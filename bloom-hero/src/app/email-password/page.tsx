@@ -8,5 +8,5 @@ export default async function EmailPasswordPage() {
     } = await supabase.auth.getUser();
 
     console.log({ user });
-    return <EmailPassword user={user}/>;
+    // return <EmailPassword user={user}/>;
 }

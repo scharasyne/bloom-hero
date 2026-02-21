@@ -16,11 +16,4 @@ export default function EmailPassword({ user }: EmailPasswordProps){
     const [password, setPassword] = useState(""); //again, blank first
     const [status, setStatus] = useState("");
     // const supabase = getSupabaseBrowserClient();
-
-    return (
-
-
-
-
-    );
 }
