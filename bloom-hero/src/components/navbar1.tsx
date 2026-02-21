@@ -1,6 +1,7 @@
 "use client";
 
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
+import { LoginForm } from "@/src/components/login-form";
 
 import { cn } from "@/lib/utils";
 
@@ -62,7 +63,7 @@ const Navbar1 = ({
     url: "https://www.shadcnblocks.com",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
     alt: "logo",
-    title: "Shadcnblocks.com",
+    title: "Bloom Hero",
   },
   menu = [
     { title: "Home", url: "#" },
@@ -137,7 +138,7 @@ const Navbar1 = ({
     },
   ],
   auth = {
-    login: { title: "Login", url: "#" },
+    login: { title: "Login", url: "/login" },
     signup: { title: "Sign up", url: "#" },
   },
   className,
