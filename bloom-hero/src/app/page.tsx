@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Navbar1 } from "@/src/components/navbar1";
+import Footer from "@/src/components/footer";
 
 export default function Home() {
   return (
@@ -62,6 +62,7 @@ export default function Home() {
             Documentation
           </a>
         </div>
+        <Footer />
       </main>
     </div>
   );
