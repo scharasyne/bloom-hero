@@ -3,7 +3,7 @@
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
 import { LoginForm } from "@/src/components/login-form";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 
 import {
   Accordion,
