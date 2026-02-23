@@ -4,7 +4,7 @@ function Footer() {
   return (
     <footer className="mt-auto flex w-full flex-col items-center gap-8 py-10 text-center">
       <Image
-        src="/footer.png"
+        src="/navbar-logo.png"
         alt="Bloomhero"
         width={280}
         height={90}
