@@ -47,7 +47,7 @@ export default function SignUp() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-primary">
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
                 <button
                     type="button"
@@ -83,14 +83,14 @@ export default function SignUp() {
                     <button
                         type="button"
                         onClick={() => setRole("client")}
-                        className={`flex-1 py-2 rounded-full text-sm font-medium transition ${role === "client" ? "bg-[#d24b46] text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
+                        className={`flex-1 py-2 rounded-full text-sm font-medium transition ${role === "client" ? "bg-accent text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
                     >
                         I am a Client
                     </button>
                     <button
                         type="button"
                         onClick={() => setRole("vendor")}
-                        className={`flex-1 py-2 mx-2 rounded-full text-sm font-medium transition ${role === "vendor" ? "bg-[#d24b46] text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
+                        className={`flex-1 py-2 mx-2 rounded-full text-sm font-medium transition ${role === "vendor" ? "bg-secondary text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
                     >
                         I am a Vendor
                     </button>
@@ -140,7 +140,7 @@ export default function SignUp() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-[#d24b46] text-white py-2 rounded-full font-medium hover:bg-red-700 transition"
+                            className="w-full bg-accent text-white py-2 rounded-full font-medium hover:bg-red-800 transition"
                         >
                             {isSubmitting ? "Creating account..." : "Create Account"}
                         </button>
