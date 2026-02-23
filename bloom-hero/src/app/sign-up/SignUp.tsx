@@ -11,9 +11,23 @@ type Role = "client" | "vendor";
 export default function SignUp() {
     const router = useRouter();
     const [role, setRole] = useState<Role>("client");
+    
+    // Client fields
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Vendor-specific fields
+    const [businessName, setBusinessName] = useState("");
+    const [vendorType, setVendorType] = useState("");
+    const [contactName, setContactName] = useState("");
+    const [vendorEmail, setVendorEmail] = useState("");
+    const [vendorPassword, setVendorPassword] = useState("");
+    const [vendorConfirmPassword, setVendorConfirmPassword] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [supportingDocuments, setSupportingDocuments] = useState<FileList | null>(null);
+
     const [status, setStatus] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
@@ -22,16 +36,60 @@ export default function SignUp() {
         event.preventDefault();
         setStatus("");
 
-        if (password !== confirmPassword) {
-            setStatus("Passwords do not match.");
+        setIsSubmitting(true);
+
+        if (role === "client") {
+            if (password !== confirmPassword) {
+                setStatus("Passwords do not match.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        role: "client",
+                        username,
+                    },
+                },
+            });
+
+            if (error) {
+                setStatus(error.message);
+                setIsSubmitting(false);
+                return;
+            }
+
+            setStatus("Check your email to confirm your account.");
+            setUsername("");
+            setPassword("");
+            setConfirmPassword("");
+            setIsSubmitting(false);
             return;
         }
 
-        setIsSubmitting(true);
+        if (vendorPassword !== vendorConfirmPassword) {
+            setStatus("Passwords do not match.");
+            setIsSubmitting(false);
+            return;
+        }
 
+        const documents = supportingDocuments ? Array.from(supportingDocuments) : [];
         const { error } = await supabase.auth.signUp({
-            email,
-            password,
+            email: vendorEmail,
+            password: vendorPassword,
+            options: {
+                data: {
+                    role: "vendor",
+                    business_name: businessName,
+                    vendor_type: vendorType,
+                    contact_name: contactName,
+                    phone_number: phoneNumber,
+                    supporting_documents: documents.map((file) => file.name),
+                },
+            },
         });
 
         if (error) {
@@ -40,20 +98,26 @@ export default function SignUp() {
             return;
         }
 
-        setStatus("Check your email to confirm your account.");
-        setPassword("");
-        setConfirmPassword("");
+        setStatus("Vendor application submitted. Check your email to confirm your account.");
+        setBusinessName("");
+        setVendorType("");
+        setContactName("");
+        setVendorEmail("");
+        setVendorPassword("");
+        setVendorConfirmPassword("");
+        setPhoneNumber("");
+        setSupportingDocuments(null);
         setIsSubmitting(false);
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-primary">
+        <div className="min-h-screen flex items-start justify-center pt-8 pb-8 bg-primary">
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
                 <button
                     type="button"
                     onClick={() => router.push("/")}
                     aria-label="Go back"
-                    className="absolute top-6 left-6 text-gray-500 hover:text-gray-700"
+                    className="absolute cursor-pointer top-6 left-6 text-gray-500 hover:text-gray-700"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -83,66 +147,212 @@ export default function SignUp() {
                     <button
                         type="button"
                         onClick={() => setRole("client")}
-                        className={`flex-1 py-2 rounded-full text-sm font-medium transition ${role === "client" ? "bg-accent text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
+                        className={`flex-1 py-2 cursor-pointer rounded-full text-sm font-medium transition ${role === "client" ? "bg-accent text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
                     >
                         I am a Client
                     </button>
                     <button
                         type="button"
                         onClick={() => setRole("vendor")}
-                        className={`flex-1 py-2 mx-2 rounded-full text-sm font-medium transition ${role === "vendor" ? "bg-secondary text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
+                        className={`flex-1 py-2 mx-2 cursor-pointer rounded-full text-sm font-medium transition ${role === "vendor" ? "bg-secondary text-white shadow" : "text-gray-700 hover:bg-[#d8cbc4]"}`}
                     >
                         I am a Vendor
                     </button>
                 </div>
 
                 <form onSubmit={handleSignUp} className="space-y-5">
-                    <div>
-                        <label className="block text-sm text-gray-700 mb-1">
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
+                    {role === "client" ? (
+                        <>
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Username
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                    <div>
-                        <label className="block text-sm text-gray-700 mb-1">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                    <div>
-                        <label className="block text-sm text-gray-700 mb-1">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Business Name
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={businessName}
+                                    onChange={(e) => setBusinessName(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Contact Name
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={contactName}
+                                    onChange={(e) => setContactName(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Vendor Type
+                                </label>
+                                <select
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={vendorType}
+                                    onChange={(e) => setVendorType(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>
+                                        Select an option
+                                    </option>
+                                    <option value="Pop-up">Pop-up</option>
+                                    <option value="Flower Shop">Flower Shop</option>
+                                    <option value="Handcrafted">Handcrafted</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={vendorEmail}
+                                    onChange={(e) => setVendorEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={vendorPassword}
+                                    onChange={(e) => setVendorPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-700 mb-1">
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                                    value={vendorConfirmPassword}
+                                    onChange={(e) => setVendorConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <p className="block text-sm text-gray-700 mb-2">
+                                    Attach <span className="text-secondary">Required Documents</span>
+                                </p>
+                                <label
+                                    htmlFor="supporting-documents"
+                                    className="inline-flex cursor-pointer items-center justify-center rounded-full bg-secondary px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                                >
+                                    Choose File
+                                </label>
+                                <input
+                                    id="supporting-documents"
+                                    type="file"
+                                    className="sr-only"
+                                    multiple
+                                    onChange={(e) => setSupportingDocuments(e.target.files)}
+                                />
+                                {supportingDocuments?.length ? (
+                                    <p className="mt-2 text-xs text-gray-600">
+                                        {supportingDocuments.length} file(s) selected
+                                    </p>
+                                ) : null}
+                            </div>
+                        </>
+                    )}
 
                     <div className="flex items-center justify-center">
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-accent text-white py-2 rounded-full font-medium hover:bg-red-800 transition"
+                            className="cursor-pointer inline-flex items-center justify-center my-8 px-6 py-2 bg-accent text-white rounded-full font-medium hover:bg-red-400 transition"
                         >
-                            {isSubmitting ? "Creating account..." : "Create Account"}
+                            {isSubmitting
+                                ? role === "vendor"
+                                    ? "Submitting..."
+                                    : "Creating account..."
+                                : role === "vendor"
+                                    ? "Submit Application"
+                                    : "Create Account"}
                         </button>
                     </div>
 
