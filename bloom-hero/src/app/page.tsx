@@ -143,95 +143,123 @@ function SearchBar() {
   );
 }
 
-function Chip() {
+// function Chip() {
+//   return (
+//     <div className="bg-[#2f5d3a] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
+//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-center text-white tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">All</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Chip1() {
+//   return (
+//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
+//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">Bouquets</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Chip2() {
+//   return (
+//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
+//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">Plants</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Chip3() {
+//   return (
+//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
+//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">Handcrafted</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+function Chip({ label, active = false }: { label: string; active?: boolean }) {
   return (
-    <div className="bg-[#2f5d3a] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-center text-white tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">All</p>
+    <div className={`content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0 ${active ? "bg-[#2f5d3a]" : "bg-[#efeae4]"}`}>
+      <div className={`flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-center tracking-[-0.07px] whitespace-nowrap ${active ? "text-white" : "text-[#1f1f1f]"}`}>
+        <p className="leading-[1.45]">{label}</p>
       </div>
     </div>
   );
 }
 
-function Chip1() {
-  return (
-    <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">Bouquets</p>
-      </div>
-    </div>
-  );
-}
-
-function Chip2() {
-  return (
-    <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">Plants</p>
-      </div>
-    </div>
-  );
-}
-
-function Chip3() {
-  return (
-    <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">Handcrafted</p>
-      </div>
-    </div>
-  );
-}
 
 function CategoryChips() {
   return (
     <div className="content-stretch flex gap-[12px] items-center justify-center relative shrink-0">
-      <Chip /><Chip1 /><Chip2 /><Chip3 />
+      <Chip label="All" active={true} />
+      <Chip label="Bouquets" />
+      <Chip label="Plants" />
+      <Chip label="Handcrafted" />
     </div>
   );
 }
 
-function DropdownPill() {
+// function DropdownPill() {
+//   return (
+//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
+//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
+//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">Price: Any</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function DropdownPill1() {
+//   return (
+//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
+//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
+//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">Sort by: Best Sellers</p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function DropdownPill2() {
+//   return (
+//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
+//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
+//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
+//         <p className="leading-[1.45]">More Filters</p>
+//       </div>
+//     </div>
+//   );
+// }
+function DropdownPill({ label }: { label: string }) {
   return (
     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">Price: Any</p>
+        <p className="leading-[1.45]">{label}</p>
       </div>
     </div>
   );
 }
 
-function DropdownPill1() {
-  return (
-    <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
-      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-      <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">Sort by: Best Sellers</p>
-      </div>
-    </div>
-  );
-}
-
-function DropdownPill2() {
-  return (
-    <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
-      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-      <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-        <p className="leading-[1.45]">More Filters</p>
-      </div>
-    </div>
-  );
-}
 
 function Filters() {
   return (
     <div className="bg-[#f7f4ef] content-stretch flex gap-[12px] items-center justify-center relative rounded-[12px] shrink-0">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-      <DropdownPill /><DropdownPill1 /><DropdownPill2 />
+      <DropdownPill label="Price: Any" />
+      <DropdownPill label="Sort by: Best Sellers" />
+      <DropdownPill label="More Filters" />
     </div>
   );
 }
+
 
 function CategFilter() {
   return (
