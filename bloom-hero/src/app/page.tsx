@@ -205,38 +205,6 @@ function CategoryChips() {
   );
 }
 
-// function DropdownPill() {
-//   return (
-//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
-//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">Price: Any</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function DropdownPill1() {
-//   return (
-//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
-//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">Sort by: Best Sellers</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function DropdownPill2() {
-//   return (
-//     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
-//       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
-//       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">More Filters</p>
-//       </div>
-//     </div>
-//   );
-// }
 function DropdownPill({ label }: { label: string }) {
   return (
     <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
