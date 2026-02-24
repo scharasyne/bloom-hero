@@ -39,7 +39,7 @@ export default function Login() {
     if (role === "vendor") {
       router.push("/vendor/dashboard");
     } else {
-      router.push("/");
+      router.push("/customer/profile");
     }
 
     router.refresh();
