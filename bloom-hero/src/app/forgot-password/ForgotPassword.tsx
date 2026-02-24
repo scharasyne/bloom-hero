@@ -20,7 +20,7 @@ export default function ForgotPassword() {
 
         const redirectTo =
             typeof window !== "undefined"
-                ? `${window.location.origin}/login`
+                ? `${window.location.origin}/reset-password`
                 : undefined;
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
