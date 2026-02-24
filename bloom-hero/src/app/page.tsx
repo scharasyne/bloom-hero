@@ -1,7 +1,8 @@
 import Footer from "../components/footer";
 import BouquetCard from "../components/BouquetCard";
+import { Icon } from "@iconify/react";
 
-const imgLogo = "https://placehold.co/36x48?text=Logo";
+const navLogo = "/icon.png";
 const imgFreeLocationIcon2952Thumb1 = "https://placehold.co/14x20";
 const imgChevron = "https://placehold.co/8x8";
 const imgSearchIcon = "https://placehold.co/28x28";
@@ -23,10 +24,11 @@ const imgRectangle37 = "https://placehold.co/24x24";
 const imgRectangle38 = "https://placehold.co/24x24";
 
 const mockBouquets = [
-  { id: 1, image_url: "https://placehold.co/280x260?text=Bouquet", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
-  { id: 2, image_url: "https://placehold.co/280x260?text=Bouquet", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
-  { id: 3, image_url: "https://placehold.co/280x260?text=Bouquet", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
+  { id: 1, image_url: "/bouquets/roses.jpg", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
+  { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
+  { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
 ];
+
 
 function SignInButton() {
   return (
@@ -64,7 +66,7 @@ function NavBar() {
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <div className="h-[48px] relative shrink-0 w-[36px]">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]" src={imgLogo} />
+          <img alt="" className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]" src={navLogo} />
         </div>
       </div>
       <NavItems />
@@ -90,11 +92,7 @@ function Location() {
   return (
     <div className="bg-[#f6f2ee] content-stretch flex gap-[5px] items-center px-[14px] py-[10px] relative rounded-[14px] shrink-0">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[14px]" />
-      <div className="h-[20px] relative shrink-0 w-[14px]">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[111.06%] left-[-29.63%] max-w-none top-[-5.93%] w-[159.26%]" src={imgFreeLocationIcon2952Thumb1} />
-        </div>
-      </div>
+      <Icon icon="mdi:map-marker" width={20} height={20} color="#2f5d3a" />
       <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[16px] text-center tracking-[-0.08px] whitespace-nowrap">
         <p className="leading-[1.5]">Cebu City</p>
       </div>
@@ -124,11 +122,7 @@ function LocPlaceholder() {
 function SearchButton() {
   return (
     <div className="bg-[#2f6b4f] content-stretch flex h-[55px] items-center justify-center px-[18px] py-[12px] relative rounded-br-[24px] rounded-tr-[24px] shrink-0 w-[84px]">
-      <div className="relative shrink-0 size-[28px]">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute left-[-3.54%] max-w-none size-[198.7%] top-[-3.46%]" src={imgSearchIcon} />
-        </div>
-      </div>
+      <Icon icon="mdi:magnify" width={28} height={28} color="white" />
     </div>
   );
 }
@@ -143,46 +137,6 @@ function SearchBar() {
   );
 }
 
-// function Chip() {
-//   return (
-//     <div className="bg-[#2f5d3a] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-center text-white tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">All</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Chip1() {
-//   return (
-//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">Bouquets</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Chip2() {
-//   return (
-//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">Plants</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Chip3() {
-//   return (
-//     <div className="bg-[#efeae4] content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0">
-//       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
-//         <p className="leading-[1.45]">Handcrafted</p>
-//       </div>
-//     </div>
-//   );
-// }
-
 function Chip({ label, active = false }: { label: string; active?: boolean }) {
   return (
     <div className={`content-stretch flex items-center justify-center px-[14px] py-[8px] relative rounded-[999px] shrink-0 ${active ? "bg-[#2f5d3a]" : "bg-[#efeae4]"}`}>
@@ -192,7 +146,6 @@ function Chip({ label, active = false }: { label: string; active?: boolean }) {
     </div>
   );
 }
-
 
 function CategoryChips() {
   return (
@@ -207,15 +160,15 @@ function CategoryChips() {
 
 function DropdownPill({ label }: { label: string }) {
   return (
-    <div className="bg-white content-stretch flex gap-[6px] items-start px-[14px] py-[8px] relative rounded-[12px] shrink-0">
+    <div className="bg-white content-stretch flex gap-[6px] items-center px-[14px] py-[8px] relative rounded-[12px] shrink-0">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[14px] text-center tracking-[-0.07px] whitespace-nowrap">
         <p className="leading-[1.45]">{label}</p>
       </div>
+      <Icon icon="mdi:chevron-down" width={12} height={12} color="#1f1f1f" />
     </div>
   );
 }
-
 
 function Filters() {
   return (
@@ -296,12 +249,10 @@ function BestSellers() {
   );
 }
 
-function CategoryItem({ src, label }: { src: string; label: string }) {
+function CategoryItem({ icon, label }: { icon: string; label: string }) {
   return (
     <div className="content-stretch flex gap-[12px] items-center justify-center relative shrink-0">
-      <div className="relative rounded-[6px] shrink-0 size-[24px]">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[6px] size-full" src={src} />
-      </div>
+      <Icon icon={icon} width={24} height={24} color="#2E7D5B" />
       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#2f5d3a] text-[16px] text-center tracking-[1.28px] whitespace-nowrap">
         <p className="leading-[22px]">{label}</p>
       </div>
@@ -309,7 +260,7 @@ function CategoryItem({ src, label }: { src: string; label: string }) {
   );
 }
 
-function CategoryGroup({ title, items }: { title: string; items: { src: string; label: string }[] }) {
+function CategoryGroup({ title, items }: { title: string; items: { icon: string; label: string }[] }) {
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-center justify-center relative shrink-0">
       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#7a7a7a] text-[14px] text-center tracking-[0.28px] whitespace-nowrap">
@@ -317,12 +268,13 @@ function CategoryGroup({ title, items }: { title: string; items: { src: string; 
       </div>
       <div className="content-stretch flex flex-col gap-[12px] items-start justify-center relative shrink-0">
         {items.map((item) => (
-          <CategoryItem key={item.label} src={item.src} label={item.label} />
+          <CategoryItem key={item.label} icon={item.icon} label={item.label} />
         ))}
       </div>
     </div>
   );
 }
+
 
 function ShopByCategory() {
   return (
@@ -339,32 +291,35 @@ function ShopByCategory() {
           <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
             <div className="content-stretch flex gap-[48px] items-start justify-center relative shrink-0 w-full">
               <CategoryGroup title="CELEBRATIONS & MILESTONES" items={[
-                { src: imgRectangle24, label: "Birthday Blooms" },
-                { src: imgRectangle25, label: "Graduation Cheers" },
-                { src: imgRectangle26, label: "New Beginnings" },
-                { src: imgRectangle27, label: "Just Because" },
+                { icon: "mdi:cake-variant-outline", label: "Birthday Blooms" },
+                { icon: "mdi:school-outline", label: "Graduation Cheers" },
+                { icon: "mdi:star-shooting-outline", label: "New Beginnings" },
+                { icon: "mdi:flower-outline", label: "Just Because" },
               ]} />
+
               <CategoryGroup title="LOVE & RELATIONSHIPS" items={[
-                { src: imgRectangle28, label: "Love Notes in Bloom" },
-                { src: imgRectangle29, label: "Anniversary Classics" },
-                { src: imgRectangle30, label: `Say "I Miss You"` },
+                { icon: "mdi:heart-outline", label: "Love Notes in Bloom" },
+                { icon: "mdi:ring", label: "Anniversary Classics" },
+                { icon: "mdi:emoticon-sad-outline", label: `Say "I Miss You"` },
               ]} />
+
               <CategoryGroup title="CARE & SUPPORT" items={[
-                { src: imgRectangle31, label: "Get Well Soon" },
-                { src: imgRectangle32, label: "Thinking of You" },
-                { src: imgRectangle33, label: "Gentle Comfort" },
+                { icon: "mdi:medical-bag", label: "Get Well Soon" },
+                { icon: "mdi:hand-heart-outline", label: "Thinking of You" },
+                { icon: "mdi:hand-okay", label: "Gentle Comfort" },
               ]} />
-            </div>
-            <div className="content-stretch flex gap-[48px] items-start justify-center relative shrink-0 w-full">
+
               <CategoryGroup title="EVERYDAY & SPECIALTY" items={[
-                { src: imgRectangle34, label: "Plants That Last" },
-                { src: imgRectangle35, label: "Handcrafted" },
-                { src: imgRectangle36, label: "Florist's Picks" },
+                { icon: "mdi:leaf", label: "Plants That Last" },
+                { icon: "mdi:scissors-cutting", label: "Handcrafted" },
+                { icon: "mdi:storefront-outline", label: "Florist's Picks" },
               ]} />
+
               <CategoryGroup title="CUSTOM & FLEXIBLE" items={[
-                { src: imgRectangle37, label: "Build Your Own Bouquet" },
-                { src: imgRectangle38, label: "Made Just for You" },
+                { icon: "mdi:pencil-ruler-outline", label: "Build Your Own Bouquet" },
+                { icon: "mdi:gift-outline", label: "Made Just for You" },
               ]} />
+
             </div>
           </div>
         </div>

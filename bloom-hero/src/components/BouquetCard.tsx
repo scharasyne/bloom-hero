@@ -1,3 +1,6 @@
+import { Icon } from "@iconify/react";
+
+
 interface BouquetCardProps {
   image: string;
   name: string;
@@ -37,6 +40,7 @@ export default function BouquetCard({
         </div>
         {/* Shop & Distance */}
         <div className="content-stretch flex gap-[6px] items-center justify-center relative shrink-0">
+          <Icon icon="mdi:map-marker-outline" width={15} height={15} color="#7a7a7a" />
           <p className="text-[#7a7a7a] text-[13px] font-medium leading-[22px]">{shop} · {distance}</p>
         </div>
         {/* Category Pill */}
