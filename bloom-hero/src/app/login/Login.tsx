@@ -30,7 +30,18 @@ export default function Login() {
       return;
     }
 
-    router.push("/");
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const role = user?.user_metadata?.role as string | undefined;
+
+    if (role === "vendor") {
+      router.push("/vendor/dashboard");
+    } else {
+      router.push("/");
+    }
+
     router.refresh();
   }
 
@@ -58,6 +69,8 @@ export default function Login() {
           </svg>
         </button>
 
+        <div className="h-12" />
+
         <div className="flex justify-center mb-6">
           <Image
             src="/navbar-logo.png"
@@ -66,13 +79,6 @@ export default function Login() {
             height={90}
           />
         </div>
-
-        <h2 className="text-xl font-semibold text-gray-800 text-center mb-2">
-          Login to your account
-        </h2>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          Enter your email and password to access your account.
-        </p>
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
@@ -104,14 +110,14 @@ export default function Login() {
               required
             />
           </div>
-
+          <div className="h-2" />
           <div className="flex items-center justify-center">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#d24b46] text-white py-2 rounded-full font-medium hover:bg-red-700 transition"
+              className="w-full bg-[#d24b46] text-white py-2 rounded-full font-medium hover:bg-red-400 transition cursor-pointer disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
           </div>
 

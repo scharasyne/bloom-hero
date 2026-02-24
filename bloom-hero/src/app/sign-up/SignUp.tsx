@@ -134,6 +134,8 @@ export default function SignUp() {
                     </svg>
                 </button>
 
+                <div className="h-12" />
+
                 <div className="flex justify-center mb-6">
                     <Image
                         src="/navbar-logo.png"
