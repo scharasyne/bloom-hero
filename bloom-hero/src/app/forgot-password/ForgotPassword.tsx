@@ -62,6 +62,8 @@ export default function ForgotPassword() {
                     </svg>
                 </button>
 
+                <div className="h-10" />
+
                 <div className="flex justify-center mb-6">
                     <Image
                         src="/navbar-logo.png"
