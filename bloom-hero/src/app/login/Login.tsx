@@ -45,6 +45,19 @@ export default function Login() {
     router.refresh();
   }
 
+  // -------------------------------------------------------------
+  // social login
+  async function handleGoogleLogin() {
+    setStatus("");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+
+    if (error) {
+      setStatus(error.message);
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-start justify-center pt-8 pb-8 bg-primary">
       <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
@@ -111,7 +124,7 @@ export default function Login() {
             />
           </div>
           <div className="h-2" />
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-3">
             <button
               type="submit"
               disabled={isSubmitting}
@@ -119,10 +132,18 @@ export default function Login() {
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full bg-[white] border border-gray-300 text-gray-700 py-2 rounded-full hover:bg-gray-100 transition cursor-pointer disabled:cursor-not-allowed"
+            >
+              Login with Google
+            </button>
           </div>
 
           {status ? (
-            <p className="text-sm text-center text-gray-700">{status}</p>
+            <p className="text-sm text-center text-gray-700 mt-2">{status}</p>
           ) : null}
         </form>
 
