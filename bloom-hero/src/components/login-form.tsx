@@ -3,23 +3,23 @@
 import { FormEvent, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { cn } from "@/src/lib/utils"
-import { Button } from "@/src/components/ui/button"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card"
+} from "@/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/src/components/ui/field"
-import { Input } from "@/src/components/ui/input"
-import { createSupabaseBrowserClient } from "@/src/lib/supabase/browser-client"
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
 export function LoginForm({
   className,

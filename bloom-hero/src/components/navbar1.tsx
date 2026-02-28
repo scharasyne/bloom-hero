@@ -1,17 +1,17 @@
 "use client";
 
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
-import { LoginForm } from "@/src/components/login-form";
+import { LoginForm } from "@/components/login-form";
 
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/src/components/ui/accordion";
-import { Button } from "@/src/components/ui/button";
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -19,14 +19,14 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/src/components/ui/navigation-menu";
+} from "@/components/ui/navigation-menu";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/src/components/ui/sheet";
+} from "@/components/ui/sheet";
 
 interface MenuItem {
   title: string;

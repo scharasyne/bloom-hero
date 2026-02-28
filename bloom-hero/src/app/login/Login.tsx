@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createSupabaseBrowserClient } from "@/src/lib/supabase/browser-client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 export default function Login() {
   const router = useRouter();

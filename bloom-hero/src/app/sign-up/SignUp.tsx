@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/src/lib/supabase/browser-client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import Image from "next/image";
 
 type Role = "client" | "vendor";
