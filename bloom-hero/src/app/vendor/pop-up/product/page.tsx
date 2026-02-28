@@ -1,12 +1,14 @@
 "use client"
 
+import { useState } from "react";
+// import { supabase } from "@/lib/supabaseClient"; = not sure what this is so idk yet
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
-import { Button } from "@/src/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -14,41 +16,43 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card"
+} from "@/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/src/components/ui/field"
-import { Input } from "@/src/components/ui/input"
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   InputGroupTextarea,
-} from "@/src/components/ui/input-group"
+} from "@/components/ui/input-group"
 
 const formSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Bug title must be at least 5 characters.")
-    .max(32, "Bug title must be at most 32 characters."),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters.")
-    .max(100, "Description must be at most 100 characters."),
+  productName: z.string().min(4, "Required"),
+  description: z.string().min(4),
+  price: z.coerce.number().min(10),
+  stocks: z.coerce.number().min(0),
 })
 
-export default function BugReportForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+type FormValues = z.infer<typeof formSchema>;
+
+export default function AddProductForm() {
+
+  const form = useForm<FormValues, any, FormValues>({
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      title: "",
+      productName: "",
       description: "",
+      price: 0,
+      stocks: 0,
     },
-  })
+  });
+
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     toast("You submitted the following values:", {
@@ -79,7 +83,7 @@ export default function BugReportForm() {
         <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="title"
+              name="productName"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
