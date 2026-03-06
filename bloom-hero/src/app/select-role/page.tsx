@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,54 +33,59 @@ import {
   RadioGroupItem,
 } from "@/components/ui/radio-group"
 
+const formSchema = z.object({
+  role: z.enum(["admin", "vendor", "customer"]),
+  vendor_type: z.enum(["pop-up", "market"]).optional(),
+}).refine((data) => {
+  if(data.role === "vendor" && !data.vendor_type)
+    return false;
+  return true;
+},{
+  message: "Please select a vendor type",
+  path: ["vendor_type"],
+});
+
 const plans = [
   {
-    id: "starter",
-    title: "Starter (100K tokens/month)",
-    description: "For everyday use with basic features.",
+    id: "customer",
+    title: "Customer",
+    description: "I want to sign up as a customer",
   },
   {
-    id: "pro",
-    title: "Pro (1M tokens/month)",
-    description: "For advanced AI usage with more features.",
-  },
-  {
-    id: "enterprise",
-    title: "Enterprise (Unlimited tokens)",
-    description: "For large teams and heavy usage.",
+    id: "vendor",
+    title: "Vendor",
+    description: "I want to sign up as a vendor",
   },
 ] as const
 
-const formSchema = z.object({
-  plan: z.string().min(1, "You must select a subscription plan to continue."),
-})
-
-export default function FormRhfRadioGroup() {
+export default function SelectRolePage() {
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      plan: "",
+      role: "customer"
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  const watchedRole = form.watch("role");
+
+  async function onSubmit(values: z.infer<typeof formSchema>){
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return router.push("/login");
+
+    await supabase.from("users").update({
+      role: values.role,
+      vendor_type: values.role === "vendor" ? values.vendor_type : null, 
+    }).eq("id", user.id);
+
+    if (values.role === "vendor") 
+      router.push("/vendor/dashboard");
+    else router.push("/customer/dashboard");
   }
 
   return (
+    <div className="flex justify-center items-center h-screen">
     <Card className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle>Subscription Plan</CardTitle>
@@ -90,7 +97,7 @@ export default function FormRhfRadioGroup() {
         <form id="form-rhf-radiogroup" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="plan"
+              name="role"
               control={form.control}
               render={({ field, fieldState }) => (
                 <FieldSet data-invalid={fieldState.invalid}>
@@ -148,5 +155,7 @@ export default function FormRhfRadioGroup() {
         </Field>
       </CardFooter>
     </Card>
-  )
+    </div>
+  
+)
 }
