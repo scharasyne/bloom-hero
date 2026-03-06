@@ -1,78 +1,15 @@
 import Footer from "../components/footer";
 import BouquetCard from "../components/BouquetCard";
 import { Icon } from "@iconify/react";
+import NavBar from "../components/navbar";
 
 const navLogo = "/icon.png";
-const imgFreeLocationIcon2952Thumb1 = "https://placehold.co/14x20";
-const imgChevron = "https://placehold.co/8x8";
-const imgSearchIcon = "https://placehold.co/28x28";
-const imgUntitledDesign31 = "https://placehold.co/15x15";
-const imgRectangle24 = "https://placehold.co/24x24";
-const imgRectangle25 = "https://placehold.co/24x24";
-const imgRectangle26 = "https://placehold.co/24x24";
-const imgRectangle27 = "https://placehold.co/24x24";
-const imgRectangle28 = "https://placehold.co/24x24";
-const imgRectangle29 = "https://placehold.co/24x24";
-const imgRectangle30 = "https://placehold.co/24x24";
-const imgRectangle31 = "https://placehold.co/24x24";
-const imgRectangle32 = "https://placehold.co/24x24";
-const imgRectangle33 = "https://placehold.co/24x24";
-const imgRectangle34 = "https://placehold.co/24x24";
-const imgRectangle35 = "https://placehold.co/24x24";
-const imgRectangle36 = "https://placehold.co/24x24";
-const imgRectangle37 = "https://placehold.co/24x24";
-const imgRectangle38 = "https://placehold.co/24x24";
 
 const mockBouquets = [
   { id: 1, image_url: "/bouquets/roses.jpg", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
   { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
   { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
 ];
-
-
-function SignInButton() {
-  return (
-    <div className="absolute bg-[#d24b46] bottom-0 content-stretch flex items-center justify-center px-[20px] py-[12px] right-0 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] top-0">
-      <a className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-center text-white tracking-[0.56px] whitespace-nowrap" href="/sign-in">
-        <p className="cursor-pointer leading-[1.5]">Sign In</p>
-      </a>
-    </div>
-  );
-}
-
-function NavItems() {
-  return (
-    <div className="h-[44px] relative shrink-0 w-[394px]">
-      <a className="-translate-x-1/2 absolute bottom-[12px] flex flex-col font-semibold justify-center leading-[0] left-[39px] text-[14px] text-black text-center top-[12px] tracking-[-0.07px] whitespace-nowrap" href="/page-2">
-        <p className="cursor-pointer leading-[1.45]">Home</p>
-      </a>
-      <a className="-translate-x-1/2 absolute bottom-[12px] flex flex-col font-semibold justify-center leading-[0] left-[calc(50%-83.5px)] text-[14px] text-black text-center top-[12px] tracking-[-0.07px] whitespace-nowrap" href="/browse-flowers">
-        <p className="cursor-pointer leading-[1.45]">Flowers</p>
-      </a>
-      <a className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-semibold justify-center leading-[0] left-[calc(50%-9.5px)] text-[14px] text-black text-center top-1/2 tracking-[-0.07px] whitespace-nowrap" href="/browse-shops">
-        <p className="cursor-pointer leading-[1.45]">Shops</p>
-      </a>
-      <a className="-translate-x-1/2 absolute bottom-[12px] flex flex-col font-semibold justify-center leading-[0] left-[257px] text-[14px] text-black text-center top-[12px] tracking-[-0.07px] whitespace-nowrap" href="/about-us">
-        <p className="cursor-pointer leading-[1.45]">About</p>
-      </a>
-      <SignInButton />
-    </div>
-  );
-}
-
-function NavBar() {
-  return (
-    <div className="content-stretch flex h-[88px] items-center justify-between relative shrink-0 w-full">
-      <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
-      <div className="h-[48px] relative shrink-0 w-[36px]">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="" className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]" src={navLogo} />
-        </div>
-      </div>
-      <NavItems />
-    </div>
-  );
-}
 
 function Headline() {
   return (
@@ -103,7 +40,7 @@ function Location() {
 function Query() {
   return (
     <div className="content-stretch flex items-start relative shrink-0">
-      <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#9a948f] text-[16px] text-center tracking-[-0.08px] whitespace-nowrap">
+      <div className="flex flex-col font-regular justify-center leading-[0] relative shrink-0 text-[#9a948f] text-[16px] text-center tracking-[-0.08px] whitespace-nowrap">
         <p className="leading-[1.5]">Search flowers, vendors, or occasions…</p>
       </div>
     </div>
@@ -252,7 +189,7 @@ function BestSellers() {
 function CategoryItem({ icon, label }: { icon: string; label: string }) {
   return (
     <div className="content-stretch flex gap-[12px] items-center justify-center relative shrink-0">
-      <Icon icon={icon} width={24} height={24} color="#2E7D5B" />
+      <Icon icon={icon} width={24} height={24} color="#E05850" />
       <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#2f5d3a] text-[16px] text-center tracking-[1.28px] whitespace-nowrap">
         <p className="leading-[22px]">{label}</p>
       </div>
