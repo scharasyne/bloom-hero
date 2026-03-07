@@ -1,3 +1,5 @@
+//this file was edited - the original could be found in the same folder, with the name signup-copy.txt
+//this should be a general registration page. role selection is handled by select-role upon signing up
 "use client";
 
 import { useMemo, useState } from "react";
@@ -10,7 +12,7 @@ type Role = "client" | "vendor";
 
 export default function SignUp() {
     const router = useRouter();
-    const [role, setRole] = useState<Role>("client");
+    // const [role, setRole] = useState<Role>("client");
     
     // Client fields
     const [username, setUsername] = useState("");
@@ -19,14 +21,14 @@ export default function SignUp() {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     // Vendor-specific fields
-    const [businessName, setBusinessName] = useState("");
-    const [vendorType, setVendorType] = useState("");
-    const [contactName, setContactName] = useState("");
-    const [vendorEmail, setVendorEmail] = useState("");
-    const [vendorPassword, setVendorPassword] = useState("");
-    const [vendorConfirmPassword, setVendorConfirmPassword] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [supportingDocuments, setSupportingDocuments] = useState<FileList | null>(null);
+    // const [businessName, setBusinessName] = useState("");
+    // const [vendorType, setVendorType] = useState("");
+    // const [contactName, setContactName] = useState("");
+    // const [vendorEmail, setVendorEmail] = useState("");
+    // const [vendorPassword, setVendorPassword] = useState("");
+    // const [vendorConfirmPassword, setVendorConfirmPassword] = useState("");
+    // const [phoneNumber, setPhoneNumber] = useState("");
+    // const [supportingDocuments, setSupportingDocuments] = useState<FileList | null>(null);
 
     const [status, setStatus] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,56 +40,20 @@ export default function SignUp() {
 
         setIsSubmitting(true);
 
-        if (role === "client") {
-            if (password !== confirmPassword) {
-                setStatus("Passwords do not match.");
-                setIsSubmitting(false);
-                return;
-            }
-
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        role: "client",
-                        username,
-                    },
-                },
-            });
-
-            if (error) {
-                setStatus(error.message);
-                setIsSubmitting(false);
-                return;
-            }
-
-            setStatus("Check your email to confirm your account.");
-            setUsername("");
-            setPassword("");
-            setConfirmPassword("");
-            setIsSubmitting(false);
-            return;
-        }
-
-        if (vendorPassword !== vendorConfirmPassword) {
+        // if (role === "client") {
+        if (password !== confirmPassword) {
             setStatus("Passwords do not match.");
             setIsSubmitting(false);
             return;
         }
 
-        const documents = supportingDocuments ? Array.from(supportingDocuments) : [];
         const { error } = await supabase.auth.signUp({
-            email: vendorEmail,
-            password: vendorPassword,
+            email,
+            password,
             options: {
                 data: {
-                    role: "vendor",
-                    business_name: businessName,
-                    vendor_type: vendorType,
-                    contact_name: contactName,
-                    phone_number: phoneNumber,
-                    supporting_documents: documents.map((file) => file.name),
+                    // role: "client",
+                    username,
                 },
             },
         });
@@ -98,16 +64,52 @@ export default function SignUp() {
             return;
         }
 
-        setStatus("Vendor application submitted. Check your email to confirm your account.");
-        setBusinessName("");
-        setVendorType("");
-        setContactName("");
-        setVendorEmail("");
-        setVendorPassword("");
-        setVendorConfirmPassword("");
-        setPhoneNumber("");
-        setSupportingDocuments(null);
+        setStatus("Check your email to confirm your account.");
+        setUsername("");
+        setPassword("");
+        setConfirmPassword("");
         setIsSubmitting(false);
+        return;
+        // }
+
+        // if (vendorPassword !== vendorConfirmPassword) {
+        //     setStatus("Passwords do not match.");
+        //     setIsSubmitting(false);
+        //     return;
+        // }
+
+        // const documents = supportingDocuments ? Array.from(supportingDocuments) : [];
+        // const { error } = await supabase.auth.signUp({
+        //     email: vendorEmail,
+        //     password: vendorPassword,
+        //     options: {
+        //         data: {
+        //             role: "vendor",
+        //             business_name: businessName,
+        //             vendor_type: vendorType,
+        //             contact_name: contactName,
+        //             phone_number: phoneNumber,
+        //             supporting_documents: documents.map((file) => file.name),
+        //         },
+        //     },
+        // });
+
+        // if (error) {
+        //     setStatus(error.message);
+        //     setIsSubmitting(false);
+        //     return;
+        // }
+
+        // setStatus("Vendor application submitted. Check your email to confirm your account.");
+        // setBusinessName("");
+        // setVendorType("");
+        // setContactName("");
+        // setVendorEmail("");
+        // setVendorPassword("");
+        // setVendorConfirmPassword("");
+        // setPhoneNumber("");
+        // setSupportingDocuments(null);
+        // setIsSubmitting(false);
     }
 
     return (
@@ -143,7 +145,7 @@ export default function SignUp() {
                     />
                 </div>
 
-                <div className="flex bg-gray-200 rounded-full p-1 mb-6 border border-gray-300">
+                {/* <div className="flex bg-gray-200 rounded-full p-1 mb-6 border border-gray-300">
                     <button
                         type="button"
                         onClick={() => setRole("client")}
@@ -158,189 +160,65 @@ export default function SignUp() {
                     >
                         I am a Vendor
                     </button>
-                </div>
+                </div> */}
 
                 <form onSubmit={handleSignUp} className="space-y-5">
-                    {role === "client" ? (
-                        <>
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Username
-                                </label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    required
-                                />
-                            </div>
+                        {/* <> */}
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    type="password"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Business Name
-                                </label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={businessName}
-                                    onChange={(e) => setBusinessName(e.target.value)}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm text-gray-700 mb-1">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                        {/* </> */}
+                    
 
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Contact Name
-                                </label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={contactName}
-                                    onChange={(e) => setContactName(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Vendor Type
-                                </label>
-                                <select
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={vendorType}
-                                    onChange={(e) => setVendorType(e.target.value)}
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        Select an option
-                                    </option>
-                                    <option value="Pop-up">Pop-up</option>
-                                    <option value="Flower Shop">Flower Shop</option>
-                                    <option value="Handcrafted">Handcrafted</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={vendorEmail}
-                                    onChange={(e) => setVendorEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Phone Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={phoneNumber}
-                                    onChange={(e) => setPhoneNumber(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={vendorPassword}
-                                    onChange={(e) => setVendorPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-700 mb-1">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    type="password"
-                                    className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
-                                    value={vendorConfirmPassword}
-                                    onChange={(e) => setVendorConfirmPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <p className="block text-sm text-gray-700 mb-2">
-                                    Attach <span className="text-secondary">Required Documents</span>
-                                </p>
-                                <label
-                                    htmlFor="supporting-documents"
-                                    className="inline-flex cursor-pointer items-center justify-center rounded-full bg-secondary px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                                >
-                                    Choose File
-                                </label>
-                                <input
-                                    id="supporting-documents"
-                                    type="file"
-                                    className="sr-only"
-                                    multiple
-                                    onChange={(e) => setSupportingDocuments(e.target.files)}
-                                />
-                                {supportingDocuments?.length ? (
-                                    <p className="mt-2 text-xs text-gray-600">
-                                        {supportingDocuments.length} file(s) selected
-                                    </p>
-                                ) : null}
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex items-center justify-center">
+                    {/* <div className="flex items-center justify-center">
                         <button
                             type="submit"
                             disabled={isSubmitting}
@@ -354,11 +232,11 @@ export default function SignUp() {
                                     ? "Submit Application"
                                     : "Create Account"}
                         </button>
-                    </div>
+                    </div> */}
 
-                    {status ? (
+                    {/* {status ? (
                         <p className="text-sm text-center text-gray-700">{status}</p>
-                    ) : null}
+                    ) : null} */}
                 </form>
 
                 <p className="text-sm text-center text-gray-600 mt-6">

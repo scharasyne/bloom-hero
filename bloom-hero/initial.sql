@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS users(
     name TEXT,
     email TEXT NOT NULL, 
     contact_number TEXT,
-    -- role user_role NOT NULL DEFAULT 'customer',
     role user_role NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
