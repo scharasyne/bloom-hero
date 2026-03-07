@@ -45,7 +45,7 @@ const formSchema = z.object({
   path: ["vendor_type"],
 });
 
-const plans = [
+const roles = [
   {
     id: "customer",
     title: "Customer",
@@ -68,7 +68,8 @@ export default function SelectRolePage() {
     },
   })
 
-  const watchedRole = form.watch("role");
+  const selectedRole = form.watch("role");
+  // const selectedVendorType = form.watch("vendor_type");
 
   async function onSubmit(values: z.infer<typeof formSchema>){
     const { data: { user } } = await supabase.auth.getUser();
@@ -88,9 +89,9 @@ export default function SelectRolePage() {
     <div className="flex justify-center items-center h-screen">
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Subscription Plan</CardTitle>
+        <CardTitle>Select your desired role</CardTitle>
         <CardDescription>
-          See pricing and features for each plan.
+          See the description of roles.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -101,9 +102,9 @@ export default function SelectRolePage() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <FieldSet data-invalid={fieldState.invalid}>
-                  <FieldLegend>Plan</FieldLegend>
+                  <FieldLegend>Role</FieldLegend>
                   <FieldDescription>
-                    You can upgrade or downgrade your plan at any time.
+                    You may submit requirements later.
                   </FieldDescription>
                   <RadioGroup
                     name={field.name}
@@ -111,30 +112,65 @@ export default function SelectRolePage() {
                     onValueChange={field.onChange}
                     aria-invalid={fieldState.invalid}
                   >
-                    {plans.map((plan) => (
+                    {roles.map((role) => (
                       <FieldLabel
-                        key={plan.id}
-                        htmlFor={`form-rhf-radiogroup-${plan.id}`}
+                        key={role.id}
+                        htmlFor={`form-rhf-radiogroup-${role.id}`}
                       >
                         <Field
                           orientation="horizontal"
                           data-invalid={fieldState.invalid}
                         >
                           <FieldContent>
-                            <FieldTitle>{plan.title}</FieldTitle>
+                            <FieldTitle>{role.title}</FieldTitle>
                             <FieldDescription>
-                              {plan.description}
+                              {role.description}
                             </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem
-                            value={plan.id}
-                            id={`form-rhf-radiogroup-${plan.id}`}
+                            value={role.id}
+                            id={`form-rhf-radiogroup-${role.id}`}
                             aria-invalid={fieldState.invalid}
                           />
                         </Field>
                       </FieldLabel>
                     ))}
                   </RadioGroup>
+                  {
+                    selectedRole === "vendor" && (
+                      <Controller name="vendor_type"
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <FieldSet data-invalid={fieldState.invalid}>
+                          <FieldLegend>Vendor Type</FieldLegend>
+                          <RadioGroup
+                            name={field.name}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FieldLabel htmlFor="vendor-type-popup">
+                              <Field orientation="horizontal">
+                                <FieldContent>
+                                  <FieldTitle>Pop-up</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem value="pop-up" id="vendor-type-popup" />
+                              </Field>
+                            </FieldLabel>  
+                            <FieldLabel htmlFor="vendor-type-market">
+                              <Field orientation="horizontal">
+                                <FieldContent>
+                                  <FieldTitle>Market Stall</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem value="market" id="vendor-type-market" />
+                              </Field>
+                            </FieldLabel>
+                          </RadioGroup>
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                        </FieldSet>  
+                      )}
+                      />
+                    )
+                  }
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -156,6 +192,5 @@ export default function SelectRolePage() {
       </CardFooter>
     </Card>
     </div>
-  
 )
 }
