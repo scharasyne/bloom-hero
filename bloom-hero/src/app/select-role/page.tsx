@@ -76,6 +76,7 @@ export default function SelectRolePage() {
 
     if (values.role === "customer") {
       await supabase.from("customers").insert({ user_id: user.id });
+      await supabase.from("users").update({role: "customer"}).eq("id", user.id);
     } else if (values.role === "vendor") {
       await supabase.from("users").update({ role: "vendor" }).eq("id", user.id);
       if(values.vendor_type === "market")

@@ -64,19 +64,30 @@ export default function Login() {
       return;
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser();
 
-    const role = user?.user_metadata?.role as string | undefined;
+    // if (!user) return router.push("/sign-up");
 
-    if (role === "vendor") {
-      router.push("/vendor/dashboard");
-    } else if(role === "customer"){
-      router.push("/customer/dashboard");
-    } else if(!role){
-      router.push("/select-role");
-    }
+    // const { data: vendor } = await supabase
+    //   .from("vendors")
+    //   .select("vendor_type")
+    //   .eq("owner_id", user.id)
+    //   .single();
+
+    // const role = user?.user_metadata?.role as string | undefined;
+    
+    // if(!role)
+    //   router.push("/select-role");
+    // if (role === "vendor") {
+    //   if(vendor?.vendor_type === "market")
+    //     router.push("/vendor/market/dashboard");
+    //   else
+    //     router.push("/vendor/pop-up/dashboard");
+    // } else if(role === "customer"){
+    //   router.push("/customer/dashboard");
+    // } 
 
     router.refresh();
 
