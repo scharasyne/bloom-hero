@@ -69,19 +69,27 @@ export default function SelectRolePage() {
   })
 
   const selectedRole = form.watch("role");
-  // const selectedVendorType = form.watch("vendor_type");
 
   async function onSubmit(values: z.infer<typeof formSchema>){
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return router.push("/login");
+    if (!user) return router.push("/sign-up");
 
-    await supabase.from("users").update({
-      role: values.role,
-      vendor_type: values.role === "vendor" ? values.vendor_type : null, 
-    }).eq("id", user.id);
+    if (values.role === "customer") {
+      await supabase.from("customers").insert({ user_id: user.id });
+    } else if (values.role === "vendor") {
+      await supabase.from("users").update({ role: "vendor" }).eq("id", user.id);
+      if(values.vendor_type === "market")
+        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "market" });
+      else
+        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "pop-up" });
+    }
 
-    if (values.role === "vendor") 
-      router.push("/vendor/dashboard");
+    if (values.role === "vendor"){
+      if(values.vendor_type === "market")
+          router.push("/vendor/market/dashboard");
+      else if(values.vendor_type === "pop-up")
+          router.push("/vendor/pop-up/dashboard");
+    }
     else router.push("/customer/dashboard");
   }
 
