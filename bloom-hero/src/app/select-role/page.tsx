@@ -79,9 +79,9 @@ export default function SelectRolePage() {
     } else if (values.role === "vendor") {
       await supabase.from("users").update({ role: "vendor" }).eq("id", user.id);
       if(values.vendor_type === "market")
-        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "market" });
+        await supabase.from("vendors").insert({ owner_id: user.id, vendor_type: "market" });
       else
-        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "pop-up" });
+        await supabase.from("vendors").insert({ owner_id: user.id, vendor_type: "pop-up" });
     }
 
     if (values.role === "vendor"){
