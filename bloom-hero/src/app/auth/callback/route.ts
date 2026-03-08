@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -10,13 +11,28 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code);
 
     const { data: { user } } = await supabase.auth.getUser();
-    const role = user?.user_metadata?.role as string | undefined;
 
-    if (role === "vendor") {
-      return NextResponse.redirect(`${origin}/vendor/dashboard`);
-    } else if (role === "customer") {
+    if(!user)
+        return NextResponse.redirect(`${origin}/sign-up`);
+
+    const { data: roleData } = await supabase.from("users").select("role").eq("id",user.id).single();
+    const userRole = roleData?.role;
+
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("vendor_type")
+      .eq("owner_id", user.id)
+      .single();
+    const vendorType = vendorData?.vendor_type;
+
+    if (userRole === "vendor") {
+      if(vendorType === "market")
+        return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
+      else if(vendorType === "pop-up")
+        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
+    } else if (userRole === "customer") {
       return NextResponse.redirect(`${origin}/customer/dashboard`);
-    } else {
+    } else if (!userRole) {
       return NextResponse.redirect(`${origin}/select-role`);
     }
   }
