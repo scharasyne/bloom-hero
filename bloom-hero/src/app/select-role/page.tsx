@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,72 +33,86 @@ import {
   RadioGroupItem,
 } from "@/components/ui/radio-group"
 
-const plans = [
+const formSchema = z.object({
+  role: z.enum(["admin", "vendor", "customer"]),
+  vendor_type: z.enum(["pop-up", "market"]).optional(),
+}).refine((data) => {
+  if(data.role === "vendor" && !data.vendor_type)
+    return false;
+  return true;
+},{
+  message: "Please select a vendor type",
+  path: ["vendor_type"],
+});
+
+const roles = [
   {
-    id: "starter",
-    title: "Starter (100K tokens/month)",
-    description: "For everyday use with basic features.",
+    id: "customer",
+    title: "Customer",
+    description: "I want to sign up as a customer",
   },
   {
-    id: "pro",
-    title: "Pro (1M tokens/month)",
-    description: "For advanced AI usage with more features.",
-  },
-  {
-    id: "enterprise",
-    title: "Enterprise (Unlimited tokens)",
-    description: "For large teams and heavy usage.",
+    id: "vendor",
+    title: "Vendor",
+    description: "I want to sign up as a vendor",
   },
 ] as const
 
-const formSchema = z.object({
-  plan: z.string().min(1, "You must select a subscription plan to continue."),
-})
-
-export default function FormRhfRadioGroup() {
+export default function SelectRolePage() {
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      plan: "",
+      role: "customer"
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  const selectedRole = form.watch("role");
+
+  async function onSubmit(values: z.infer<typeof formSchema>){
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return router.push("/sign-up");
+
+    if (values.role === "customer") {
+      await supabase.from("customers").insert({ user_id: user.id });
+    } else if (values.role === "vendor") {
+      await supabase.from("users").update({ role: "vendor" }).eq("id", user.id);
+      if(values.vendor_type === "market")
+        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "market" });
+      else
+        await supabase.from("vendors").insert({ user_id: user.id, vendor_type: "pop-up" });
+    }
+
+    if (values.role === "vendor"){
+      if(values.vendor_type === "market")
+          router.push("/vendor/market/dashboard");
+      else if(values.vendor_type === "pop-up")
+          router.push("/vendor/pop-up/dashboard");
+    }
+    else router.push("/customer/dashboard");
   }
 
   return (
+    <div className="flex justify-center items-center h-screen">
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Subscription Plan</CardTitle>
+        <CardTitle>Select your desired role</CardTitle>
         <CardDescription>
-          See pricing and features for each plan.
+          See the description of roles.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form id="form-rhf-radiogroup" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="plan"
+              name="role"
               control={form.control}
               render={({ field, fieldState }) => (
                 <FieldSet data-invalid={fieldState.invalid}>
-                  <FieldLegend>Plan</FieldLegend>
+                  <FieldLegend>Role</FieldLegend>
                   <FieldDescription>
-                    You can upgrade or downgrade your plan at any time.
+                    You may submit requirements later.
                   </FieldDescription>
                   <RadioGroup
                     name={field.name}
@@ -104,30 +120,65 @@ export default function FormRhfRadioGroup() {
                     onValueChange={field.onChange}
                     aria-invalid={fieldState.invalid}
                   >
-                    {plans.map((plan) => (
+                    {roles.map((role) => (
                       <FieldLabel
-                        key={plan.id}
-                        htmlFor={`form-rhf-radiogroup-${plan.id}`}
+                        key={role.id}
+                        htmlFor={`form-rhf-radiogroup-${role.id}`}
                       >
                         <Field
                           orientation="horizontal"
                           data-invalid={fieldState.invalid}
                         >
                           <FieldContent>
-                            <FieldTitle>{plan.title}</FieldTitle>
+                            <FieldTitle>{role.title}</FieldTitle>
                             <FieldDescription>
-                              {plan.description}
+                              {role.description}
                             </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem
-                            value={plan.id}
-                            id={`form-rhf-radiogroup-${plan.id}`}
+                            value={role.id}
+                            id={`form-rhf-radiogroup-${role.id}`}
                             aria-invalid={fieldState.invalid}
                           />
                         </Field>
                       </FieldLabel>
                     ))}
                   </RadioGroup>
+                  {
+                    selectedRole === "vendor" && (
+                      <Controller name="vendor_type"
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <FieldSet data-invalid={fieldState.invalid}>
+                          <FieldLegend>Vendor Type</FieldLegend>
+                          <RadioGroup
+                            name={field.name}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FieldLabel htmlFor="vendor-type-popup">
+                              <Field orientation="horizontal">
+                                <FieldContent>
+                                  <FieldTitle>Pop-up</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem value="pop-up" id="vendor-type-popup" />
+                              </Field>
+                            </FieldLabel>  
+                            <FieldLabel htmlFor="vendor-type-market">
+                              <Field orientation="horizontal">
+                                <FieldContent>
+                                  <FieldTitle>Market Stall</FieldTitle>
+                                </FieldContent>
+                                <RadioGroupItem value="market" id="vendor-type-market" />
+                              </Field>
+                            </FieldLabel>
+                          </RadioGroup>
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                        </FieldSet>  
+                      )}
+                      />
+                    )
+                  }
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -148,5 +199,6 @@ export default function FormRhfRadioGroup() {
         </Field>
       </CardFooter>
     </Card>
-  )
+    </div>
+)
 }

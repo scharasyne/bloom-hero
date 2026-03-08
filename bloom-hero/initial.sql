@@ -1,5 +1,5 @@
 CREATE TYPE user_role AS ENUM ('admin', 'vendor', 'customer');
-CREATE TYPE vendor_type AS ENUM ('market', 'pop-up', 'handcrafted');
+CREATE TYPE vendor_type AS ENUM ('market', 'pop-up');
 CREATE TYPE order_status AS ENUM ('pending', 'confirmed', 'shipped', 'completed', 'cancelled');
 
 CREATE TABLE IF NOT EXISTS users(
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users(
     name TEXT,
     email TEXT NOT NULL, 
     contact_number TEXT,
-    role user_role NOT NULL DEFAULT 'customer',
+    role user_role NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

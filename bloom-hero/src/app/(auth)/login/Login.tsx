@@ -38,8 +38,10 @@ export default function Login() {
 
     if (role === "vendor") {
       router.push("/vendor/dashboard");
-    } else {
-      router.push("/customer/profile");
+    } else if(role === "customer"){
+      router.push("/customer/dashboard");
+    } else if (!role){
+      router.push("/select-role");
     }
 
     router.refresh();
@@ -51,11 +53,33 @@ export default function Login() {
     setStatus("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     if (error) {
       setStatus(error.message);
+      setIsSubmitting(false);
+      return;
     }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const role = user?.user_metadata?.role as string | undefined;
+
+    if (role === "vendor") {
+      router.push("/vendor/dashboard");
+    } else if(role === "customer"){
+      router.push("/customer/dashboard");
+    } else if(!role){
+      router.push("/select-role");
+    }
+
+    router.refresh();
+
   }
 
   return (
