@@ -3,23 +3,23 @@
 import { FormEvent, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { cn } from "@/src/lib/utils"
-import { Button } from "@/src/components/ui/button"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card"
+} from "@/components/ui/card"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/src/components/ui/field"
-import { Input } from "@/src/components/ui/input"
-import { createSupabaseBrowserClient } from "@/src/lib/supabase/browser-client"
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
 export function LoginForm({
   className,
@@ -48,7 +48,42 @@ export function LoginForm({
       return
     }
 
-    router.push("/")
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      router.push("/customer/dashboard")
+      router.refresh()
+      return
+    }
+
+    const { data, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle()
+
+    if (roleError) {
+      console.error("Error fetching role:", roleError.message)
+      router.push("/customer/dashboard")
+      router.refresh()
+      return
+    }
+
+    if (!data) {
+      console.error("No user record found in users table for id:", user.id)
+      router.push("/customer/dashboard")
+      router.refresh()
+      return
+    }
+
+    if (data.role === "vendor") {
+      router.push("/vendor/dashboard")
+    } else if (data.role === "admin") {
+      router.push("/admin/dashboard")
+    } else {
+      router.push("/customer/dashboard")
+    }
+
     router.refresh()
   }
 

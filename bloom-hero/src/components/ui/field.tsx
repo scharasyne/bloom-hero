@@ -3,9 +3,9 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/src/lib/utils"
-import { Label } from "@/src/components/ui/label"
-import { Separator } from "@/src/components/ui/separator"
+import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -117,7 +117,7 @@ function FieldLabel({
       className={cn(
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-4",
-        "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
+        "has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-[#D24B46] dark:has-data-[state=checked]:bg-primary/10",
         className
       )}
       {...props}
