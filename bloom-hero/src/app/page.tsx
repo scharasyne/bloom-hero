@@ -141,7 +141,7 @@ function Hero() {
       <div className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[15px] text-center tracking-[0.3px]">
         <p className="tracking-[0.32px]">
           <span className="leading-normal">Are you a local florist? </span>
-          <a className="cursor-pointer font-bold leading-normal text-[#2f5d3a]" href="/register-as-vendor">
+          <a className="cursor-pointer font-bold leading-normal text-[#2f5d3a]" href="/sign-up">
             <span className="leading-normal">Join BloomHero as a Vendor</span>
           </a>
         </p>
