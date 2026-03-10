@@ -1,39 +1,86 @@
-import Link from "next/link";
+"use client";
 
-function SignInButton() {
-  return (
-    <div className="absolute bg-[#d24b46] bottom-0 content-stretch flex items-center justify-center px-5 py-3 right-0 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] top-0">
-      <Link className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[16px] text-center text-white tracking-[0.56px] whitespace-nowrap" href="/login">
-        <p className="cursor-pointer leading-normal">Sign In</p>
-      </Link>
-    </div>
-  );
-}
+import Link from "next/link";
+import { useState } from "react";
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/browse-flowers", label: "Flowers" },
+  { href: "/browse-shops", label: "Shops" },
+  { href: "/about-us", label: "About" },
+];
 
 export default function NavBar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div className="content-stretch flex h-22 items-center justify-between relative shrink-0 w-full">
-      <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
-      <div className="h-12 relative shrink-0 w-9">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img alt="BloomHero Logo" className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]" src="/icon.png" />
+    <nav className="relative w-full border-b border-[#edeae6]">
+      <div className="flex items-center justify-between px-6 py-4">
+        {/* Logo */}
+        <Link href="/" className="relative h-12 w-9 shrink-0 overflow-hidden">
+          <img
+            alt="BloomHero Logo"
+            className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]"
+            src="/icon.png"
+          />
+        </Link>
+
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="text-[16px] font-semibold text-black tracking-[-0.07px] hover:text-[#d24b46] transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
+          <Link
+            href="/login"
+            className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+          >
+            Sign In
+          </Link>
         </div>
+
+        {/* Hamburger button (mobile only) */}
+        <button
+          className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+        >
+          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        </button>
       </div>
-      <div className="h-11 relative shrink-0 w-98.5">
-        <Link className="-translate-x-1/2 absolute bottom-3 flex flex-col font-semibold justify-center leading-0 left-9.75 text-[16px] text-black text-center top-3 tracking-[-0.07px] whitespace-nowrap" href="/">
-          <p className="cursor-pointer leading-[1.45]">Home</p>
-        </Link>
-        <Link className="-translate-x-1/2 absolute bottom-3 flex flex-col font-semibold justify-center leading-0 left-[calc(50%-83.5px)] text-[16px] text-black text-center top-3 tracking-[-0.07px] whitespace-nowrap" href="/browse-flowers">
-          <p className="cursor-pointer leading-[1.45]">Flowers</p>
-        </Link>
-        <Link className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-semibold justify-center leading-0 left-[calc(50%-9.5px)] text-[16px] text-black text-center top-1/2 tracking-[-0.07px] whitespace-nowrap" href="/browse-shops">
-          <p className="cursor-pointer leading-[1.45]">Shops</p>
-        </Link>
-        <Link className="-translate-x-1/2 absolute bottom-3 flex flex-col font-semibold justify-center leading-0 left-64.25 text-[16px] text-black text-center top-3 tracking-[-0.07px] whitespace-nowrap" href="/about-us">
-          <p className="cursor-pointer leading-[1.45]">About</p>
-        </Link>
-        <SignInButton />
-      </div>
-    </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-[#edeae6] bg-white shadow-md flex flex-col py-4">
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="px-6 py-3 text-[16px] font-semibold text-black tracking-[-0.07px] hover:bg-[#fdf8f4] transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              {label}
+            </Link>
+          ))}
+          <div className="px-6 pt-3">
+            <Link
+              href="/login"
+              className="block bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      )}
+    </nav>
   );
 }
