@@ -7,12 +7,12 @@ export default function VendorMarketDashboardPage() {
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
         <VendorDashboardSidebarCard activeTab="dashboard" />
 
-        <section className="rounded-lg border p-6">
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Here's what's happening with your shop.
-          </p>
-        </section>
+        <div className="mb-8 flex flex-col justify-between">
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <p className="text-muted-foreground text-sm">
+              Here's what's happening with your shop.
+            </p>
+          </div>
       </div>
     </main>
   )
