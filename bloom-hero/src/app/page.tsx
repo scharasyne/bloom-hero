@@ -13,13 +13,13 @@ const mockBouquets = [
 
 function Headline() {
   return (
-    <div className="content-stretch flex flex-col gap-[24px] items-center justify-center relative shrink-0 text-center w-full">
-      <div className="flex flex-col font-bold justify-center leading-[1.1] relative shrink-0 text-[#1f1f1f] text-[64px] tracking-[-0.64px] whitespace-nowrap">
+    <div className="content-stretch flex flex-col gap-6 items-center justify-center relative shrink-0 text-center w-full">
+      <div className="flex flex-col font-bold justify-center leading-[1.1] relative shrink-0 text-[#1f1f1f] text-[32px] sm:text-[48px] lg:text-[64px] tracking-[-0.64px]">
         <h2 className="block mb-0">Find flowers fast.</h2>
         <h2 className="block">Buy with confidence.</h2>
       </div>
-      <div className="flex flex-col font-semibold h-[78px] justify-center leading-[0] relative shrink-0 text-[#6f6a65] text-[18px] tracking-[-0.09px] w-[640px]">
-        <p className="leading-[1.5] whitespace-pre-wrap">Search bouquets, local florists, or special occasions—all in one place.</p>
+      <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#6f6a65] text-[18px] tracking-[-0.09px] w-full max-w-[40rem]">
+        <p className="leading-normal whitespace-pre-wrap">Search bouquets, local florists, or special occasions—all in one place.</p>
       </div>
     </div>
   );
@@ -40,8 +40,8 @@ function Location() {
 function Query() {
   return (
     <div className="content-stretch flex items-start relative shrink-0">
-      <div className="flex flex-col font-regular justify-center leading-[0] relative shrink-0 text-[#9a948f] text-[16px] text-center tracking-[-0.08px] whitespace-nowrap">
-        <p className="leading-[1.5]">Search flowers, vendors, or occasions…</p>
+      <div className="flex flex-col font-regular justify-center leading-0 relative shrink-0 text-[#9a948f] text-[16px] text-center tracking-[-0.08px]">
+        <p className="leading-normal">Search flowers, vendors, or occasions…</p>
       </div>
     </div>
   );
@@ -49,7 +49,7 @@ function Query() {
 
 function LocPlaceholder() {
   return (
-    <div className="content-stretch flex gap-[18px] items-center relative shrink-0 w-[643.5px]">
+    <div className="content-stretch flex gap-4.5 items-center relative min-w-0 shrink w-full overflow-hidden">
       <Location />
       <Query />
     </div>
@@ -66,7 +66,7 @@ function SearchButton() {
 
 function SearchBar() {
   return (
-    <div className="bg-white content-stretch flex h-[57px] items-center justify-between pl-[16px] py-[16px] relative rounded-[24px] shrink-0 w-[960px]">
+    <div className="bg-white content-stretch flex h-14.25 items-center justify-between pl-4 py-4 relative rounded-[24px] w-full max-w-[960px]">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[24px] shadow-[0px_10px_30px_0px_rgba(0,0,0,0.1)]" />
       <LocPlaceholder />
       <SearchButton />
@@ -86,7 +86,7 @@ function Chip({ label, active = false }: { label: string; active?: boolean }) {
 
 function CategoryChips() {
   return (
-    <div className="content-stretch flex gap-[12px] items-center justify-center relative shrink-0">
+    <div className="content-stretch flex flex-wrap gap-3 items-center justify-center relative shrink-0">
       <Chip label="All" active={true} />
       <Chip label="Bouquets" />
       <Chip label="Plants" />
@@ -109,8 +109,8 @@ function DropdownPill({ label }: { label: string }) {
 
 function Filters() {
   return (
-    <div className="bg-[#f7f4ef] content-stretch flex gap-[12px] items-center justify-center relative rounded-[12px] shrink-0">
-      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[12px]" />
+    <div className="bg-[#f7f4ef] content-stretch flex flex-wrap gap-3 items-center justify-center relative rounded-2xl shrink-0">
+      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-2xl" />
       <DropdownPill label="Price: Any" />
       <DropdownPill label="Sort by: Best Sellers" />
       <DropdownPill label="More Filters" />
@@ -121,7 +121,7 @@ function Filters() {
 
 function CategFilter() {
   return (
-    <div className="content-stretch flex gap-[108px] items-center justify-center relative shrink-0">
+    <div className="content-stretch flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 lg:gap-27 items-center justify-center relative shrink-0 w-full">
       <CategoryChips />
       <Filters />
     </div>
@@ -130,13 +130,13 @@ function CategFilter() {
 
 function Hero() {
   return (
-    <div className="content-stretch flex flex-col gap-[24px] items-center justify-center py-[64px] relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <Headline />
       <SearchBar />
       <CategFilter />
-      <div className="bg-[#edeae6] h-px shrink-0 w-[160px]" />
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#7a7a7a] text-[15px] text-center tracking-[0.3px] whitespace-nowrap">
+      <div className="bg-[#edeae6] h-px shrink-0 w-40" />
+      <div className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[15px] text-center tracking-[0.3px]">
         <p className="tracking-[0.32px]">
           <span className="leading-[1.5]">Are you a local florist? </span>
           <a className="cursor-pointer font-bold leading-[1.5] text-[#2f5d3a]" href="/register-as-vendor">
@@ -150,7 +150,7 @@ function Hero() {
 
 function BouquetGrid({ bouquets }: { bouquets: any[] }) {
   return (
-    <div className="content-stretch flex gap-[24px] items-center justify-center overflow-clip relative shrink-0 w-full">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:flex lg:flex-row gap-6 justify-center overflow-clip relative shrink-0 w-full">
       {bouquets.map((bouquet) => (
         <BouquetCard
           key={bouquet.id}
@@ -170,16 +170,16 @@ function BouquetGrid({ bouquets }: { bouquets: any[] }) {
 
 function BestSellers() {
   return (
-    <div className="content-stretch flex flex-col gap-[24px] items-center justify-center py-[64px] relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#8f8f8f] text-[12px] text-center tracking-[1.2px] whitespace-nowrap">
         <p><span className="leading-[22px]">BEST SELLERS</span></p>
       </div>
-      <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[32px] text-center tracking-[1.28px] whitespace-nowrap">
+      <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#1f1f1f] text-[24px] md:text-[32px] text-center tracking-[1.28px]">
         <p className="leading-[1.2]">Customer favorites, loved for any moment</p>
       </div>
-      <div className="flex flex-col font-normal justify-center leading-[0] relative shrink-0 text-[#7a7a7a] text-[16px] text-center tracking-[0.64px] w-[520px]">
-        <p className="leading-[1.5] whitespace-pre-wrap">Popular flowers from trusted local florists.</p>
+      <div className="flex flex-col font-normal justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[16px] text-center tracking-[0.64px] w-full max-w-[32.5rem]">
+        <p className="leading-normal whitespace-pre-wrap">Popular flowers from trusted local florists.</p>
       </div>
       <BouquetGrid bouquets={mockBouquets} />
     </div>
@@ -199,9 +199,9 @@ function CategoryItem({ icon, label }: { icon: string; label: string }) {
 
 function CategoryGroup({ title, items }: { title: string; items: { icon: string; label: string }[] }) {
   return (
-    <div className="content-stretch flex flex-col gap-[16px] items-center justify-center relative shrink-0">
-      <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#7a7a7a] text-[14px] text-center tracking-[0.28px] whitespace-nowrap">
-        <p className="leading-[22px]">{title}</p>
+    <div className="content-stretch flex flex-col gap-4 items-center justify-center relative shrink-0">
+      <div className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[14px] text-center tracking-[0.28px]">
+        <p className="leading-5.5">{title}</p>
       </div>
       <div className="content-stretch flex flex-col gap-[12px] items-start justify-center relative shrink-0">
         {items.map((item) => (
@@ -218,15 +218,15 @@ function ShopByCategory() {
     <div className="relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <div className="flex flex-col items-center justify-center size-full">
-        <div className="content-stretch flex flex-col gap-[48px] items-center justify-center p-[64px] relative w-full">
-          <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#7a7a7a] text-[12px] text-center tracking-[0.96px] whitespace-nowrap">
-            <p className="leading-[1.5]">SHOP BY CATEGORY</p>
+        <div className="content-stretch flex flex-col gap-8 md:gap-12 items-center justify-center p-6 md:p-16 relative w-full">
+          <div className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[12px] text-center tracking-[0.96px] whitespace-nowrap">
+            <p className="leading-normal">SHOP BY CATEGORY</p>
           </div>
-          <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[36px] text-center tracking-[0.36px] whitespace-nowrap">
+          <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#1f1f1f] text-[24px] md:text-[36px] text-center tracking-[0.36px]">
             <p className="leading-[1.2]">Pick a vibe. We&apos;ll handle the flowers.</p>
           </div>
-          <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
-            <div className="content-stretch flex gap-[48px] items-start justify-center relative shrink-0 w-full">
+          <div className="content-stretch flex flex-col gap-8 items-start relative shrink-0 w-full">
+            <div className="content-stretch flex flex-wrap gap-8 md:gap-12 items-start justify-center relative shrink-0 w-full">
               <CategoryGroup title="CELEBRATIONS & MILESTONES" items={[
                 { icon: "mdi:cake-variant-outline", label: "Birthday Blooms" },
                 { icon: "mdi:school-outline", label: "Graduation Cheers" },
@@ -267,7 +267,7 @@ function ShopByCategory() {
 
 export default function Desktop() {
   return (
-    <div className="flex flex-col items-start w-full">
+    <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
       <NavBar />
       <Hero />
       <BestSellers />
