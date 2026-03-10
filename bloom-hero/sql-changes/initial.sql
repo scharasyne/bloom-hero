@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS products (
     vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     product_name TEXT NOT NULL,
+    product_image_url TEXT,
     description TEXT,
     price NUMERIC (10, 2) NOT NULL CHECK (price >=0),
     stocks INTEGER NOT NULL DEFAULT 0 CHECK (stocks >=0),
