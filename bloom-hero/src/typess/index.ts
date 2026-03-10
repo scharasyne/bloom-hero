@@ -1,5 +1,44 @@
 // CART
 export type CartItemStatus = "available" | "out-of-stock" | "price-changed";
+export type OrderStatus = "to-pay" | "to-ship" | "to-receive" | "completed";
+
+
+export interface Product {
+  id: string;
+  productName: string;
+  vendorName: string;
+  price: number;
+  qty: number;       
+  maxQty: number;    
+  status: string;    
+  imageUrl: string[];
+}
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  thumbnail: string;
+  qty: number;
+  price: number;
+}
+
+export interface Order {
+  id: string;
+  vendorName: string;
+  orderNumber: string;
+  datePlaced: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  status: OrderStatus;
+  paymentDue?: string;
+  courier?: string;
+  trackingNumber?: string;
+  deliveredDate?: string;
+    reviewed?: boolean;
+  reviewSnippet?: string;
+}
 
 export interface CartItem {
   id: string;
