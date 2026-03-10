@@ -1,9 +1,7 @@
-import Image from "next/image";
-import { Navbar1 } from "@/components/navbar1";
-import Footer from "@/components/footer";
+import Footer from "../components/footer";
 import BouquetCard from "../components/BouquetCard";
 import { Icon } from "@iconify/react";
-import NavBar from "@/components/navbar";
+import NavBar from "../components/navbar";
 
 const navLogo = "/icon.png";
 
