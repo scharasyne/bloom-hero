@@ -1,21 +1,17 @@
 import { useState } from "react";
 import { mockVendorApplications } from "@/lib/mockData";
-import { VendorApplication } from "@/types";
+import { VendorApplication } from "@/typess";
 
 export function useVendorApplications() {
-  const [data, setData] = useState<VendorApplication[]>(
-    mockVendorApplications
-  );
-  const isLoading = false;
-  const error = null;
+  const [data, setData] = useState<VendorApplication[]>(mockVendorApplications);
 
-  const approveApplication = (id: string) => {
+  const approve = (id: string) => {
     setData((prev) => prev.filter((app) => app.id !== id));
   };
 
-  const rejectApplication = (id: string) => {
+  const reject = (id: string) => {
     setData((prev) => prev.filter((app) => app.id !== id));
   };
 
-  return { data, isLoading, error, approveApplication, rejectApplication };
+  return { data, approve, reject };
 }
