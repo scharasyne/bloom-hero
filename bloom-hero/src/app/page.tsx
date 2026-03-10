@@ -20,7 +20,7 @@ function Headline() {
         <h2 className="block mb-0">Find flowers fast.</h2>
         <h2 className="block">Buy with confidence.</h2>
       </div>
-      <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#6f6a65] text-[18px] tracking-[-0.09px] w-full max-w-[40rem]">
+      <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#6f6a65] text-[18px] tracking-[-0.09px] w-full max-w-160">
         <p className="leading-normal whitespace-pre-wrap">Search bouquets, local florists, or special occasions—all in one place.</p>
       </div>
     </div>
@@ -68,7 +68,7 @@ function SearchButton() {
 
 function SearchBar() {
   return (
-    <div className="bg-white content-stretch flex h-14.25 items-center justify-between pl-4 py-4 relative rounded-[24px] w-full max-w-[960px]">
+    <div className="bg-white content-stretch flex h-14.25 items-center justify-between pl-4 py-4 relative rounded-[24px] w-full max-w-240">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[24px] shadow-[0px_10px_30px_0px_rgba(0,0,0,0.1)]" />
       <LocPlaceholder />
       <SearchButton />
@@ -180,7 +180,7 @@ function BestSellers() {
       <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#1f1f1f] text-[24px] md:text-[32px] text-center tracking-[1.28px]">
         <p className="leading-[1.2]">Customer favorites, loved for any moment</p>
       </div>
-      <div className="flex flex-col font-normal justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[16px] text-center tracking-[0.64px] w-full max-w-[32.5rem]">
+      <div className="flex flex-col font-normal justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[16px] text-center tracking-[0.64px] w-full max-w-130">
         <p className="leading-normal whitespace-pre-wrap">Popular flowers from trusted local florists.</p>
       </div>
       <BouquetGrid bouquets={mockBouquets} />
