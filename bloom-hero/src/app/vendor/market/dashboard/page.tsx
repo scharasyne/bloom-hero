@@ -1,16 +1,19 @@
 
+import { VendorDashboardSidebarCard } from "@/components/vendor-dashboard-sidebar-card"
 
-export default function HomePage() {
+export default function VendorMarketDashboardPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "sans-serif" }}>
-      <h1>BloomHero</h1>
+    <main className="mx-auto max-w-6xl px-6 py-10">
+      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+        <VendorDashboardSidebarCard activeTab="dashboard" />
 
-      <p>Welcome to BloomHero.</p>
-      <p>This is a temporary landing page for Vendor Dashboard.</p>
-
-      <hr />
-
-      <p>If you can see this page, routing is working correctly.</p>
+        <section className="rounded-lg border p-6">
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Here's what's happening with your shop.
+          </p>
+        </section>
+      </div>
     </main>
   )
 }
