@@ -3,10 +3,10 @@ import Footer from "../../components/footer";
 import NavBar from "../../components/navbar";
 
 const imgLogo = "/navbar-logo.png";
-const imgSunstarImportUploadsImages20181031988101 = "https://placehold.co/700x468?text=BloomHero+Story";
-const imgRectangle25 = "https://placehold.co/240x180?text=Flowers";
-const imgRectangle26 = "https://placehold.co/240x180?text=Flowers";
-const imgRectangle27 = "https://placehold.co/240x180?text=Flowers";
+const imgSunstarImportUploadsImages20181031988101 = "/choose.png";
+const imgRectangle25 = "/1local.jpg";
+const imgRectangle26 = "/2local.jpg";
+const imgRectangle27 = "/3local.jpg";
 const imgRectangle28 = "https://placehold.co/32x32?text=C";
 const imgRectangle29 = "https://placehold.co/32x32?text=F";
 
@@ -16,7 +16,7 @@ function AboutHero() {
      <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <div className="content-stretch flex flex-col gap-[40px] items-center relative shrink-0 w-[720px]">
         <div className="flex flex-col font-bold justify-center leading-[0] relative shrink-0 text-[#1f1f1f] text-[64px] text-center tracking-[-0.64px] w-[560px]">
-          <h2 className="block leading-[1.1] whitespace-pre-wrap">Flowers should be easy to give—and easy to trust.</h2>
+          <h2 className="block leading-[1.1] whitespace-pre-wrap">Flowers should be easy to give— and easy to trust.</h2>
         </div>
         <div className="bg-[#e6e2dd] h-px shrink-0 w-[64px]" />
       </div>
@@ -110,7 +110,7 @@ function LocalFirst() {
       </div>
       {/* Gallery */}
       <div className="content-stretch flex gap-[16px] items-center justify-center relative shrink-0 w-[760px]">
-        <div className="h-[180px] relative rounded-[16px] shadow-[0px_8px_24px_6px_rgba(0,0,0,0.25)] shrink-0 w-[240px]">
+        <div className="h-[180px] relative rounded-[16px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.25)] shrink-0 w-[240px]">
           <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[16px] size-full" src={imgRectangle25} />
         </div>
         <div className="h-[180px] relative rounded-[16px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] shrink-0 w-[240px]">
@@ -127,7 +127,7 @@ function LocalFirst() {
       <div className="bg-[#f5f1ec] content-stretch flex gap-[32px] items-center justify-center py-[64px] relative rounded-[16px] shrink-0 w-[793px] mt-[48px]">
         <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-[-0.5px] pointer-events-none rounded-[16.5px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)]" />
         <div className="content-stretch flex flex-col gap-[12px] items-center justify-center relative rounded-[24px] shrink-0">
-          <img alt="" className="relative shrink-0 size-[32px] object-cover" src={imgRectangle28} />
+          <Icon icon="mdi:magnify" width={32} height={32} color="#2f5d3a" />
           <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#2f5d3a] text-[14px] text-center tracking-[1.4px] whitespace-nowrap">
             <p className="leading-[1.6]">FOR CUSTOMERS</p>
           </div>
@@ -137,7 +137,7 @@ function LocalFirst() {
         </div>
         <div className="bg-[#e6e2dd] h-[95px] shrink-0 w-px" />
         <div className="content-stretch flex flex-col gap-[12px] items-center justify-center relative rounded-[24px] shrink-0">
-          <img alt="" className="relative shrink-0 size-[32px] object-cover" src={imgRectangle29} />
+          <Icon icon="mdi:storefront-outline" width={32} height={32} color="#2f5d3a" />
           <div className="flex flex-col font-semibold justify-center leading-[0] relative shrink-0 text-[#2f5d3a] text-[14px] text-center tracking-[1.4px] whitespace-nowrap">
             <p className="leading-[1.6]">FOR FLORISTS</p>
           </div>
@@ -171,7 +171,7 @@ function ClosingSection() {
 
 export default function AboutPage() {
   return (
-    <div className="content-stretch flex flex-col items-center justify-center px-[64px] relative size-full">
+    <div className="content-stretch flex flex-col items-center justify-center relative size-full">
       <NavBar />
       <div className="content-stretch flex flex-col gap-[16px] items-center justify-center py-[96px] relative shrink-0 w-full">
         <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#5f6b61] text-[12px] text-center tracking-[2.4px] whitespace-nowrap">
