@@ -1,17 +1,18 @@
-- changed the auth callback, from pop-up/dashboard to only pop-p.
-- page.tsx in pop-up
-- navBar is added to layout.tsx. now its visible to every page. 
-    changes to be done:
-    - change the navbar to signout when the user is signed in
-    - allow configuration of the navbar depending on role
-- modify hardcoded pages and images
+CHANGES AS OF MARCH 12:
+landing page responsiveness
+configured auth callback for proper routing
+navBar is added to layout.tsx. now its visible to every page.
+change the navbar item to signout when the user is signed in
+allowed configuration of the navbar depending on role
+modified hardcoded pages and images
+added conditional navbars depending on the role
+modification of individual vendor components (made by JM) to overall vendor components for easier use
 
-recent changes: 
-- added conditional navbars depending on the role
+to verify:
 
-to change:
-- in vendor profile, etc., if i press on the home, the nav items changes to the one same to customers
-e.g. home, cart, orders, profile
+consistency of navbar items
 
-urgent:
-- what to do with the nav if the vendors want to be a customer too - they will order for sure. how do we go around that?
+URGENT:
+
+what to do with the nav if the vendors want to be a customer too - they will order for sure. how do we go around that? what would the navbar look like?
+WHY IS IT SO SLOW? apply caching, make sure GET/fetching of data is a lot faster
