@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { VendorDashboardSidebarCard } from "@/components/vendor-dashboard-sidebar-card"
+import { VendorDashboardSidebarCard } from "@/app/vendor/_components/vendor-dashboard-sidebar-card"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
+
+type vendorType = 'market' | 'pop-up';
 
 type ProductRow = {
   id: string
@@ -23,7 +25,7 @@ function formatPeso(value: number) {
   }).format(value)
 }
 
-export default async function VendorListProductPage() {
+export default async function VendorListProductPage({ type }: { type: vendorType }) {
   const supabase = await createSupabaseServerClient()
 
   const {
@@ -38,11 +40,11 @@ export default async function VendorListProductPage() {
     .from("vendors")
     .select("id")
     .eq("owner_id", user.id)
-    .eq("vendor_type", "market")
+    .eq("vendor_type", type)
     .maybeSingle()
 
   if (vendorError || !vendor) {
-    throw new Error(vendorError?.message || "Market vendor profile not found.")
+    throw new Error(vendorError?.message || "Vendor profile not found.")
   }
 
   const { data: productsData, error: productsError } = await supabase
@@ -60,7 +62,7 @@ export default async function VendorListProductPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-        <VendorDashboardSidebarCard activeTab="products" />
+        <VendorDashboardSidebarCard activeTab="products" vendorType={type} />
 
         <div>
           <div className="mb-8 flex items-center justify-between gap-4">
@@ -72,7 +74,7 @@ export default async function VendorListProductPage() {
             </div>
 
             <Button asChild>
-              <Link href="/vendor/market/add-product">Add Product</Link>
+              <Link href={`/vendor/${type}/add-product`}>Add Product</Link>
             </Button>
           </div>
 

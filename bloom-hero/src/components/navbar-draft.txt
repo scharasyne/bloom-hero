@@ -5,18 +5,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
-type navTypes = 'market' | 'pop-up' | 'customer';
+type navTypes = 'vendor' | 'customer';
+type vendorType = 'pop-up' | 'market';
 
-const navLinks = {
-  'pop-up': [
+const navLinks = (vendorType?: vendorType) => ({
+  'vendor': [
     { href: "/", label: "Home" },
-    { href: "/vendor/pop-up/dashboard", label: "Explore"},
-    { href: "/vendor/pop-up/profile", label: "Profile"},
-  ],
-  'market': [
-    { href: "/", label: "Home" },
-    { href: "/vendor/market/dashboard", label: "Explore"},
-    { href: "/vendor/market/profile", label: "Profile"},
+    { href: `/vendor/${vendorType}/dashboard`, label: "Explore"},
+    { href: "/profile", label: "Profile"},
   ],
   'customer': [
     { href: "/", label: "Home"},
@@ -30,12 +26,12 @@ const navLinks = {
     { href: "/browse-shops", label: "Shops" },
     { href: "/about-us", label: "About" },
   ]
-};
+});
 
-export default function NavBar({ type = "default" }: { type: navTypes | "default" }) {
+export default async function NavBar({ type = "default", vendorType }: { type: navTypes | "default"; vendorType?: vendorType}) {
   const [user, setUser] = useState< any|null >(null);
-  const [resolvedType, setResolvedType] = useState<navTypes | "default">(type)
   const [menuOpen, setMenuOpen] = useState(false);
+  
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
 
@@ -45,37 +41,24 @@ export default function NavBar({ type = "default" }: { type: navTypes | "default
   }
 
   useEffect(() => {
-    const init = async () => {
+    const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      if (type !== "default") return
-
-      if (user) {
-        const { data: userCheck } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", user.id)
-          .single()
-        
-        if(userCheck?.role === "customer")
-          setResolvedType(userCheck.role);
-        else{ 
-          if(userCheck?.role === "vendor"){
-            const { data: vendor } = await supabase
-            .from("vendors")
-            .select("vendor_type")
-            .eq("owner_id", user.id)
-            .single()
-
-            setResolvedType(vendor?.vendor_type);
-          }
-        }
-      }
     }
-    init()
+    getUser()
   }, [])
-  
-  const items = navLinks[resolvedType]
+
+  const { data: vendor, error: vendorError } = await supabase
+    .from("vendors")
+    .select("id")
+    .eq("owner_id", user.id)
+    .eq("vendor_type", vendorType)
+    .maybeSingle()
+
+  if (vendorError || !vendor) {
+    throw new Error("Vendor profile not found for this account.")
+  }
+  const items = navLinks(vendorType)[type];
 
   return (
     <nav className="relative w-full border-b border-[#edeae6]">

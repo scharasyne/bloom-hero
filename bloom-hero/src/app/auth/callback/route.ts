@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       if(vendorType === "market")
         return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
       else if(vendorType === "pop-up"){
-        return NextResponse.redirect(`${origin}/vendor/pop-up`);
+        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
         // return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);        
       }
 

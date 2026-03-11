@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
-export default function VendorAddProductPage() {
+type vendorType = 'market' | 'pop-up';
+
+export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const router = useRouter()
   const supabase = useMemo(() => createSupabaseBrowserClient(), [])
 
@@ -71,11 +73,11 @@ export default function VendorAddProductPage() {
         .from("vendors")
         .select("id")
         .eq("owner_id", user.id)
-        .eq("vendor_type", "market")
+        .eq("vendor_type", type)
         .maybeSingle()
 
       if (vendorError || !vendor) {
-        throw new Error("Market vendor profile not found for this account.")
+        throw new Error("Vendor profile not found for this account.")
       }
 
       const { data: category, error: categoryError } = await supabase
@@ -140,7 +142,8 @@ export default function VendorAddProductPage() {
         }
       }
 
-      router.push("/vendor/market/list-product")
+      // router.push(`/vendor/${type}/add-product`)
+      router.push(`/vendor/${type}/list-product`)
       router.refresh()
     } catch (error) {
       const message =
@@ -162,7 +165,7 @@ export default function VendorAddProductPage() {
         </div>
 
         <Link
-          href="/vendor/market/list-product"
+          href={`/vendor/${type}/add-product`}
           className="text-sm text-muted-foreground underline underline-offset-4"
         >
           Back to Product List

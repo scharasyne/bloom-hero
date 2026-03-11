@@ -1,6 +1,9 @@
+import NavBar from "@/components/navbar";
+
 export default function HomePage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "sans-serif" }}>
+    <main>
+      <NavBar type="customer" />
       <h1>BloomHero</h1>
 
       <p>Welcome to BloomHero.</p>

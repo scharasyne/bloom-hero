@@ -1,35 +1,48 @@
 import Link from "next/link"
 
+type TabId = "dashboard" | "products" | "orders" | "messages" | "profile" | "schedule"
+type VendorType = "market" | "pop-up"
+
 type VendorDashboardSidebarCardProps = {
-  activeTab?: "dashboard" | "products" | "orders" | "messages" | "profile"
+  activeTab?: TabId
+  vendorType: VendorType
 }
 
-const tabs: Array<{
-  id: "dashboard" | "products" | "orders" | "messages" | "profile"
-  label: string
-}> = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "products", label: "Products" },
-  { id: "orders", label: "Orders" },
-  { id: "messages", label: "Messages" },
-  { id: "profile", label: "Profile" },
-]
+const tabs: Record<"pop-up" | "market", Array<{ id: TabId; label: string }>> = {
+  'pop-up': [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "products", label: "Products" },
+    { id: "orders", label: "Orders" },
+    { id: "messages", label: "Messages" },
+    { id: "profile", label: "Profile" },    
+    { id: "schedule", label: "Schedule"},
+  ],
+  'market': [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "products", label: "Products" },
+    { id: "orders", label: "Orders" },
+    { id: "messages", label: "Messages" },
+    { id: "profile", label: "Profile" },
+  ]
+}
 
-const tabRoutes: Partial<
-  Record<"dashboard" | "products" | "orders" | "messages" | "profile", string>
-> = {
-  dashboard: "/vendor/market/dashboard",
-  products: "/vendor/market/list-product",
+function getTabRoutes(vendorType: VendorType): Partial<Record<TabId, string>> {
+  return {
+    dashboard: `/vendor/${vendorType}/dashboard`,
+    products: `/vendor/${vendorType}/list-product`,
+  }
 }
 
 export function VendorDashboardSidebarCard({
-  activeTab = "products",
+  activeTab,
+  vendorType,
 }: VendorDashboardSidebarCardProps) {
+  const tabRoutes = getTabRoutes(vendorType)
   return (
     <aside className="w-full rounded-2xl border bg-card p-5 shadow-sm md:max-w-55">
       <nav aria-label="Vendor dashboard navigation">
         <ul className="space-y-3">
-          {tabs.map((tab) => {
+          {tabs[vendorType].map((tab) => {
             const isActive = tab.id === activeTab
             const sharedClassName = [
               "block rounded-md px-3 py-2 text-lg",
