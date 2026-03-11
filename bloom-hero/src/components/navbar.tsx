@@ -10,12 +10,12 @@ type navTypes = 'market' | 'pop-up' | 'customer';
 const navLinks = {
   'pop-up': [
     { href: "/", label: "Home" },
-    { href: "/vendor/pop-up/dashboard", label: "Explore"},
+    { href: "/vendor/pop-up/dashboard", label: "Dashboard"},
     { href: "/vendor/pop-up/profile", label: "Profile"},
   ],
   'market': [
     { href: "/", label: "Home" },
-    { href: "/vendor/market/dashboard", label: "Explore"},
+    { href: "/vendor/market/dashboard", label: "Dashboard"},
     { href: "/vendor/market/profile", label: "Profile"},
   ],
   'customer': [
