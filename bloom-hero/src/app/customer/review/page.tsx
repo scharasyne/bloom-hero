@@ -1,11 +1,12 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { ReviewForm } from "./ReviewForm";
+
+export const dynamic = "force-dynamic";
 
 type ReviewPageProps = {
-  searchParams: {
-    orderId?: string;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function CustomerReviewPage({ searchParams }: ReviewPageProps) {
@@ -13,6 +14,8 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  const params = await searchParams;
 
   if (!session) {
     return (
@@ -37,7 +40,8 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
     );
   }
 
-  const orderId = searchParams.orderId;
+  const rawOrderId = params.orderId;
+  const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
   if (!orderId) {
     return (
       <>
@@ -61,14 +65,18 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
     );
   }
 
-  // Load single order + its first item to display in the review card
-  const { data: rows } = await supabase
+  // Load all items for this order belonging to the logged-in customer
+  const { data: rows, error: loadError } = await supabase
     .from("order_items")
     .select(
-      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, vendors(id, shop_name))"
+      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, customer_id, order_date, vendors(id, shop_name))"
     )
-    .eq("order_id", orderId)
-    .limit(10);
+    .eq("orders.id", orderId)
+    .eq("orders.customer_id", session.user.id);
+
+  if (loadError) {
+    console.error("Failed to load order for review:", loadError);
+  }
 
   const items = rows ?? [];
   const first = items[0];
@@ -76,6 +84,21 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
   const vendorName = first?.orders?.vendors?.shop_name ?? "Vendor";
   const productName = first?.products?.product_name ?? "Product";
   const productImage = first?.products?.product_image_url ?? null;
+  const vendorId = first?.orders?.vendors?.id ?? null;
+
+  // Load existing review (if any) for this vendor & customer
+  let existingReview: { id: string; rating: number; comment: string | null } | null =
+    null;
+  if (vendorId) {
+    const { data: review } = await supabase
+      .from("reviews")
+      .select("id, rating, comment")
+      .eq("customer_id", session.user.id)
+      .eq("vendor_id", vendorId)
+      .maybeSingle();
+
+    existingReview = review ?? null;
+  }
 
   return (
     <>
@@ -156,25 +179,12 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
               </div>
             </div>
 
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#2f2f2f] mb-2">
-                  Your Feedback
-                </label>
-                <textarea
-                  className="w-full rounded-2xl border border-[#e2ddd4] bg-[#faf7f2] px-4 py-3 text-sm text-[#2f2f2f] min-h-[140px] outline-none focus:ring-2 focus:ring-[#2f5d3a]/40"
-                  placeholder="Share your experience with this order..."
-                />
-              </div>
-              <div className="flex justify-center mt-4">
-                <button
-                  type="button"
-                  className="rounded-full bg-[#2f5d3a] px-8 py-2.5 text-sm font-semibold text-white hover:bg-[#26492f]"
-                >
-                  Submit Review
-                </button>
-              </div>
-            </form>
+            <ReviewForm
+              orderId={orderId}
+              vendorId={vendorId}
+              customerId={session.user.id}
+              existingReview={existingReview}
+            />
           </section>
         </div>
       </main>

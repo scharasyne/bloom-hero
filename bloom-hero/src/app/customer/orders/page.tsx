@@ -17,6 +17,7 @@ type OrderItemRow = {
     status: string;
     total_amount: number;
     vendors: {
+      id: string | null;
       shop_name: string | null;
     } | null;
   } | null;
@@ -63,37 +64,67 @@ export default async function CustomerOrdersPage() {
 
   const items = rows ?? [];
 
-// Group by order, then by vendor (each order already has a single vendor)
-const ordersMap = new Map<
-  string,
-  {
-    id: string;
-    vendorName: string;
-    status: string;
-    orderDate: string;
-    total: number;
-    items: OrderItemRow[];
-  }
->();
+  // Group by order, then by vendor (each order already has a single vendor)
+  const ordersMap = new Map<
+    string,
+    {
+      id: string;
+      vendorId: string | null;
+      vendorName: string;
+      status: string;
+      orderDate: string;
+      total: number;
+      items: OrderItemRow[];
+      hasReview: boolean;
+    }
+  >();
   for (const row of items) {
     if (!row.orders) continue;
     const key = row.orders.id;
     if (!ordersMap.has(key)) {
       ordersMap.set(key, {
-        id: row.orders.id,
+        id: row.order_id,
+        vendorId: row.orders.vendors?.id ?? null,
         vendorName: row.orders.vendors?.shop_name ?? "Bloom & Co.",
         status: row.orders.status,
         orderDate: row.orders.order_date,
         total: Number(row.orders.total_amount) || 0,
         items: [],
+        hasReview: false,
       });
     }
     ordersMap.get(key)!.items.push(row);
   }
 
-  const orders = Array.from(ordersMap.values()).sort(
-    (a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+  // Look up which vendors already have reviews from this customer
+  const ordersArray = Array.from(ordersMap.values());
+  const vendorIds = Array.from(
+    new Set(
+      ordersArray
+        .map((o) => o.vendorId)
+        .filter((v): v is string => Boolean(v))
+    )
   );
+
+  let reviewedVendors = new Set<string>();
+  if (vendorIds.length > 0) {
+    const { data: reviews } = await supabase
+      .from("reviews")
+      .select("vendor_id")
+      .eq("customer_id", session.user.id)
+      .in("vendor_id", vendorIds);
+
+    reviewedVendors = new Set((reviews ?? []).map((r: any) => r.vendor_id));
+  }
+
+  const orders = ordersArray
+    .map((o) => ({
+      ...o,
+      hasReview: o.vendorId ? reviewedVendors.has(o.vendorId) : false,
+    }))
+    .sort(
+      (a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+    );
 
   return (
     <>
@@ -213,12 +244,21 @@ const ordersMap = new Map<
                         </span>
                       </p>
                       <div className="flex gap-3 justify-end">
-                        <a
-                          href={`/customer/review?orderId=${order.id}`}
-                          className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6] inline-flex items-center justify-center"
-                        >
-                          To Rate
-                        </a>
+                        {order.hasReview ? (
+                          <a
+                            href={`/customer/review?orderId=${order.id}`}
+                            className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100 inline-flex items-center justify-center cursor-pointer"
+                          >
+                            View Rating
+                          </a>
+                        ) : (
+                          <a
+                            href={`/customer/review?orderId=${order.id}`}
+                            className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6] inline-flex items-center justify-center"
+                          >
+                            To Rate
+                          </a>
+                        )}
                         <button className="rounded-full border border-[#2f5d3a] px-4 py-1.5 text-xs font-semibold text-white bg-[#2f5d3a] hover:bg-[#26492f]">
                           Buy Again
                         </button>
