@@ -66,9 +66,11 @@ export default function SignUp() {
 
         setStatus("Check your email to confirm your account.");
         setUsername("");
+        setEmail("");
         setPassword("");
         setConfirmPassword("");
         setIsSubmitting(false);
+        router.push("/");
         return;
         // }
 
@@ -218,25 +220,21 @@ export default function SignUp() {
                         {/* </> */}
                     
 
-                    {/* <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center">
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="cursor-pointer inline-flex items-center justify-center my-8 px-6 py-2 bg-accent text-white rounded-full font-medium hover:bg-red-400 transition"
+                            className="cursor-pointer inline-flex items-center justify-center my-2 px-6 py-2 bg-accent text-white rounded-full font-medium hover:bg-red-400 transition"
                         >
                             {isSubmitting
-                                ? role === "vendor"
-                                    ? "Submitting..."
-                                    : "Creating account..."
-                                : role === "vendor"
-                                    ? "Submit Application"
-                                    : "Create Account"}
+                                ? "Creating account..."
+                                : "Create Account"}
                         </button>
-                    </div> */}
+                    </div>
 
-                    {/* {status ? (
+                    {status ? (
                         <p className="text-sm text-center text-gray-700">{status}</p>
-                    ) : null} */}
+                    ) : null}
                 </form>
 
                 <p className="text-sm text-center text-gray-600 mt-6">
