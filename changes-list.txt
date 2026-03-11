@@ -1,0 +1,17 @@
+- changed the auth callback, from pop-up/dashboard to only pop-p.
+- page.tsx in pop-up
+- navBar is added to layout.tsx. now its visible to every page. 
+    changes to be done:
+    - change the navbar to signout when the user is signed in
+    - allow configuration of the navbar depending on role
+- modify hardcoded pages and images
+
+recent changes: 
+- added conditional navbars depending on the role
+
+to change:
+- in vendor profile, etc., if i press on the home, the nav items changes to the one same to customers
+e.g. home, cart, orders, profile
+
+urgent:
+- what to do with the nav if the vendors want to be a customer too - they will order for sure. how do we go around that?

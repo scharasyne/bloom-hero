@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import Footer from "../../components/footer";
-import NavBar from "../../components/navbar";
+// import NavBar from "../../components/navbar";
 
 const imgLogo = "/navbar-logo.png";
 const imgSunstarImportUploadsImages20181031988101 = "/choose.png";
@@ -172,7 +172,7 @@ function ClosingSection() {
 export default function AboutPage() {
   return (
     <div className="content-stretch flex flex-col items-center justify-center relative size-full">
-      <NavBar />
+      {/* <NavBar /> */}
       <div className="content-stretch flex flex-col gap-[16px] items-center justify-center py-[96px] relative shrink-0 w-full">
         <div className="flex flex-col font-medium justify-center leading-[0] relative shrink-0 text-[#5f6b61] text-[12px] text-center tracking-[2.4px] whitespace-nowrap">
           <p className="leading-[22px]">OUR STORY</p>

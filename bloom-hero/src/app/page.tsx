@@ -1,7 +1,7 @@
 import Footer from "../components/footer";
 import BouquetCard from "../components/BouquetCard";
 import { Icon } from "@iconify/react";
-import NavBar from "../components/navbar";
+import NavBar from "@/components/navbar";
 
 const navLogo = "/icon.png";
 
@@ -268,7 +268,7 @@ function ShopByCategory() {
 export default function Desktop() {
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
-      <NavBar />
+      <NavBar type="default"/>
       <Hero />
       <BestSellers />
       <ShopByCategory />
