@@ -1,0 +1,7 @@
+- changed the auth callback, from pop-up/dashboard to only pop-p.
+- page.tsx in pop-up
+- navBar is added to layout.tsx. now its visible to every page. 
+    changes to be done:
+    - change the navbar to signout when the user is signed in
+    - allow configuration of the navbar depending on role
+- modify hardcoded pages and images

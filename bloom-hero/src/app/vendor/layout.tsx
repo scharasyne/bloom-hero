@@ -1,6 +1,6 @@
 import { Quicksand } from "next/font/google";
 import NavBar from "@/components/navbar";
-import "./globals.css";
+// import "./globals.css";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>
-        {/* <NavBar /> */}
+        <NavBar type="vendor"/>
         {children}
       </body>
     </html>

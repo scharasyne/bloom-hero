@@ -1,17 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/browse-flowers", label: "Flowers" },
-  { href: "/browse-shops", label: "Shops" },
-  { href: "/about-us", label: "About" },
-];
+type navTypes = 'vendor' | 'customer';
 
-export default function NavBar() {
+const navLinks = {
+  'vendor': [
+    { href: "/", label: "Home" },
+    { href: "/dashboard", label: "Explore"},
+    { href: "/profile", label: "Profile"},
+  ],
+  'customer': [
+    { href: "/", label: "Home"},
+    { href: "/orders", label: "Orders"},
+    { href: "/cart", label: "Cart"},
+    {href: "/profile", label: "Profile"},
+  ],
+  'default': [
+    { href: "/", label: "Home" },
+    { href: "/browse-flowers", label: "Flowers" },
+    { href: "/browse-shops", label: "Shops" },
+    { href: "/about-us", label: "About" },
+    // { href: "/login", label: "Sign in"},    
+  ]
+};
+
+export default function NavBar({ type = "default" }: { type: navTypes | 'default'}) {
+  const [user, setUser] = useState< any|null >(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const items = navLinks[type];
+  const supabase = createSupabaseBrowserClient();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+  }, [])
 
   return (
     <nav className="relative w-full border-b border-[#edeae6]">
@@ -27,7 +62,7 @@ export default function NavBar() {
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ href, label }) => (
+          {items.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
@@ -36,12 +71,26 @@ export default function NavBar() {
               {label}
             </Link>
           ))}
-          <Link
+          {/* <Link
             href="/login"
             className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
           >
             Sign In
-          </Link>
+          </Link> */}
+          {
+            user ? (
+              <button onClick={handleSignOut} className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors">
+                Sign Out
+              </button>              
+            ) : (
+              <Link
+                href="/login"
+                className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+              >
+                Sign In
+              </Link>
+            )
+          }
         </div>
 
         {/* Hamburger button (mobile only) */}
@@ -60,7 +109,7 @@ export default function NavBar() {
       {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-[#edeae6] bg-white shadow-md flex flex-col py-4">
-          {navLinks.map(({ href, label }) => (
+          {items.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
