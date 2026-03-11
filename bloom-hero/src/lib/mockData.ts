@@ -130,3 +130,10 @@ export const mockActivityLogs: ActivityLog[] = [
     tags: ["authentication", "login"],
   },
 ];
+
+// simple bouquet list used by home/search pages
+export const mockBouquets = [
+  { id: 1, image_url: "/bouquets/roses.jpg", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
+  { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
+  { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
+];
