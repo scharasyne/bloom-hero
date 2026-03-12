@@ -39,7 +39,7 @@ export default function ForgotPassword() {
     }
 
     return (
-        <div className="max-h-svh flex items-center justify-center">
+        <div className="min-h-svh flex items-center justify-center">
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
                 <button
                     type="button"
@@ -86,6 +86,7 @@ export default function ForgotPassword() {
                         <label className="block text-sm text-gray-700 mb-1">
                             Email
                         </label>
+                        <div className="h-4" />
                         <input
                             type="email"
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
@@ -95,6 +96,8 @@ export default function ForgotPassword() {
                         />
                     </div>
 
+                    <div className="h-2" />
+                    
                     <div className="flex items-center justify-center">
                         <button
                             type="submit"

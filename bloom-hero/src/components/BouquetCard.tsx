@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 
 
 interface BouquetCardProps {
-  image: string;
+  image?: string | null;
   name: string;
   price: number;
   shop: string;
@@ -10,6 +10,10 @@ interface BouquetCardProps {
   category: string;
   rating: number;
   sold: number;
+  onAddToCart?: () => void;
+  adding?: boolean;
+  onBuyNow?: () => void;
+  buying?: boolean;
 }
 
 export default function BouquetCard({
@@ -21,12 +25,23 @@ export default function BouquetCard({
   category,
   rating,
   sold,
+  onAddToCart,
+  adding,
+  onBuyNow,
+  buying,
 }: BouquetCardProps) {
   return (
     <div className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70" data-name="Bouquet Card">
       <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[18px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)]" />
-      <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full">
-        <img alt={name} className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-tl-[18px] rounded-tr-[18px] size-full" src={image} />
+      <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt={name}
+            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-tl-[18px] rounded-tr-[18px] size-full"
+            src={image}
+          />
+        ) : null}
       </div>
       <div className="content-stretch flex flex-col gap-1.5 items-start justify-center px-4 relative shrink-0 w-full">
         {/* Name & Price */}
@@ -53,6 +68,31 @@ export default function BouquetCard({
           <span className="text-[#f4b400]">★ </span>
           <span className="text-[#7a7a7a]">{rating} ({sold} sold)</span>
         </p>
+
+        {(onAddToCart || onBuyNow) && (
+          <div className="mt-2 flex gap-2 w-full">
+            {onAddToCart && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={adding || buying}
+                className="flex-1 inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-3 py-1.5 text-xs lg:text-sm font-semibold text-white hover:bg-[#264a2f] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {adding ? "Adding..." : "Add to cart"}
+              </button>
+            )}
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={onBuyNow}
+                disabled={buying || adding}
+                className="flex-1 inline-flex items-center justify-center rounded-full border border-[#2f5d3a] px-3 py-1.5 text-xs lg:text-sm font-semibold text-[#2f5d3a] bg-white hover:bg-[#f3faf6] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {buying ? "Processing..." : "Buy now"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
