@@ -1,25 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { ActivityLog } from "@/typess";
 import { mockActivityLogs } from "@/lib/mockData";
-import { ActivityLog, ActionType } from "@/types";
 
-export function useActivityLogs(filter: ActionType | "all" = "all") {
-  const [searchQuery, setSearchQuery] = useState("");
-  const isLoading = false;
-  const error = null;
+export function useActivityLogs() {
+  const [data, setData] = useState<ActivityLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const data = useMemo(() => {
-    return mockActivityLogs.filter((log) => {
-      const matchesFilter =
-        filter === "all" || log.actionType === filter;
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setData(mockActivityLogs);
+      setIsLoading(false);
+    }, 800);
+  }, []);
 
-      const matchesSearch =
-        searchQuery === "" ||
-        log.actionTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.targetName.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesFilter && matchesSearch;
-    });
-  }, [filter, searchQuery]);
-
-  return { data, isLoading, error, searchQuery, setSearchQuery };
+  return { data, isLoading };
 }
