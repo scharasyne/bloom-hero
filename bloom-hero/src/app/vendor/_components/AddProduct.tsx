@@ -165,7 +165,7 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
         </div>
 
         <Link
-          href={`/vendor/${type}/add-product`}
+          href={`/vendor/${type}/list-product`}
           className="text-sm text-muted-foreground underline underline-offset-4"
         >
           Back to Product List

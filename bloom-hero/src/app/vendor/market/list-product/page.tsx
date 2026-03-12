@@ -2,7 +2,7 @@ import VendorListProductPage from "@/app/vendor/_components/ListProduct";
 
 export default function PopupProductPage(){
   return(
-    <div className="font-black">
+    <div>
       <VendorListProductPage type="market"/>
     </div>    
   )
