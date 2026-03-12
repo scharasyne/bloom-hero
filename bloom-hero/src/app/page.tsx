@@ -1,15 +1,11 @@
-import Footer from "../components/footer";
-import BouquetCard from "../components/BouquetCard";
+import Footer from "@/components/footer";
+import BouquetCard from "@/components/BouquetCard";
 import { Icon } from "@iconify/react";
 import NavBar from "@/components/navbar";
+import SearchBar from "@/components/SearchBar";
+import { mockBouquets } from "@/lib/mockData";
 
 const navLogo = "/icon.png";
-
-const mockBouquets = [
-  { id: 1, image_url: "/bouquets/roses.jpg", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
-  { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
-  { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
-];
 
 function Headline() {
   return (
@@ -25,54 +21,6 @@ function Headline() {
   );
 }
 
-function Location() {
-  return (
-    <div className="bg-[#f6f2ee] content-stretch flex gap-1.25 items-center px-3.5 py-2.5 relative rounded-[14px] shrink-0">
-      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[14px]" />
-      <Icon icon="mdi:map-marker" width={20} height={20} color="#2f5d3a" />
-      <div className="flex flex-col font-semibold justify-center leading-0 relative shrink-0 text-[#1f1f1f] text-[16px] text-center tracking-[-0.08px] whitespace-nowrap">
-        <p className="leading-normal">Cebu City</p>
-      </div>
-    </div>
-  );
-}
-
-function Query() {
-  return (
-    <div className="content-stretch flex items-start relative shrink-0">
-      <div className="flex flex-col font-regular justify-center leading-0 relative shrink-0 text-[#9a948f] text-[16px] text-center tracking-[-0.08px]">
-        <p className="leading-normal">Search flowers, vendors, or occasions…</p>
-      </div>
-    </div>
-  );
-}
-
-function LocPlaceholder() {
-  return (
-    <div className="content-stretch flex gap-4.5 items-center relative min-w-0 shrink w-full overflow-hidden">
-      <Location />
-      <Query />
-    </div>
-  );
-}
-
-function SearchButton() {
-  return (
-    <div className="bg-[#2f6b4f] content-stretch flex h-13.75 items-center justify-center px-4.5 py-3 relative rounded-br-[24px] rounded-tr-[24px] shrink-0 w-21">
-      <Icon icon="mdi:magnify" width={28} height={28} color="white" />
-    </div>
-  );
-}
-
-function SearchBar() {
-  return (
-    <div className="bg-white content-stretch flex h-14.25 items-center justify-between pl-4 py-4 relative rounded-[24px] w-full max-w-240">
-      <div aria-hidden="true" className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[24px] shadow-[0px_10px_30px_0px_rgba(0,0,0,0.1)]" />
-      <LocPlaceholder />
-      <SearchButton />
-    </div>
-  );
-}
 
 function Chip({ label, active = false }: { label: string; active?: boolean }) {
   return (

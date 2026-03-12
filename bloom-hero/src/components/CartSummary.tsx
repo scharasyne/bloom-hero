@@ -3,6 +3,8 @@ import { CartItem } from "@/typess";
 type CartSummaryProps = {
   cartItems: CartItem[];
   onCheckout: () => void;
+  loading?: boolean;
+  total?: number;
 };
 
 export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps) {
