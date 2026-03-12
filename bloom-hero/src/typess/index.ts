@@ -34,15 +34,26 @@ export interface VendorApplication {
 }
 
 // ACTIVITY LOGS
-export type ActionType = "approved" | "rejected" | "suspended" | "login";
+export type ActivityLogType = "approved" | "rejected" | "suspended" | "login";
 
-export interface ActivityLog {
+export type DetailLine = {
+  type: "order-verified" | "flag" | "reason" | "info";
+  text: string;
+};
+
+
+export type ActivityLog = {
   id: string;
-  timestamp: string; // ISO datetime string
   adminName: string;
-  actionType: ActionType;
+  timestamp: string;
+  actionType: ActivityLogType;
   actionTitle: string;
   targetName: string;
-  details: string;
+  details: DetailLine[];
   tags: string[];
-}
+  quickLinks: { label: string; href: string }[];
+  rating?: { score: number; max: number };
+};
+
+
+
