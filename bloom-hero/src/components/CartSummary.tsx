@@ -13,45 +13,48 @@ export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps)
   const total = subtotal + deliveryFee;
 
   return (
-    <>
-      {/* Totals */}
-      <div className="px-[28px] py-[16px] flex flex-col gap-[8px]">
-        <div className="flex justify-between text-[13px] text-[#7a7a7a]">
-          <span>Subtotal</span>
-          <span>₱ {subtotal}</span>
+    <div
+      className="bg-white rounded-[8px] border border-[#e8e8e8] overflow-hidden"
+      style={{ fontFamily: "'Quicksand', sans-serif" }}
+    >
+      <div className="px-[20px] py-[16px] border-b border-[#f0f0f0]">
+        <h2 className="text-[16px] font-bold text-[#333]">Order Summary</h2>
+      </div>
+
+      <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
+        <div className="flex justify-between text-[13px] text-[#888]">
+          <span>Subtotal ({cartItems.length} items)</span>
+          <span className="text-[#333]">₱{subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-[13px] text-[#7a7a7a]">
+        <div className="flex justify-between text-[13px] text-[#888]">
           <span>Delivery Fee</span>
-          <span>₱ {deliveryFee}</span>
+          <span className="text-[#333]">₱{deliveryFee.toFixed(2)}</span>
         </div>
       </div>
 
-      <div className="border-t border-dashed border-[#d4cfc9] w-full" />
+      <div className="border-t border-[#f0f0f0]" />
 
-      <div className="px-[28px] py-[16px] flex justify-between font-bold text-[16px] text-[#3f6f52]">
-        <span>TOTAL</span>
-        <span>₱ {total}</span>
+      <div className="px-[20px] py-[16px] flex justify-between items-center">
+        <span className="text-[14px] font-bold text-[#333]">Total</span>
+        <span className="text-[20px] font-bold text-[#D96A63]">₱{total.toFixed(2)}</span>
       </div>
 
-      <div className="border-t border-dashed border-[#d4cfc9] w-full" />
-
-      {/* Checkout button */}
-      <div className="px-[28px] py-[24px]">
+      <div className="px-[20px] pb-[20px]">
         <button
           onClick={onCheckout}
-          className="w-full bg-[#d24b46] flex items-center justify-center h-[44px] rounded-[999px] cursor-pointer"
+          disabled={cartItems.length === 0}
+          className="w-full bg-[#D96A63] hover:bg-[#c45e58] disabled:bg-[#ddd] disabled:cursor-not-allowed transition-colors h-[44px] rounded-[4px] cursor-pointer"
         >
-          <span className="font-semibold text-[15px] text-white tracking-[-0.075px]">
-            Check Out
+          <span className="font-semibold text-[14px] text-white tracking-[0.5px]">
+            Check Out ({cartItems.length})
           </span>
         </button>
       </div>
 
-      {/* Receipt footer */}
-      <div className="flex flex-col items-center pb-[24px] gap-[4px]">
+      <div className="flex flex-col items-center pb-[16px] gap-[2px]">
         <p className="text-[11px] text-[#ccc] tracking-[1px]">— thank you for your order —</p>
         <p className="text-[11px] text-[#ccc]">bloomhero.com</p>
       </div>
-    </>
+    </div>
   );
 }
