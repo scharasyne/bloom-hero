@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
-import Footer from "../../components/footer";
-// import NavBar from "../../components/navbar";
+import Footer from "@/components/footer";
+// import NavBar from "@/components/navbar";
 
 const imgLogo = "/navbar-logo.png";
 const imgSunstarImportUploadsImages20181031988101 = "/choose.png";
