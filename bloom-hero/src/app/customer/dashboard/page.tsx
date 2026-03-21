@@ -1,6 +1,7 @@
 import NavBar from "@/components/navbar";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { redirect } from "next/navigation";
+import ApplyVendorModal from "./ApplyVendorModal";
 
 export default async function CustomerDashboardPage() {
   const supabase = await createSupabaseServerClient();
@@ -37,6 +38,7 @@ export default async function CustomerDashboardPage() {
         >
           View Order History
         </a>
+        <ApplyVendorModal />
       </div>
       <hr />
       <p>If you can see this page, routing is working correctly.</p>
