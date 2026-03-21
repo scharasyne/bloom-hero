@@ -5,6 +5,9 @@ import { useCart } from "@/hooks/useCart";
 
 export default function TestCartPage() {
   const { data, isLoading, error } = useCart();
+  console.log("TC-SP2-001 | data:", data);
+  console.log("TC-SP2-001 | isLoading:", isLoading);
+  console.log("TC-SP2-001 | error:", error);
 
   if (isLoading) return <div>Loading cart...</div>;
   if (error) return <div>Something went wrong.</div>;
