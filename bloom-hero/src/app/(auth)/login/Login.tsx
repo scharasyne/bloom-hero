@@ -34,17 +34,83 @@ export default function Login() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const role = user?.user_metadata?.role as string | undefined;
+    if (!user) {
+      setStatus("Unable to load your account. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { data: roleData, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (roleError) {
+      setStatus(roleError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    let role = roleData?.role as string | undefined;
+
+    if (!role) {
+      const { error: upsertUserError } = await supabase
+        .from("users")
+        .upsert(
+          {
+            id: user.id,
+            email: user.email ?? "",
+            role: "customer",
+          },
+          { onConflict: "id" }
+        );
+
+      if (upsertUserError) {
+        setStatus(upsertUserError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { error: upsertCustomerError } = await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+
+      if (upsertCustomerError) {
+        setStatus(upsertCustomerError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      role = "customer";
+    }
 
     if (role === "vendor") {
-      router.push("/vendor/dashboard");
-    } else if(role === "customer"){
+      const { data: vendorData, error: vendorError } = await supabase
+        .from("vendors")
+        .select("vendor_type")
+        .eq("owner_id", user.id)
+        .single();
+
+      if (vendorError) {
+        setStatus(vendorError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (vendorData?.vendor_type === "market") {
+        router.push("/vendor/market/dashboard");
+      } else {
+        router.push("/vendor/pop-up/dashboard");
+      }
+    } else if (role === "customer") {
       router.push("/customer/dashboard");
-    } else if (!role){
-      router.push("/select-role");
+    } else {
+      router.push("/");
     }
 
     router.refresh();
+    setIsSubmitting(false);
   }
 
   // -------------------------------------------------------------
