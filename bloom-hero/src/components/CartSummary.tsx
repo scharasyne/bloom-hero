@@ -2,14 +2,17 @@ import { CartItem } from "@/typess";
 
 type CartSummaryProps = {
   cartItems: CartItem[];
+  selectedIds: Set<string>;
   onCheckout: () => void;
   loading?: boolean;
+  checkoutLoading?: boolean;
   total?: number;
 };
 
-export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps) {
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const deliveryFee = 40;
+export default function CartSummary({ cartItems, selectedIds, onCheckout, checkoutLoading }: CartSummaryProps) {
+  const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
+  const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const deliveryFee = selectedItems.length > 0 ? 40 : 0;
   const total = subtotal + deliveryFee;
 
   return (
@@ -23,7 +26,7 @@ export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps)
 
       <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
         <div className="flex justify-between text-[13px] text-[#888]">
-          <span>Subtotal ({cartItems.length} items)</span>
+          <span>Subtotal ({selectedItems.length} selected)</span>
           <span className="text-[#333]">₱{subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-[13px] text-[#888]">
@@ -42,11 +45,11 @@ export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps)
       <div className="px-[20px] pb-[20px]">
         <button
           onClick={onCheckout}
-          disabled={cartItems.length === 0}
+          disabled={selectedItems.length === 0 || checkoutLoading}
           className="w-full bg-[#D96A63] hover:bg-[#c45e58] disabled:bg-[#ddd] disabled:cursor-not-allowed transition-colors h-[44px] rounded-[4px] cursor-pointer"
         >
           <span className="font-semibold text-[14px] text-white tracking-[0.5px]">
-            Check Out ({cartItems.length})
+            {checkoutLoading ? "Processing..." : `Check Out (${selectedItems.length})`}
           </span>
         </button>
       </div>

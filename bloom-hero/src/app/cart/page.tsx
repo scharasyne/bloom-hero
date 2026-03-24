@@ -26,7 +26,7 @@ export default function CartPage() {
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -104,7 +104,7 @@ export default function CartPage() {
         const orderIds = orderList.map((o: any) => o.id);
 
         if (orderIds.length === 0) {
-          if (mounted) { setPendingOrderId(null); setCartItems([]); }
+          if (mounted) { setPendingOrderIds([]); setCartItems([]); }
           return;
         }
 
@@ -115,7 +115,7 @@ export default function CartPage() {
 
         if (itemsError) {
           console.error("Load cart - items error:", itemsError);
-          if (mounted) { setPendingOrderId(orderIds[0]); setCartItems([]); }
+          if (mounted) { setPendingOrderIds(orderIds); setCartItems([]); }
           return;
         }
 
@@ -124,6 +124,7 @@ export default function CartPage() {
           const stocks = product.stocks ?? 0;
           return {
             id: row.product_id,
+            orderId: row.order_id,
             productName: product.product_name ?? "",
             vendorName: product.vendor_name ?? "BloomHero Vendor",
             price: product.price ?? 0,
@@ -134,7 +135,7 @@ export default function CartPage() {
           };
         }) ?? [];
 
-        if (mounted) { setPendingOrderId(orderIds[0]); setCartItems(mappedItems); }
+        if (mounted) { setPendingOrderIds(orderIds); setCartItems(mappedItems); }
       } catch (error) {
         console.error("Failed to load cart:", error);
       }
@@ -160,23 +161,36 @@ export default function CartPage() {
     return () => { mounted = false; };
   }, [supabase]);
 
-  const getTotal = useCallback(() => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
-  }, [cartItems]);
+  const getTotal = useCallback((filterBySelected: boolean = false) => {
+    const itemsToSum = filterBySelected 
+      ? cartItems.filter(item => selectedIds.has(item.id))
+      : cartItems;
+    return itemsToSum.reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
+  }, [cartItems, selectedIds]);
 
   const updateCartItem = async (productId: string, newQty: number) => {
-    if (!pendingOrderId || !customerId) return;
+    if (pendingOrderIds.length === 0 || !customerId) return;
     if (newQty === 0) { handleRemove(productId); return; }
     try {
       const item = cartItems.find(i => i.id === productId);
       if (!item) return;
       const subtotal = item.price * newQty;
       await supabase.from("order_items").upsert(
-        { order_id: pendingOrderId, product_id: productId, quantity: newQty, subtotal },
+        { order_id: item.orderId, product_id: productId, quantity: newQty, subtotal },
         { onConflict: "order_id,product_id" }
       );
       setCartItems(prev => prev.map(i => i.id === productId ? { ...i, qty: newQty, subtotal } : i));
-      await supabase.from("orders").update({ total_amount: getTotal() }).eq("id", pendingOrderId);
+      
+      // Update all affected orders' total amounts
+      const orderTotals = new Map<string, number>();
+      for (const cartItem of cartItems) {
+        const total = orderTotals.get(cartItem.orderId) || 0;
+        orderTotals.set(cartItem.orderId, total + (cartItem.id === productId ? subtotal : cartItem.price * cartItem.qty));
+      }
+      
+      for (const [orderId, total] of orderTotals) {
+        await supabase.from("orders").update({ total_amount: total }).eq("id", orderId);
+      }
     } catch (error) {
       console.error("Update failed:", error);
     }
@@ -193,28 +207,98 @@ export default function CartPage() {
   };
 
   const handleRemove = async (id: string) => {
-    if (!pendingOrderId) return;
+    if (pendingOrderIds.length === 0) return;
     try {
-      await supabase.from("order_items").delete().eq("order_id", pendingOrderId).eq("product_id", id);
+      const item = cartItems.find(i => i.id === id);
+      if (!item) return;
+      
+      await supabase.from("order_items").delete().eq("order_id", item.orderId).eq("product_id", id);
       setCartItems(prev => prev.filter(i => i.id !== id));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-      await supabase.from("orders").update({ total_amount: getTotal() }).eq("id", pendingOrderId);
+      
+      // Update the affected order's total
+      const orderTotal = cartItems
+        .filter(i => i.orderId === item.orderId && i.id !== id)
+        .reduce((sum, i) => sum + (i.price * i.qty), 0);
+      
+      if (orderTotal === 0) {
+        // Delete the order if no items remain
+        await supabase.from("orders").delete().eq("id", item.orderId);
+        setPendingOrderIds(prev => prev.filter(id => id !== item.orderId));
+      } else {
+        await supabase.from("orders").update({ total_amount: orderTotal }).eq("id", item.orderId);
+      }
     } catch (error) {
       console.error("Remove failed:", error);
     }
   };
 
   const handleCheckout = async () => {
-    if (!pendingOrderId || cartItems.length === 0) return;
+    if (pendingOrderIds.length === 0 || !customerId || selectedIds.size === 0) return;
     try {
       setCheckoutLoading(true);
-      for (const item of cartItems) {
+      const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
+      
+      // Check stock for selected items only
+      for (const item of selectedItems) {
         const { data } = await supabase.from("products").select("stocks, product_name").eq("id", item.id).single();
-        if (data?.stocks < item.qty) { alert(`Not enough stock for ${item.productName}`); return; }
+        if (data?.stocks < item.qty) { 
+          alert(`Not enough stock for ${item.productName}`); 
+          return; 
+        }
       }
-      await supabase.from("orders").update({ status: "completed", total_amount: getTotal() }).eq("id", pendingOrderId);
-      setCartItems([]);
-      window.location.href = "/customer/orders";
+      
+      // Group selected items by their vendor/orderid
+      const itemsByOrderId = new Map<string, typeof selectedItems>();
+      for (const item of selectedItems) {
+        if (!itemsByOrderId.has(item.orderId)) {
+          itemsByOrderId.set(item.orderId, []);
+        }
+        itemsByOrderId.get(item.orderId)!.push(item);
+      }
+      
+      // Mark each vendor's order as completed with their selected items total
+      for (const [orderId, items] of itemsByOrderId) {
+        const vendorTotal = items.reduce((sum, item) => sum + (item.price * item.qty || 0), 0) + 40;
+        
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update({ 
+            status: "completed", 
+            total_amount: vendorTotal
+          })
+          .eq("id", orderId);
+        
+        if (updateError) {
+          console.error("Failed to update order to completed:", updateError);
+          alert("Failed to complete order. Please try again.");
+          return;
+        }
+        
+        // Delete unselected items from this vendor's order
+        const unselectedItemsForVendor = cartItems.filter(
+          i => i.orderId === orderId && !selectedIds.has(i.id)
+        );
+        
+        for (const item of unselectedItemsForVendor) {
+          await supabase
+            .from("order_items")
+            .delete()
+            .eq("order_id", orderId)
+            .eq("product_id", item.id);
+        }
+      }
+      
+      // Update cart UI to remove checked items
+      setCartItems(cartItems.filter(item => !selectedIds.has(item.id)));
+      setSelectedIds(new Set());
+      
+      console.log("Checkout complete, redirecting to orders page");
+      
+      // Add a small delay to ensure database updates propagate
+      setTimeout(() => {
+        window.location.href = "/customer/orders";
+      }, 500);
     } catch (error) {
       console.error("Checkout failed:", error);
       alert("Checkout failed");
@@ -310,7 +394,12 @@ export default function CartPage() {
 
           {/* ── Right: Order Summary ── */}
           <div className="w-[280px] shrink-0 sticky top-[24px]">
-            <CartSummary cartItems={cartItems} onCheckout={handleCheckout} />
+            <CartSummary 
+              cartItems={cartItems} 
+              selectedIds={selectedIds}
+              onCheckout={handleCheckout} 
+              checkoutLoading={checkoutLoading}
+            />
           </div>
 
         </div>
