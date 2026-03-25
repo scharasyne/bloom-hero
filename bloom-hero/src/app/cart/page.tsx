@@ -41,10 +41,25 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
   const isEmpty = cartItems.length === 0;
   const allSelected = !isEmpty && selectedIds.size === cartItems.length;
 
+  const formatSupabaseError = (error: any) => {
+    if (!error) return "Unknown database error.";
+
+    const parts = [
+      error.message,
+      error.details,
+      error.hint,
+      error.code ? `code: ${error.code}` : null,
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(" | ") : "Unknown database error.";
+  };
+
+  // Group flat cartItems array by vendorName
   const groupedItems = cartItems.reduce<Record<string, typeof cartItems>>((acc, item) => {
     const vendor = item.vendorName || "BloomHero Vendor";
     if (!acc[vendor]) acc[vendor] = [];
@@ -235,7 +250,7 @@ export default function CartPage() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (selectedPaymentMethod: "online" | "cod") => {
     if (pendingOrderIds.length === 0 || !customerId || selectedIds.size === 0) return;
     try {
       setCheckoutLoading(true);
@@ -259,21 +274,39 @@ export default function CartPage() {
         itemsByOrderId.get(item.orderId)!.push(item);
       }
       
-      // Mark each vendor's order as completed with their selected items total
+      // Move each vendor order into the correct next status after checkout.
       for (const [orderId, items] of itemsByOrderId) {
         const vendorTotal = items.reduce((sum, item) => sum + (item.price * item.qty || 0), 0) + 40;
+        const nextStatus = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
+        const updatePayload: Record<string, unknown> = {
+          status: nextStatus,
+          payment_method: selectedPaymentMethod,
+          total_amount: vendorTotal,
+        };
+
+        if (selectedPaymentMethod === "cod") {
+          updatePayload.payment_confirmed_at = new Date().toISOString();
+        }
         
         const { error: updateError } = await supabase
           .from("orders")
-          .update({ 
-            status: "completed", 
-            total_amount: vendorTotal
-          })
+          .update(updatePayload)
           .eq("id", orderId);
         
         if (updateError) {
-          console.error("Failed to update order to completed:", updateError);
-          alert("Failed to complete order. Please try again.");
+          const formatted = formatSupabaseError(updateError);
+          const migrationHint =
+            formatted.includes("receipt_proof_url") ||
+            formatted.includes("payment_method") ||
+            formatted.includes("to_pay") ||
+            formatted.includes("to_ship") ||
+            formatted.includes("42703") ||
+            formatted.includes("22P02")
+              ? " Run sql-changes/add_order_payment_flow.sql in Supabase first."
+              : "";
+
+          console.error("Failed to update checkout status:", formatted);
+          alert(`Failed to process checkout: ${formatted}.${migrationHint}`);
           return;
         }
         
@@ -299,7 +332,8 @@ export default function CartPage() {
       
       // Add a small delay to ensure database updates propagate
       setTimeout(() => {
-        window.location.href = "/customer/orders";
+        const nextTab = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
+        window.location.href = `/customer/orders?tab=${nextTab}`;
       }, 500);
     } catch (error) {
       console.error("Checkout failed:", error);
@@ -404,6 +438,8 @@ export default function CartPage() {
             <CartSummary 
               cartItems={cartItems} 
               selectedIds={selectedIds}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
               onCheckout={handleCheckout} 
               checkoutLoading={checkoutLoading}
             />
