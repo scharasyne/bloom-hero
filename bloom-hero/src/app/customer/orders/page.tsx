@@ -1,6 +1,13 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { markOrderReceived, uploadOrderReceiptProof } from "@/app/actions/order-status";
+
+type OrderTab = "to_pay" | "to_ship" | "to_receive" | "completed";
+
+type PageProps = {
+  searchParams: Promise<{ tab?: string; success?: string; error?: string }>;
+};
 
 type OrderItemRow = {
   order_id: string;
@@ -16,6 +23,11 @@ type OrderItemRow = {
     order_date: string;
     status: string;
     total_amount: number;
+    payment_method: "online" | "cod" | null;
+    receipt_proof_url: string | null;
+    payment_confirmed_at: string | null;
+    shipped_at: string | null;
+    received_at: string | null;
     vendors: {
       id: string | null;
       shop_name: string | null;
@@ -23,7 +35,40 @@ type OrderItemRow = {
   } | null;
 };
 
-export default async function CustomerOrdersPage() {
+const tabConfig: Record<OrderTab, { label: string; statuses: string[]; badgeClass: string }> = {
+  to_pay: {
+    label: "To Pay",
+    statuses: ["to_pay"],
+    badgeClass: "text-amber-700 border-amber-200 bg-amber-50",
+  },
+  to_ship: {
+    label: "To Ship",
+    statuses: ["to_ship"],
+    badgeClass: "text-indigo-700 border-indigo-200 bg-indigo-50",
+  },
+  to_receive: {
+    label: "To Receive",
+    statuses: ["to_receive"],
+    badgeClass: "text-sky-700 border-sky-200 bg-sky-50",
+  },
+  completed: {
+    label: "Completed",
+    statuses: ["completed"],
+    badgeClass: "text-emerald-700 border-emerald-200 bg-emerald-50",
+  },
+};
+
+export default async function CustomerOrdersPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const requestedTab = params.tab;
+  const activeTab: OrderTab =
+    requestedTab === "to_pay" ||
+    requestedTab === "to_ship" ||
+    requestedTab === "to_receive" ||
+    requestedTab === "completed"
+      ? requestedTab
+      : "completed";
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { session },
@@ -53,14 +98,16 @@ export default async function CustomerOrdersPage() {
     );
   }
 
-  // Fetch completed orders + their items for this customer
+  const selectedStatuses = tabConfig[activeTab].statuses;
+
+  // Fetch orders for this customer based on active tab.
   const { data: rows } = await supabase
     .from("order_items")
     .select(
-      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, vendors(id, shop_name))"
+      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, payment_method, receipt_proof_url, payment_confirmed_at, shipped_at, received_at, vendors(id, shop_name))"
     )
     .eq("orders.customer_id", session.user.id)
-    .eq("orders.status", "completed") as { data: OrderItemRow[] | null };
+    .in("orders.status", selectedStatuses) as { data: OrderItemRow[] | null };
 
   const items = rows ?? [];
 
@@ -74,6 +121,11 @@ export default async function CustomerOrdersPage() {
       status: string;
       orderDate: string;
       total: number;
+      paymentMethod: "online" | "cod" | null;
+      receiptProofUrl: string | null;
+      paymentConfirmedAt: string | null;
+      shippedAt: string | null;
+      receivedAt: string | null;
       items: OrderItemRow[];
       hasReview: boolean;
     }
@@ -89,6 +141,11 @@ export default async function CustomerOrdersPage() {
         status: row.orders.status,
         orderDate: row.orders.order_date,
         total: Number(row.orders.total_amount) || 0,
+        paymentMethod: row.orders.payment_method,
+        receiptProofUrl: row.orders.receipt_proof_url,
+        paymentConfirmedAt: row.orders.payment_confirmed_at,
+        shippedAt: row.orders.shipped_at,
+        receivedAt: row.orders.received_at,
         items: [],
         hasReview: false,
       });
@@ -144,6 +201,12 @@ export default async function CustomerOrdersPage() {
                 <h1 className="mt-4 text-2xl md:text-3xl font-bold text-[#2f2f2f]">
                   Purchase History
                 </h1>
+                {params.success ? (
+                  <p className="mt-2 text-sm text-emerald-700">{params.success}</p>
+                ) : null}
+                {params.error ? (
+                  <p className="mt-2 text-sm text-red-600">{params.error}</p>
+                ) : null}
               </div>
               <div className="flex flex-col items-center gap-3">
                 <div className="h-20 w-20 rounded-full bg-[#f1eee8] flex items-center justify-center text-gray-400 text-4xl">
@@ -156,21 +219,28 @@ export default async function CustomerOrdersPage() {
               </div>
             </div>
 
-            {/* Tabs (static for now, Completed active) */}
+            {/* Order status tabs */}
             <div className="mt-8 border-b border-[#ebe6dd] flex gap-6 text-sm">
-              <button className="pb-3 text-gray-400">To Pay</button>
-              <button className="pb-3 text-gray-400">To Ship</button>
-              <button className="pb-3 text-gray-400">To Receive</button>
-              <button className="pb-3 border-b-2 border-[#2f5d3a] text-[#2f5d3a] font-semibold">
-                Completed
-              </button>
+              {(Object.keys(tabConfig) as OrderTab[]).map((tab) => (
+                <a
+                  key={tab}
+                  href={`/customer/orders?tab=${tab}`}
+                  className={`pb-3 ${
+                    tab === activeTab
+                      ? "border-b-2 border-[#2f5d3a] text-[#2f5d3a] font-semibold"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {tabConfig[tab].label}
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Orders list */}
           {orders.length === 0 ? (
             <div className="bg-white rounded-3xl shadow-md border border-dashed border-[#e2ddd4] px-8 py-12 text-center text-sm text-gray-500">
-              No completed orders yet. Once you place an order, it will appear here.
+              No {tabConfig[activeTab].label.toLowerCase()} orders yet.
             </div>
           ) : (
             <div className="space-y-6">
@@ -195,8 +265,10 @@ export default async function CustomerOrdersPage() {
                           {new Date(order.orderDate).toLocaleString()}
                         </p>
                       </div>
-                      <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
-                        Completed
+                      <span
+                        className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${tabConfig[activeTab].badgeClass}`}
+                      >
+                        {tabConfig[activeTab].label}
                       </span>
                     </div>
 
@@ -237,28 +309,66 @@ export default async function CustomerOrdersPage() {
 
                     {/* Footer with totals & actions */}
                     <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                      <p className="text-sm text-gray-600">
-                        Total {totalItems} item{totalItems !== 1 ? "s" : ""}:{" "}
-                        <span className="font-semibold text-[#2f5d3a]">
-                          ₱ {order.total}
-                        </span>
-                      </p>
+                      <div className="text-sm text-gray-600">
+                        <p>
+                          Total {totalItems} item{totalItems !== 1 ? "s" : ""}: {" "}
+                          <span className="font-semibold text-[#2f5d3a]">₱ {order.total}</span>
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Payment: {order.paymentMethod === "cod" ? "Cash on Delivery" : "Online"}
+                        </p>
+                      </div>
                       <div className="flex gap-3 justify-end">
-                        {order.hasReview ? (
-                          <a
-                            href={`/customer/review?orderId=${order.id}`}
-                            className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100 inline-flex items-center justify-center cursor-pointer"
-                          >
-                            View Rating
-                          </a>
-                        ) : (
-                          <a
-                            href={`/customer/review?orderId=${order.id}`}
-                            className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6] inline-flex items-center justify-center"
-                          >
-                            To Rate
-                          </a>
-                        )}
+                        {activeTab === "to_pay" && order.paymentMethod === "online" ? (
+                          <form action={uploadOrderReceiptProof} className="flex flex-col gap-2">
+                            <input type="hidden" name="orderId" value={order.id} />
+                            <input
+                              type="file"
+                              name="receipt"
+                              accept="image/*"
+                              required
+                              className="rounded-md border border-[#ddd] p-1 text-xs"
+                            />
+                            <button
+                              type="submit"
+                              className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6]"
+                            >
+                              Upload Receipt
+                            </button>
+                          </form>
+                        ) : null}
+
+                        {activeTab === "to_receive" ? (
+                          <form action={markOrderReceived}>
+                            <input type="hidden" name="orderId" value={order.id} />
+                            <button
+                              type="submit"
+                              className="rounded-full border border-[#2f5d3a] px-4 py-1.5 text-xs font-semibold text-white bg-[#2f5d3a] hover:bg-[#26492f]"
+                            >
+                              Mark as Received
+                            </button>
+                          </form>
+                        ) : null}
+
+                        {activeTab === "completed"
+                          ? order.hasReview
+                            ? (
+                              <a
+                                href={`/customer/review?orderId=${order.id}`}
+                                className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100 inline-flex items-center justify-center cursor-pointer"
+                              >
+                                View Rating
+                              </a>
+                            )
+                            : (
+                              <a
+                                href={`/customer/review?orderId=${order.id}`}
+                                className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6] inline-flex items-center justify-center"
+                              >
+                                To Rate
+                              </a>
+                            )
+                          : null}
                         <button className="rounded-full border border-[#2f5d3a] px-4 py-1.5 text-xs font-semibold text-white bg-[#2f5d3a] hover:bg-[#26492f]">
                           Buy Again
                         </button>

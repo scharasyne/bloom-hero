@@ -34,6 +34,8 @@ function getTabRoutes(vendorType: VendorType): Partial<Record<TabId, string>> {
   return {
     dashboard: `/vendor/${vendorType}/dashboard`,
     products: `/vendor/${vendorType}/list-product`,
+    orders: `/vendor/${vendorType}/orders`,
+    profile: `/vendor/${vendorType}/profile`,
   };
 }
 
