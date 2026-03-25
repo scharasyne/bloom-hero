@@ -80,11 +80,14 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
 
   const items = rows ?? [];
   const first = items[0];
+  const order = Array.isArray(first?.orders) ? first.orders[0] : first?.orders;
+  const vendor = Array.isArray(order?.vendors) ? order.vendors[0] : order?.vendors;
+  const product = Array.isArray(first?.products) ? first.products[0] : first?.products;
 
-  const vendorName = first?.orders?.vendors?.shop_name ?? "Vendor";
-  const productName = first?.products?.product_name ?? "Product";
-  const productImage = first?.products?.product_image_url ?? null;
-  const vendorId = first?.orders?.vendors?.id ?? null;
+  const vendorName = vendor?.shop_name ?? "Vendor";
+  const productName = product?.product_name ?? "Product";
+  const productImage = product?.product_image_url ?? null;
+  const vendorId = vendor?.id ?? null;
 
   // Load existing review (if any) for this vendor & customer
   let existingReview: { id: string; rating: number; comment: string | null } | null =
@@ -113,8 +116,8 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {vendorName}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {first?.orders?.order_date
-                    ? new Date(first.orders.order_date).toLocaleString()
+                  {order?.order_date
+                    ? new Date(order.order_date).toLocaleString()
                     : ""}
                 </p>
               </div>
@@ -122,7 +125,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                 Completed
               </span>
             </div>
-            {first && first.products && (
+            {first && product && (
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-full bg-[#f7f3ec] overflow-hidden flex-shrink-0">
                   {productImage ? (
@@ -139,7 +142,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                     {productName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    ₱ {Number(first.products.price) || 0} per stem
+                    ₱ {Number(product.price) || 0} per stem
                   </p>
                 </div>
                 <div className="text-right text-sm">
@@ -174,7 +177,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {productName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  ₱ {first?.products ? Number(first.products.price) || 0 : 0} per stem
+                  ₱ {product ? Number(product.price) || 0 : 0} per stem
                 </p>
               </div>
             </div>

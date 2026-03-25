@@ -20,9 +20,10 @@ const navLinks = {
   ],
   'customer': [
     { href: "/", label: "Home"},
-    { href: "/orders", label: "Orders"},
+    { href: "/customer/dashboard", label: "Dashboard"},
+    { href: "/customer/orders", label: "Orders"},
     { href: "/cart", label: "Cart"},
-    {href: "/profile", label: "Profile"},
+    { href: "/customer/settings", label: "Settings"},
   ],
   'default': [
     { href: "/", label: "Home" },
@@ -32,7 +33,7 @@ const navLinks = {
   ]
 };
 
-export default function NavBar({ type = "default" }: { type: navTypes | "default" }) {
+export default function NavBar({ type = "default" }: { type?: navTypes | "default" }) {
   const [user, setUser] = useState< any|null >(null);
   const [resolvedType, setResolvedType] = useState<navTypes | "default">(type)
   const [menuOpen, setMenuOpen] = useState(false);

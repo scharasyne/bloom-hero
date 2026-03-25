@@ -18,11 +18,17 @@ export default async function CustomerDashboardPage() {
     .eq("user_id", session.user.id)
     .single();
 
+  const { data: userProfile } = await supabase
+    .from("users")
+    .select("name")
+    .eq("id", session.user.id)
+    .single();
+
   return (
     <main>
       <NavBar type="customer" />
       <h1>BloomHero</h1>
-      <p>Welcome {profile?.name || session.user.email}!</p>
+      <p>Welcome {userProfile?.name || session.user.email}!</p>
       <p>This is your customer dashboard.</p>
       <div className="mt-6 flex flex-wrap gap-3">
         <a
@@ -37,9 +43,18 @@ export default async function CustomerDashboardPage() {
         >
           View Order History
         </a>
+        <a
+          href="/customer/settings"
+          className="inline-block bg-[#d24b46] text-white px-4 py-2 rounded hover:bg-[#bb3f3a]"
+        >
+          Account Settings
+        </a>
       </div>
       <hr />
       <p>If you can see this page, routing is working correctly.</p>
+      {profile?.shipping_address ? (
+        <p className="mt-3">Saved shipping address: {profile.shipping_address}</p>
+      ) : null}
     </main>
   );
 }
