@@ -779,10 +779,10 @@ export default function VendorApplicationForm({
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => router.push(`/vendor/${submittedVendorType}/add-product`)}
+                  onClick={() => router.push(`/vendor/${submittedVendorType}/dashboard`)}
                   className="cursor-pointer rounded bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#bb3f3a]"
                 >
-                  Add Product
+                  Go to Dashboard
                 </button>
               </div>
             </div>
