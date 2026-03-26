@@ -5,6 +5,18 @@
 
 @theme {
   --font-quicksand: "Quicksand", sans-serif;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @custom-variant dark (&:is(.dark *));

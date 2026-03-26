@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { mockCartItems } from "@/lib/mockData";
-import type { CartItem } from "@/types";
+import type { CartItem } from "@/typess";
 
 export function useCart() {
   const [data, setData] = useState<CartItem[]>(mockCartItems);
