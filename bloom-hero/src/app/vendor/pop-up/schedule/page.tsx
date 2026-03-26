@@ -186,10 +186,9 @@ export default function PopUpDashboardPage() {
                     )}
                   </div>
 
-                  {/* Add more */}
                   <button className="mt-5 w-full py-3 border-2 border-dashed border-[#d6d0c8] rounded-[14px] text-[#6f6a65] font-semibold text-sm hover:border-[#2f5d3a] hover:text-[#2f5d3a] transition-all duration-200 flex items-center justify-center gap-2">
-                    <Icon icon="mdi:plus" width={18} height={18} />
-                    Add More to Schedule
+                    <Icon icon="mdi:calendar-outline" width={18} height={18} />
+                    View All Schedules
                   </button>
                 </section>
               </div>
