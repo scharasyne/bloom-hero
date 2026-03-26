@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { Upload } from "lucide-react";
@@ -42,6 +42,21 @@ const STEP_ITEMS: { id: Step; label: string }[] = [
   { id: 3, label: "Submit" },
 ];
 
+type VendorApplicationDraft = {
+  shop_name: string | null;
+  shop_address: string | null;
+  email: string | null;
+  phone_number: string | null;
+  vendor_type: VendorType | null;
+  government_id_type: string | null;
+  taxpayer_identification_number: string | null;
+  vat_registration_status: VatRegistrationStatus | null;
+  primary_business_document_url: string | null;
+  government_id_document_url: string | null;
+  bir_certificate_url: string | null;
+  submission_status: string | null;
+};
+
 function getErrorMessage(error: unknown, fallbackMessage: string) {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -56,14 +71,6 @@ function digitsOnly(value: string) {
 
 function parsePhoneNumber(value: string) {
   const compact = value.replace(/[\s-]/g, "");
-  const withCodeMatch = compact.match(/^(\+\d{1,4})(\d+)$/);
-
-  if (withCodeMatch) {
-    return {
-      countryCode: withCodeMatch[1],
-      localNumber: digitsOnly(withCodeMatch[2]),
-    };
-  }
 
   if (compact.startsWith("+63")) {
     return {
@@ -76,6 +83,15 @@ function parsePhoneNumber(value: string) {
     return {
       countryCode: "+63",
       localNumber: digitsOnly(compact.slice(2)),
+    };
+  }
+
+  const withCodeMatch = compact.match(/^(\+\d{1,4})(\d+)$/);
+
+  if (withCodeMatch) {
+    return {
+      countryCode: withCodeMatch[1],
+      localNumber: digitsOnly(withCodeMatch[2]),
     };
   }
 
@@ -139,6 +155,72 @@ export default function VendorApplicationForm({
   const [existingPrimaryBusinessDocumentUrl, setExistingPrimaryBusinessDocumentUrl] = useState("");
   const [existingGovernmentIdDocumentUrl, setExistingGovernmentIdDocumentUrl] = useState("");
   const [existingBirCertificateUrl, setExistingBirCertificateUrl] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateFromDraft() {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user || !isMounted) {
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("vendor_applications")
+          .select(
+            "shop_name, shop_address, email, phone_number, vendor_type, government_id_type, taxpayer_identification_number, vat_registration_status, primary_business_document_url, government_id_document_url, bir_certificate_url, submission_status"
+          )
+          .eq("owner_id", user.id)
+          .maybeSingle<VendorApplicationDraft>();
+
+        if (error || !data || data.submission_status !== "draft" || !isMounted) {
+          return;
+        }
+
+        setShopName(data.shop_name ?? "");
+        setShopAddress(data.shop_address ?? "");
+        setEmail(data.email ?? initialEmail);
+
+        const draftPhoneParts = parsePhoneNumber(data.phone_number ?? "");
+        const normalizedDraftLocalNumber = digitsOnly(draftPhoneParts.localNumber).slice(-10);
+        setCountryCode(draftPhoneParts.countryCode || "+63");
+        setPhoneNumber(normalizedDraftLocalNumber);
+
+        if (data.vendor_type === "market" || data.vendor_type === "pop-up") {
+          setVendorType(data.vendor_type);
+        }
+
+        setGovernmentIdType(data.government_id_type ?? "");
+        setTin(data.taxpayer_identification_number ?? "");
+
+        if (
+          data.vat_registration_status === "vat-registered" ||
+          data.vat_registration_status === "non-vat-registered"
+        ) {
+          setVatRegistrationStatus(data.vat_registration_status);
+        } else {
+          setVatRegistrationStatus("");
+        }
+
+        setExistingPrimaryBusinessDocumentUrl(data.primary_business_document_url ?? "");
+        setExistingGovernmentIdDocumentUrl(data.government_id_document_url ?? "");
+        setExistingBirCertificateUrl(data.bir_certificate_url ?? "");
+      } catch {
+        // Ignore draft errors and keep editable empty defaults.
+      }
+    }
+
+    hydrateFromDraft();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialEmail, supabase]);
 
   const onSelectFile =
     (setter: (file: File | null) => void) => (event: ChangeEvent<HTMLInputElement>) => {
@@ -702,7 +784,7 @@ export default function VendorApplicationForm({
                 >
                   Add Product
                 </button>
-              </div>X
+              </div>
             </div>
           ) : null}
         </div>
