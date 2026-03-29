@@ -15,8 +15,36 @@ export async function GET(request: NextRequest) {
     if(!user)
         return NextResponse.redirect(`${origin}/sign-up`);
 
-    const { data: roleData } = await supabase.from("users").select("role").eq("id",user.id).single();
-    const userRole = roleData?.role;
+    const { data: roleData } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    let userRole = roleData?.role;
+
+    if (!userRole) {
+      await supabase.from("users").upsert(
+        {
+          id: user.id,
+          email: user.email ?? "",
+          role: "customer",
+        },
+        { onConflict: "id" }
+      );
+
+      await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+
+      userRole = "customer";
+    }
+
+    if (userRole === "customer") {
+      await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+    }
 
     const { data: vendorData } = await supabase
       .from("vendors")
@@ -35,9 +63,9 @@ export async function GET(request: NextRequest) {
 
     } else if (userRole === "customer") {
       return NextResponse.redirect(`${origin}/customer/dashboard`);
-    } else if (!userRole) {
-      return NextResponse.redirect(`${origin}/select-role`);
     }
+
+    return NextResponse.redirect(`${origin}/customer/dashboard`);
   }
 
   return NextResponse.redirect(`${origin}/login`);

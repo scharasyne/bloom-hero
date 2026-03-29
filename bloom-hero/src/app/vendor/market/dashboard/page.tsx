@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,7 +9,7 @@ import { AlertCircle } from "lucide-react";
 
 type VendorStatus = "pending" | "approved" | "rejected";
 
-export default function VendorPopUpDashboardPage() {
+export default function VendorMarketDashboardPage() {
   const [status, setStatus] = useState<VendorStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function VendorPopUpDashboardPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-        <VendorDashboardSidebarCard activeTab="dashboard" vendorType="pop-up" />
+        <VendorDashboardSidebarCard activeTab="dashboard" vendorType="market" />
 
         <div className="flex flex-col gap-6">
           {status === "pending" && (
