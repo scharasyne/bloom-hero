@@ -21,7 +21,8 @@ export default function CartSummary({
 }: CartSummaryProps) {
   const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
   const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const deliveryFee = selectedItems.length > 0 ? 40 : 0;
+  const uniqueVendors = new Set(selectedItems.map(item => item.vendorName));
+  const deliveryFee = uniqueVendors.size > 0 ? uniqueVendors.size * 40 : 0;
   const total = subtotal + deliveryFee;
 
   return (

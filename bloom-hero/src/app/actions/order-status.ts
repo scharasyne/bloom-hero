@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png"];
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
 
@@ -26,6 +28,14 @@ export async function uploadOrderReceiptProof(formData: FormData) {
 
   if (!orderId || !file || file.size === 0) {
     redirect("/customer/orders?tab=to_pay&error=Missing+receipt+upload");
+  }
+
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    redirect("/customer/orders?tab=to_pay&error=Only+JPEG+and+PNG+images+are+accepted");
+  }
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    redirect("/customer/orders?tab=to_pay&error=File+size+must+be+under+5+MB");
   }
 
   try {
@@ -60,14 +70,11 @@ export async function uploadOrderReceiptProof(formData: FormData) {
       throw uploadError;
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(PAYMENT_PROOF_BUCKET).getPublicUrl(filePath);
-
     const { error: updateError } = await supabase
       .from("orders")
       .update({
-        receipt_proof_url: publicUrl,
+        // Store the private storage path instead of a public URL.
+        receipt_proof_url: filePath,
         receipt_submitted_at: new Date().toISOString(),
       })
       .eq("id", orderId);
@@ -81,9 +88,7 @@ export async function uploadOrderReceiptProof(formData: FormData) {
     revalidatePath("/vendor/pop-up/orders");
     redirect("/customer/orders?tab=to_pay&success=Receipt+uploaded");
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+    unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Upload+failed";
@@ -131,9 +136,7 @@ export async function markOrderReceived(formData: FormData) {
     revalidatePath("/customer/orders");
     redirect("/customer/orders?tab=completed&success=Order+completed");
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+    unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Update+failed";
@@ -202,9 +205,7 @@ export async function vendorConfirmPayment(formData: FormData) {
     revalidatePath("/customer/orders");
     redirect(`${vendorRoute}?success=Payment+confirmed`);
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+    unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Update+failed";
@@ -266,9 +267,7 @@ export async function vendorMarkAsShipped(formData: FormData) {
     revalidatePath("/customer/orders");
     redirect(`${vendorRoute}?success=Order+marked+as+shipped`);
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+    unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Update+failed";

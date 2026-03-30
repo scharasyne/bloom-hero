@@ -111,6 +111,20 @@ export default async function VendorOrdersTable({
     (a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
   );
 
+  // Generate short-lived signed URLs for receipt proofs so the bucket stays private.
+  const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
+  const receiptSignedUrlMap = new Map<string, string>();
+  for (const order of orders) {
+    if (order.receiptProofUrl) {
+      const { data } = await supabase.storage
+        .from(PAYMENT_PROOF_BUCKET)
+        .createSignedUrl(order.receiptProofUrl, 60 * 60); // 1-hour expiry
+      if (data?.signedUrl) {
+        receiptSignedUrlMap.set(order.id, data.signedUrl);
+      }
+    }
+  }
+
   const customerIds = Array.from(new Set(orders.map((o) => o.customerId)));
   let customerNameMap = new Map<string, string>();
 
@@ -197,9 +211,9 @@ export default async function VendorOrdersTable({
                 <div className="flex flex-wrap items-center gap-2">
                   {order.status === "to_pay" && order.paymentMethod === "online" ? (
                     <>
-                      {order.receiptProofUrl ? (
+                      {receiptSignedUrlMap.get(order.id) ? (
                         <a
-                          href={order.receiptProofUrl}
+                          href={receiptSignedUrlMap.get(order.id)}
                           target="_blank"
                           rel="noreferrer"
                           className="rounded-full border border-[#dad5cc] px-3 py-1.5 text-xs font-semibold text-[#5f5a55]"
@@ -216,7 +230,7 @@ export default async function VendorOrdersTable({
                         <input type="hidden" name="orderId" value={order.id} />
                         <button
                           type="submit"
-                          disabled={!order.receiptProofUrl}
+                          disabled={!receiptSignedUrlMap.has(order.id)}
                           className="rounded-full border border-[#2f5d3a] bg-[#2f5d3a] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#25492e] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Confirm Payment

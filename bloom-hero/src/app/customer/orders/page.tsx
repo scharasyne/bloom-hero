@@ -320,7 +320,7 @@ export default async function CustomerOrdersPage({ searchParams }: PageProps) {
                       </div>
                       <div className="flex gap-3 justify-end">
                         {activeTab === "to_pay" && order.paymentMethod === "online" ? (
-                          <form action={uploadOrderReceiptProof} className="flex flex-col gap-2">
+                          <form action={uploadOrderReceiptProof} encType="multipart/form-data" className="flex flex-col gap-2">
                             <input type="hidden" name="orderId" value={order.id} />
                             <input
                               type="file"
