@@ -69,7 +69,7 @@ export default function BouquetCard({
           <span className="text-[#7a7a7a]">{rating} ({sold} sold)</span>
         </p>
 
-        {(onAddToCart || onBuyNow) && (
+        {/* {(onAddToCart || onBuyNow) && (
           <div className="mt-2 flex gap-2 w-full">
             {onAddToCart && (
               <button
@@ -92,7 +92,32 @@ export default function BouquetCard({
               </button>
             )}
           </div>
+        )} */}
+        {(onAddToCart || onBuyNow) && (
+          <div className="mt-2 flex gap-2 w-full">
+            {onAddToCart && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={adding || buying}
+                className="flex-1 inline-flex items-center justify-center rounded-full bg-[#d24b46] px-3 py-1.5 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {adding ? "Adding..." : "Add to Cart"}
+              </button>
+            )}
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={onBuyNow}
+                disabled={buying || adding}
+                className="flex-1 inline-flex items-center justify-center rounded-full border border-[#d24b46] px-3 py-1.5 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {buying ? "Processing..." : "Buy Now"}
+              </button>
+            )}
+          </div>
         )}
+
       </div>
     </div>
   );

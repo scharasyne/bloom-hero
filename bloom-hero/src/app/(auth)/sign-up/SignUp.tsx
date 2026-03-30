@@ -8,8 +8,6 @@ import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import Image from "next/image";
 
-type Role = "client" | "vendor";
-
 export default function SignUp() {
     const router = useRouter();
     // const [role, setRole] = useState<Role>("client");
@@ -52,7 +50,7 @@ export default function SignUp() {
             password,
             options: {
                 data: {
-                    // role: "client",
+                    role: "customer",
                     username,
                 },
             },
