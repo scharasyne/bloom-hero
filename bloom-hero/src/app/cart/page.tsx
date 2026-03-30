@@ -256,12 +256,18 @@ export default function CartPage() {
       setCheckoutLoading(true);
       const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
       
-      // Check stock for selected items only
+      // Check stock for all selected items in a single query
+      const selectedItemIds = selectedItems.map(item => item.id);
+      const { data: stockData } = await supabase
+        .from("products")
+        .select("id, stocks, product_name")
+        .in("id", selectedItemIds);
+      const stockMap = new Map((stockData ?? []).map((p: any) => [p.id, p]));
       for (const item of selectedItems) {
-        const { data } = await supabase.from("products").select("stocks, product_name").eq("id", item.id).single();
-        if (data?.stocks < item.qty) { 
-          alert(`Not enough stock for ${item.productName}`); 
-          return; 
+        const product = stockMap.get(item.id);
+        if (product && product.stocks < item.qty) {
+          alert(`Not enough stock for ${item.productName}`);
+          return;
         }
       }
       
@@ -275,6 +281,7 @@ export default function CartPage() {
       }
       
       // Move each vendor order into the correct next status after checkout.
+      const orderIdToNewPendingId = new Map<string, string>();
       for (const [orderId, items] of itemsByOrderId) {
         const vendorTotal = items.reduce((sum, item) => sum + (item.price * item.qty || 0), 0) + 40;
         const nextStatus = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
@@ -286,6 +293,46 @@ export default function CartPage() {
 
         if (selectedPaymentMethod === "cod") {
           updatePayload.payment_confirmed_at = new Date().toISOString();
+        }
+
+        // If there are unselected items in this vendor's order, move them to a new
+        // pending order before checking out so they remain in the cart.
+        const unselectedItemsForVendor = cartItems.filter(
+          i => i.orderId === orderId && !selectedIds.has(i.id)
+        );
+
+        if (unselectedItemsForVendor.length > 0) {
+          const { data: orderData } = await supabase
+            .from("orders")
+            .select("vendor_id")
+            .eq("id", orderId)
+            .single();
+
+          if (orderData?.vendor_id) {
+            const unselectedTotal = unselectedItemsForVendor.reduce(
+              (sum, i) => sum + i.price * i.qty, 0
+            );
+            const { data: newOrder } = await supabase
+              .from("orders")
+              .insert({
+                customer_id: customerId,
+                vendor_id: orderData.vendor_id,
+                status: "pending",
+                total_amount: unselectedTotal,
+              })
+              .select("id")
+              .single();
+
+            if (newOrder) {
+              const unselectedProductIds = unselectedItemsForVendor.map(i => i.id);
+              await supabase
+                .from("order_items")
+                .update({ order_id: newOrder.id })
+                .eq("order_id", orderId)
+                .in("product_id", unselectedProductIds);
+              orderIdToNewPendingId.set(orderId, newOrder.id);
+            }
+          }
         }
         
         const { error: updateError } = await supabase
@@ -309,23 +356,22 @@ export default function CartPage() {
           alert(`Failed to process checkout: ${formatted}.${migrationHint}`);
           return;
         }
-        
-        // Delete unselected items from this vendor's order
-        const unselectedItemsForVendor = cartItems.filter(
-          i => i.orderId === orderId && !selectedIds.has(i.id)
-        );
-        
-        for (const item of unselectedItemsForVendor) {
-          await supabase
-            .from("order_items")
-            .delete()
-            .eq("order_id", orderId)
-            .eq("product_id", item.id);
-        }
       }
       
-      // Update cart UI to remove checked items
-      setCartItems(cartItems.filter(item => !selectedIds.has(item.id)));
+      // Update cart UI: remove checked-out items; update orderId for items moved to a new pending order.
+      const newPendingIds = Array.from(orderIdToNewPendingId.values());
+      setCartItems(prev =>
+        prev
+          .filter(item => !selectedIds.has(item.id))
+          .map(item => {
+            const newId = orderIdToNewPendingId.get(item.orderId);
+            return newId ? { ...item, orderId: newId } : item;
+          })
+      );
+      setPendingOrderIds(prev => [
+        ...prev.filter(id => !itemsByOrderId.has(id)),
+        ...newPendingIds,
+      ]);
       setSelectedIds(new Set());
       
       console.log("Checkout complete, redirecting to orders page");
