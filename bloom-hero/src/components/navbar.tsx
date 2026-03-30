@@ -73,7 +73,7 @@ export default function NavBar({ type = "default" }: { type: navTypes | "default
       }
     }
     init()
-  }, [])
+  }, [type])
   
   const items = navLinks[resolvedType]
 
