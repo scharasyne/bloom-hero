@@ -22,9 +22,9 @@ const navLinks = {
   ],
   'customer': [
     { href: "/",        label: "Home" },
-    { href: "/orders",  label: "Orders" },
+    { href: "/customer/orders",  label: "Orders" },
     { href: "/cart",    label: "Cart" },
-    { href: "/profile", label: "Profile" },
+    { href: "/customer/profile", label: "Profile" },
   ],
   'default': [
     { href: "/",               label: "Home" },

@@ -57,7 +57,7 @@ export function VendorDashboardSidebarCard({
           const route = tabRoutes[tab.id];
 
           const activeContent = (
-            <div className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full bg-[#D14D41] shadow-md shadow-red-100">
+            <div className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full bg-[#2f5d3a] shadow-md shadow-[#2f5d3a]/20">
               <Icon icon={tab.icon} width={20} height={20} className="text-white shrink-0" />
               <span className="text-white text-[15px] font-semibold tracking-[0.3px]">
                 {tab.label}
@@ -66,7 +66,7 @@ export function VendorDashboardSidebarCard({
           );
 
           const inactiveClassName =
-            "flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200 cursor-pointer";
+            "flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-[#eef4f0] hover:text-[#2f5d3a] transition-all duration-200 cursor-pointer";
 
           const inactiveContent = (
             <>
@@ -97,7 +97,7 @@ export function VendorDashboardSidebarCard({
 
       {/* Sign Out */}
       <div className="px-[16px] py-[16px] border-t border-slate-100">
-        <button className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200 cursor-pointer">
+        <button className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-red-50 hover:text-[#D24B46] transition-all duration-200 cursor-pointer">
           <Icon icon="mdi:logout" width={20} height={20} className="shrink-0" />
           <span className="text-[15px] font-medium tracking-[0.3px]">Sign Out</span>
         </button>

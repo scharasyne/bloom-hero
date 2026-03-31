@@ -1,11 +1,9 @@
 import type { OrderGroup } from "../_lib/types";
 import { STATUS_BADGE } from "../_lib/constants";
 import type { TabKey } from "../_lib/constants";
-import { formatPeso, friendlyDate, paymentCountdown } from "../_lib/utils";
+import { formatPeso, friendlyDate } from "../_lib/utils";
+import { PaymentCountdown } from "./PaymentCountdown";
 
-/* ------------------------------------------------------------------ */
-/*  Icons                                                              */
-/* ------------------------------------------------------------------ */
 function IconStorefront({ className = "" }: { className?: string }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -72,119 +70,70 @@ function IconPackageCheck({ className = "" }: { className?: string }) {
   );
 }
 
-function IconClock({ className = "" }: { className?: string }) {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function IconXCircle({ className = "" }: { className?: string }) {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <line x1="15" y1="9" x2="9" y2="15" />
-      <line x1="9" y1="9" x2="15" y2="15" />
-    </svg>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /*  Tab-aware footer actions                                           */
 /* ------------------------------------------------------------------ */
-function OrderFooterActions({
-  order,
-  activeTab,
-}: {
-  order: OrderGroup;
-  activeTab: TabKey;
-}) {
+function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab: TabKey }) {
+
   if (activeTab === "to-pay") {
-    const countdown = paymentCountdown(order.orderDate);
-
-    // Window expired — backend hasn't caught up yet, don't show Pay Now
-    if (countdown.expired) {
-        return (
-        <div className="flex items-center gap-2.5 justify-end flex-wrap">
-            <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Amount Due</span>
-            <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">
-                {formatPeso(order.total)}
-            </span>
-            </div>
-            {/* No Pay Now, no Cancel — just inform the user */}
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f2ed] border border-[#e0dbd5] px-5 py-2 text-xs font-semibold text-[#9a9188]">
-            <IconXCircle className="text-[#9a9188]" />
-            Payment window expired — order will be cancelled
-            </span>
-        </div>
-        );
-    }
-
     return (
-        <div className="flex flex-col gap-3 w-full sm:w-auto">
-        <div className={`flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-3 py-1.5 w-fit bg-amber-50 border border-amber-200 text-amber-700`}>
-            <IconClock />
-            {countdown.label}
-        </div>
+      <div className="flex flex-col gap-3 w-full sm:w-auto">
+        {/* FIX 7: Countdown left-aligned, actions right-aligned — no more floating center */}
+        <PaymentCountdown orderDate={order.orderDate} />
         <div className="flex items-center gap-2.5 justify-end flex-wrap">
-            <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Amount Due</span>
-            <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">
-                {formatPeso(order.total)}
-            </span>
-            </div>
-            <a
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Amount Due</span>
+            <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
+          </div>
+          {/*
+            FIX 6: Cancel Order has stronger destructive visual weight —
+            solid red bg instead of just a red outline, so it reads as
+            "this is irreversible" not just a secondary option.
+          */}
+          <a
             href={`/customer/orders/${order.id}/cancel`}
-            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-5 py-2 text-xs font-bold text-red-500 hover:bg-red-100 transition-colors"
-            >
+            className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border-2 border-red-300 px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-100 hover:border-red-400 transition-colors"
+          >
             Cancel Order
-            </a>
-            <a
+          </a>
+          {/* FIX 2: Pay Now → solid red, customer primary CTA */}
+          <a
             href={`/customer/orders/${order.id}/pay`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#2f5d3a] px-5 py-2 text-xs font-bold text-white hover:bg-[#25492e] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
-            >
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+          >
             <IconCreditCard />
             Pay Now
-            </a>
+          </a>
         </div>
-        </div>
+      </div>
     );
-
   }
 
   if (activeTab === "to-ship") {
     return (
-        <div className="flex items-center gap-2.5 justify-end flex-wrap">
+      <div className="flex items-center gap-2.5 justify-end flex-wrap">
         <div className="flex items-baseline gap-1.5">
-            <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total</span>
-            <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">
-            {formatPeso(order.total)}
-            </span>
+          <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Total</span>
+          <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
         </div>
-        {/* Use the same muted palette as STATUS_BADGE "to-ship" */}
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef4fb] border border-[#bdd0e8] px-5 py-2 text-xs font-semibold text-[#2c5282]">
-            Vendor is preparing your order
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-5 py-2 text-xs font-semibold text-blue-700">
+          Vendor is preparing your order
         </span>
-        </div>
+      </div>
     );
-}   
+  }
 
   if (activeTab === "to-receive") {
     return (
       <div className="flex items-center gap-2.5 justify-end flex-wrap">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total</span>
-          <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">
-            {formatPeso(order.total)}
-          </span>
+          <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Total</span>
+          <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
         </div>
-        {/* Order Received — confirms delivery, moves to Completed */}
+        {/* Order Received — positive confirmation action, red as customer primary */}
         <a
           href={`/customer/orders/${order.id}/confirm-receipt`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#2f5d3a] px-5 py-2 text-xs font-bold text-white hover:bg-[#25492e] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
         >
           <IconPackageCheck />
           Order Received
@@ -193,19 +142,17 @@ function OrderFooterActions({
     );
   }
 
-  // "completed"
+  // completed
   return (
     <div className="flex items-center gap-2.5 justify-end flex-wrap">
       <div className="flex items-baseline gap-1.5">
-        <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total</span>
-        <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">
-          {formatPeso(order.total)}
-        </span>
+        <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Total</span>
+        <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
       </div>
       {order.hasReview ? (
         <a
           href={`/customer/review?orderId=${order.id}`}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#e6e2dd] bg-white px-5 py-2 text-xs font-bold text-gray-400 hover:bg-[#faf8f5] transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#e6e2dd] bg-white px-5 py-2 text-xs font-bold text-[#A39E96] hover:bg-[#faf8f5] transition-colors"
         >
           <IconStar filled className="text-amber-400" />
           View Rating
@@ -213,15 +160,15 @@ function OrderFooterActions({
       ) : (
         <a
           href={`/customer/review?orderId=${order.id}`}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#D96A63]/30 bg-[#D96A63]/5 px-5 py-2 text-xs font-bold text-[#D96A63] hover:bg-[#D96A63]/10 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#D24B46]/30 bg-[#D24B46]/5 px-5 py-2 text-xs font-bold text-[#D24B46] hover:bg-[#D24B46]/10 transition-colors"
         >
-          <IconStar className="text-[#D96A63]" />
+          <IconStar className="text-[#D24B46]" />
           Rate Order
         </a>
       )}
       <a
         href="/"
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#2f5d3a] px-5 py-2 text-xs font-bold text-white hover:bg-[#25492e] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+        className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
       >
         <IconCart />
         Buy Again
@@ -233,18 +180,19 @@ function OrderFooterActions({
 /* ------------------------------------------------------------------ */
 /*  OrderCard                                                          */
 /* ------------------------------------------------------------------ */
-export function OrderCard({
-  order,
-  activeTab,
-}: {
-  order: OrderGroup;
-  activeTab: TabKey;
-}) {
-  const totalItems = order.items.reduce((sum, it) => sum + (it.quantity || 0), 0);
+export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: TabKey }) {
+  /*
+    FIX 4: totalItems was counting total quantity across all rows,
+    which reads as "5 items" when it's really 1 product × qty 5.
+    Now shows distinct product count — e.g. "1 product" or "3 products".
+    Qty per line item is already shown on each row.
+  */
+  const productCount = order.items.filter(row => row.products !== null).length;
   const badge = STATUS_BADGE[activeTab];
 
   return (
     <section className="rounded-2xl bg-white border border-[#e6e2dd] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+
       {/* Vendor header */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#faf8f5] px-5 sm:px-6 py-4 border-b border-[#eeebe6]">
         <div className="flex items-center gap-3 min-w-0">
@@ -254,15 +202,16 @@ export function OrderCard({
           <div className="min-w-0">
             <p className="text-sm font-bold text-[#2f2f2f] truncate">{order.vendorName}</p>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+              <span className="text-[11px] font-semibold text-[#A39E96] uppercase tracking-wide">
                 #{order.id.slice(0, 8)}
               </span>
-              <span className="text-[11px] text-gray-400 hidden sm:inline">
+              <span className="text-[11px] text-[#A39E96] hidden sm:inline">
                 {friendlyDate(order.orderDate)}
               </span>
             </div>
           </div>
         </div>
+        {/* FIX 5: Badge uses semantic color from updated STATUS_BADGE constants */}
         <span className={`inline-flex items-center gap-1.5 rounded-full ${badge.bg} border ${badge.border} px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${badge.text}`}>
           <IconCheck />
           {badge.label}
@@ -271,7 +220,7 @@ export function OrderCard({
 
       {/* Mobile-only date */}
       <div className="px-5 sm:px-6 pt-2 sm:hidden">
-        <p className="text-[11px] text-gray-400">{friendlyDate(order.orderDate)}</p>
+        <p className="text-[11px] text-[#A39E96]">{friendlyDate(order.orderDate)}</p>
       </div>
 
       {/* Items list */}
@@ -293,9 +242,9 @@ export function OrderCard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-[#2f2f2f] truncate">{product.product_name}</p>
-                <p className="mt-1 text-xs text-gray-400 font-medium">
+                <p className="mt-1 text-xs text-[#A39E96] font-medium">
                   {formatPeso(Number(product.price) || 0)}{" "}
-                  <span className="text-gray-300">/ stem</span>
+                  <span className="text-[#c0b8b0]">/ stem</span>
                 </p>
               </div>
               <div className="text-right flex-shrink-0 space-y-1">
@@ -304,7 +253,7 @@ export function OrderCard({
                     {formatPeso(Number(row.subtotal) || 0)}
                   </p>
                 )}
-                <span className="inline-flex items-center justify-center px-2 py-0.5 bg-[#f8f5f0] rounded-full border border-[#f1eee8] text-[11px] font-semibold text-gray-400">
+                <span className="inline-flex items-center justify-center px-2 py-0.5 bg-[#f8f5f0] rounded-full border border-[#f1eee8] text-[11px] font-semibold text-[#A39E96]">
                   Qty: {row.quantity}
                 </span>
               </div>
@@ -315,8 +264,9 @@ export function OrderCard({
 
       {/* Footer */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[#eeebe6] bg-[#faf8f5] px-5 sm:px-6 py-4">
-        <p className="text-xs text-gray-400 font-semibold">
-          {totalItems} item{totalItems !== 1 ? "s" : ""}
+        {/* FIX 4: "X product(s)" instead of misleading "X items" */}
+        <p className="text-xs text-[#A39E96] font-semibold">
+          {productCount} product{productCount !== 1 ? "s" : ""}
         </p>
         <OrderFooterActions order={order} activeTab={activeTab} />
       </div>
