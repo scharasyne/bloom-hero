@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { VendorDashboardSidebarCard } from "@/app/vendor/_components/vendor-dashboard-sidebar-card";
 import { AlertCircle } from "lucide-react";
 
+
 type VendorStatus = "pending" | "approved" | "rejected";
 
 export default function VendorPopUpDashboardPage() {

@@ -249,7 +249,7 @@ export default function SearchPage() {
 
   return (
     <>
-      <NavBar />
+      <NavBar type = "customer"/>
 
       <main className="py-8 min-h-screen max-w-7xl mx-auto px-10">
         <div className="max-w-240 mx-auto">
@@ -296,14 +296,14 @@ export default function SearchPage() {
             style={{ animationDelay: `${i * 40}ms` }}
           >
             <BouquetCard
-              image={bouquet.product_image_url || bouquet.image_url || null}
+              image={bouquet.product_image_url ?? bouquet.image_url ?? null}
               name={bouquet.product_name}
               price={bouquet.price}
               shop={bouquet.shop_name || ""}
               distance={bouquet.distance || ""}
               category={bouquet.category || ""}
-              rating={bouquet.rating || 0}
-              sold={bouquet.stocks}
+              rating={bouquet.rating > 0 ? bouquet.rating : undefined}
+              sold={bouquet.sold_count ?? undefined}
               onAddToCart={() => handleAddToCart(bouquet)}
               adding={addingId === bouquet.id}
               onBuyNow={() => handleBuyNow(bouquet)}

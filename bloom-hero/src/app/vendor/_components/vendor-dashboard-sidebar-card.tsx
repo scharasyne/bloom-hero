@@ -29,11 +29,10 @@ const tabs: Record<"pop-up" | "market", Array<{ id: TabId; label: string; icon: 
   ],
 };
 
-
 function getTabRoutes(vendorType: VendorType): Partial<Record<TabId, string>> {
   return {
     dashboard: `/vendor/${vendorType}/dashboard`,
-    products: `/vendor/${vendorType}/list-product`,
+    products:  `/vendor/${vendorType}/list-product`,
   };
 }
 
@@ -45,34 +44,34 @@ export function VendorDashboardSidebarCard({
 
   return (
     <aside
-      className="flex flex-col gap-[12px] items-start px-[24px] py-[16px] h-full border-r border-[#edeae6] w-[240px] shrink-0"
+      className="flex flex-col w-[240px] h-full bg-[#fbf7f4] border-r border-[#edeae6] shrink-0"
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
-      <nav aria-label="Vendor dashboard navigation" className="w-full flex flex-col gap-[12px]">
+      {/* Nav Items */}
+      <nav
+        aria-label="Vendor dashboard navigation"
+        className="flex-1 flex flex-col gap-[4px] px-[16px]"
+      >
         {tabs[vendorType].map((tab) => {
           const isActive = tab.id === activeTab;
           const route = tabRoutes[tab.id];
 
           const activeContent = (
-            // Active state
-            <div className="bg-[#fdf0ef] flex gap-[12px] h-[48px] items-center px-[12px] rounded-[12px] w-full">
-              <div className="bg-[#D96A63] h-[28px] w-[4px] rounded-full shrink-0" />
-              <Icon icon={tab.icon} width={20} height={20} className="text-[#D96A63] shrink-0" />
-              <span className="text-[#D96A63] text-[16px] font-medium tracking-[0.64px]">
+            <div className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full bg-[#2f5d3a] shadow-md shadow-[#2f5d3a]/20">
+              <Icon icon={tab.icon} width={20} height={20} className="text-white shrink-0" />
+              <span className="text-white text-[15px] font-semibold tracking-[0.3px]">
                 {tab.label}
               </span>
             </div>
           );
 
           const inactiveClassName =
-            "flex gap-[12px] h-[48px] items-center px-[12px] rounded-[12px] w-full hover:bg-[#f3f2f0] transition-colors cursor-pointer";
+            "flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-[#eef4f0] hover:text-[#2f5d3a] transition-all duration-200 cursor-pointer";
 
           const inactiveContent = (
             <>
-              <Icon icon={tab.icon} width={20} height={20} className="text-[#5f5a55] shrink-0" />
-              <span className="text-[#5f5a55] text-[16px] font-medium tracking-[0.64px]">
-                {tab.label}
-              </span>
+              <Icon icon={tab.icon} width={20} height={20} className="shrink-0" />
+              <span className="text-[15px] font-medium tracking-[0.3px]">{tab.label}</span>
             </>
           );
 
@@ -95,6 +94,14 @@ export function VendorDashboardSidebarCard({
           );
         })}
       </nav>
+
+      {/* Sign Out */}
+      <div className="px-[16px] py-[16px] border-t border-slate-100">
+        <button className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-red-50 hover:text-[#D24B46] transition-all duration-200 cursor-pointer">
+          <Icon icon="mdi:logout" width={20} height={20} className="shrink-0" />
+          <span className="text-[15px] font-medium tracking-[0.3px]">Sign Out</span>
+        </button>
+      </div>
     </aside>
   );
 }

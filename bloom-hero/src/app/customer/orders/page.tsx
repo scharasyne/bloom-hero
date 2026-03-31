@@ -1,50 +1,50 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { OrderCard } from "./_components/order-card";
+import { TABS } from "./_lib/constants";
+import { groupOrders } from "./_lib/utils";
+import type { OrderItemRow } from "./_lib/types";
+import { TAB_STATUS_MAP, EMPTY_STATE } from "./_lib/constants";
+import type { TabKey } from "./_lib/constants";
 
-type OrderItemRow = {
-  order_id: string;
-  quantity: number;
-  subtotal: number;
-  products: {
-    product_name: string;
-    price: number;
-    product_image_url: string | null;
-  } | null;
-  orders: {
-    id: string;
-    order_date: string;
-    status: string;
-    total_amount: number;
-    vendors: {
-      id: string | null;
-      shop_name: string | null;
-    } | null;
-  } | null;
-};
+function IconPackage({ className = "" }: { className?: string }) {
+  return (
+    <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className={className}>
+      <path d="M20 7l-8 4.5L4 7" /><path d="M12 11.5V21" />
+      <path d="M20 7v10l-8 4-8-4V7l8-4 8 4z" /><path d="M16 5.25l-8 4.5" />
+    </svg>
+  );
+}
 
-export default async function CustomerOrdersPage() {
+export default async function CustomerOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { tab } = await searchParams;
 
-  if (!session) {
-    // Let middleware / login page handle this normally
+  if (!user) {
     return (
       <>
-        <NavBar />
-        <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-red-100 px-8 py-10 text-center max-w-md w-full">
-            <h1 className="text-xl font-semibold text-red-600 mb-2">Please sign in</h1>
-            <p className="text-sm text-gray-700 mb-6">
-              You need to be logged in to view your purchase history.
-            </p>
+        <NavBar type="customer" />
+        <main className="min-h-screen flex items-center justify-center bg-[#fbf7f4] px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-[#e6e2dd] px-8 py-10 text-center max-w-md w-full">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0]">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#D24B46" strokeWidth="2">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-semibold text-[#2f2f2f] mb-2">Sign in to view your orders</h1>
+            <p className="text-sm text-[#6D6863] mb-6">You need to be logged in to view your purchase history.</p>
             <a
               href="/login"
-              className="inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#25492e]"
+              className="inline-flex items-center justify-center rounded-full bg-[#D24B46] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#A53A35] transition-colors"
             >
-              Go to login
+              Go to Login
             </a>
           </div>
         </main>
@@ -53,226 +53,105 @@ export default async function CustomerOrdersPage() {
     );
   }
 
-  // Fetch completed orders + their items for this customer
-  const { data: rows } = await supabase
+  const validTabs: TabKey[] = ["to-pay", "to-ship", "to-receive", "completed"];
+  const rawTab = tab ?? "to-pay";
+  const activeTab: TabKey = validTabs.includes(rawTab as TabKey) ? (rawTab as TabKey) : "to-pay";
+  const activeStatus = TAB_STATUS_MAP[activeTab];
+
+  const { data: rows } = (await supabase
     .from("order_items")
-    .select(
-      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, vendors(id, shop_name))"
-    )
-    .eq("orders.customer_id", session.user.id)
-    .eq("orders.status", "completed") as { data: OrderItemRow[] | null };
+    .select("order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, vendors(id, shop_name))")
+    .eq("orders.customer_id", user.id)
+    .eq("orders.status", activeStatus)) as { data: OrderItemRow[] | null };
 
-  const items = rows ?? [];
-
-  // Group by order, then by vendor (each order already has a single vendor)
-  const ordersMap = new Map<
-    string,
-    {
-      id: string;
-      vendorId: string | null;
-      vendorName: string;
-      status: string;
-      orderDate: string;
-      total: number;
-      items: OrderItemRow[];
-      hasReview: boolean;
-    }
-  >();
-  for (const row of items) {
-    if (!row.orders) continue;
-    const key = row.orders.id;
-    if (!ordersMap.has(key)) {
-      ordersMap.set(key, {
-        id: row.order_id,
-        vendorId: row.orders.vendors?.id ?? null,
-        vendorName: row.orders.vendors?.shop_name ?? "Bloom & Co.",
-        status: row.orders.status,
-        orderDate: row.orders.order_date,
-        total: Number(row.orders.total_amount) || 0,
-        items: [],
-        hasReview: false,
-      });
-    }
-    ordersMap.get(key)!.items.push(row);
-  }
-
-  // Look up which vendors already have reviews from this customer
-  const ordersArray = Array.from(ordersMap.values());
-  const vendorIds = Array.from(
-    new Set(
-      ordersArray
-        .map((o) => o.vendorId)
-        .filter((v): v is string => Boolean(v))
-    )
-  );
+  const ordersArray = groupOrders(rows ?? []);
 
   let reviewedVendors = new Set<string>();
-  if (vendorIds.length > 0) {
-    const { data: reviews } = await supabase
-      .from("reviews")
-      .select("vendor_id")
-      .eq("customer_id", session.user.id)
-      .in("vendor_id", vendorIds);
-
-    reviewedVendors = new Set((reviews ?? []).map((r: any) => r.vendor_id));
+  if (activeTab === "completed") {
+    const vendorIds = [...new Set(ordersArray.map(o => o.vendorId).filter(Boolean))] as string[];
+    if (vendorIds.length > 0) {
+      const { data: reviews } = await supabase
+        .from("reviews").select("vendor_id")
+        .eq("customer_id", user.id)
+        .in("vendor_id", vendorIds);
+      reviewedVendors = new Set((reviews ?? []).map((r: any) => r.vendor_id));
+    }
   }
 
+  const emptyState = EMPTY_STATE[activeTab];
   const orders = ordersArray
-    .map((o) => ({
-      ...o,
-      hasReview: o.vendorId ? reviewedVendors.has(o.vendorId) : false,
-    }))
-    .sort(
-      (a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
-    );
+    .map(o => ({ ...o, hasReview: o.vendorId ? reviewedVendors.has(o.vendorId) : false }))
+    .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
   return (
     <>
-      <NavBar />
-      <main className="min-h-screen bg-[#f5f2eb] px-4 py-10 flex justify-center">
-        <div className="w-full max-w-5xl">
-          {/* Header / profile strip */}
-          <div className="bg-white rounded-3xl shadow-md border border-[#e2ddd4] px-8 py-10 mb-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div>
-                <p className="text-xs text-gray-500">
-                  You are signed in as{" "}
-                  <span className="font-semibold text-[#2f5d3a]">
-                    {session.user.user_metadata?.name ?? session.user.email}
-                  </span>
-                </p>
-                <h1 className="mt-4 text-2xl md:text-3xl font-bold text-[#2f2f2f]">
-                  Purchase History
-                </h1>
-              </div>
-              <div className="flex flex-col items-center gap-3">
-                <div className="h-20 w-20 rounded-full bg-[#f1eee8] flex items-center justify-center text-gray-400 text-4xl">
-                  {/* simple avatar placeholder */}
-                  <span>👤</span>
-                </div>
-                <p className="text-sm font-medium text-[#2f2f2f]">
-                  {session.user.user_metadata?.name ?? "Customer"}
-                </p>
-              </div>
-            </div>
+      <NavBar type="customer" />
+      <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="mx-auto w-full max-w-[920px] pt-8">
 
-            {/* Tabs (static for now, Completed active) */}
-            <div className="mt-8 border-b border-[#ebe6dd] flex gap-6 text-sm">
-              <button className="pb-3 text-gray-400">To Pay</button>
-              <button className="pb-3 text-gray-400">To Ship</button>
-              <button className="pb-3 text-gray-400">To Receive</button>
-              <button className="pb-3 border-b-2 border-[#2f5d3a] text-[#2f5d3a] font-semibold">
-                Completed
-              </button>
-            </div>
-          </div>
+          {/*
+            FIX 3: Slimmed header — removed the large white card and user avatar pill.
+            Title + subtitle inline, tabs immediately below. Saves ~120px of dead space
+            the user had to scroll past on every visit.
+          */}
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#2f2f2f] tracking-tight">
+              Purchase History
+            </h1>
+            <p className="mt-1 text-sm text-[#A39E96] font-medium">
+              Track and manage your BloomHero orders
+            </p>
 
-          {/* Orders list */}
-          {orders.length === 0 ? (
-            <div className="bg-white rounded-3xl shadow-md border border-dashed border-[#e2ddd4] px-8 py-12 text-center text-sm text-gray-500">
-              No completed orders yet. Once you place an order, it will appear here.
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {orders.map((order, idx) => {
-                const totalItems = order.items.reduce(
-                  (sum, it) => sum + (it.quantity || 0),
-                  0
-                );
-
+            {/*
+              FIX 1: Active tab uses red — customer-facing screen accent.
+              Red tinted pill bg with red border instead of solid green.
+            */}
+            <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {TABS.map((t) => {
+                const isActive = t.key === activeTab;
                 return (
-                  <section
-                    key={idx}
-                    className="bg-white rounded-3xl shadow-md border border-[#e2ddd4] px-6 py-5"
+                  <a
+                    key={t.key}
+                    href={`?tab=${t.key}`}
+                    className={[
+                      "px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all",
+                      isActive
+                        ? "bg-[#D24B46] text-white shadow-sm shadow-[#D24B46]/20"
+                        : "bg-white text-[#A39E96] border border-[#e6e2dd] hover:border-[#c0b8b0] hover:text-[#6D6863]",
+                    ].join(" ")}
                   >
-                    {/* Vendor header */}
-                    <div className="flex items-center justify-between gap-4 mb-4">
-                      <div className="flex flex-col">
-                        <p className="text-sm font-semibold text-[#2f2f2f]">
-                          {order.vendorName}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(order.orderDate).toLocaleString()}
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
-                        Completed
-                      </span>
-                    </div>
-
-                    {/* Items list */}
-                    <div className="divide-y divide-[#f1ece4]">
-                      {order.items.map((row, i) => {
-                        const product = row.products;
-                        if (!product) return null;
-                        return (
-                          <div key={i} className="flex items-center gap-4 py-3">
-                            <div className="h-14 w-14 rounded-full bg-[#f7f3ec] overflow-hidden flex-shrink-0">
-                              {product.product_image_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={product.product_image_url}
-                                  alt={product.product_name}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : null}
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-[#2f2f2f]">
-                                {product.product_name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                ₱ {Number(product.price) || 0} per stem
-                              </p>
-                            </div>
-                            <div className="text-right text-sm">
-                              <p className="text-gray-600">
-                                {row.quantity}× • ₱ {Number(row.subtotal) || 0}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Footer with totals & actions */}
-                    <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                      <p className="text-sm text-gray-600">
-                        Total {totalItems} item{totalItems !== 1 ? "s" : ""}:{" "}
-                        <span className="font-semibold text-[#2f5d3a]">
-                          ₱ {order.total}
-                        </span>
-                      </p>
-                      <div className="flex gap-3 justify-end">
-                        {order.hasReview ? (
-                          <a
-                            href={`/customer/review?orderId=${order.id}`}
-                            className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-400 bg-gray-100 inline-flex items-center justify-center cursor-pointer"
-                          >
-                            View Rating
-                          </a>
-                        ) : (
-                          <a
-                            href={`/customer/review?orderId=${order.id}`}
-                            className="rounded-full border border-[#f0b4b0] px-4 py-1.5 text-xs font-semibold text-[#c84943] bg-[#fff7f6] inline-flex items-center justify-center"
-                          >
-                            To Rate
-                          </a>
-                        )}
-                        <button className="rounded-full border border-[#2f5d3a] px-4 py-1.5 text-xs font-semibold text-white bg-[#2f5d3a] hover:bg-[#26492f]">
-                          Buy Again
-                        </button>
-                      </div>
-                    </div>
-                  </section>
+                    {t.label}
+                  </a>
                 );
               })}
             </div>
+          </div>
+
+          {orders.length === 0 ? (
+            <div className="flex flex-col items-center rounded-2xl border border-[#e6e2dd] bg-white px-6 py-16 text-center">
+              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#f8f5f0] text-[#c0b8b0]">
+                <IconPackage />
+              </div>
+              <h3 className="text-base font-bold text-[#2f2f2f]">{emptyState.heading}</h3>
+              <p className="mt-2 max-w-xs text-sm text-[#A39E96]">{emptyState.body}</p>
+              <a
+                href="/"
+                className="mt-6 inline-flex items-center rounded-full bg-[#D24B46] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#A53A35] transition-colors shadow-sm"
+              >
+                Browse Flowers
+              </a>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {orders.map((order) => (
+                <OrderCard key={order.id} order={order} activeTab={activeTab} />
+              ))}
+            </div>
           )}
+
         </div>
       </main>
       <Footer />
     </>
   );
 }
-
