@@ -247,7 +247,7 @@ export default function CartPage() {
 
   return (
     <>
-      <NavBar />
+      <NavBar type = "customer" />
       <main
         className="w-full bg-[#f5f5f5] min-h-screen px-[24px] py-[32px]"
         style={{ fontFamily: "'Quicksand', sans-serif" }}

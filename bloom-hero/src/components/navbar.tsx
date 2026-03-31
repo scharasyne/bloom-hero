@@ -9,27 +9,29 @@ type navTypes = 'market' | 'pop-up' | 'customer';
 
 const navLinks = {
   'pop-up': [
-    { href: "/", label: "Home" },
-    { href: "/vendor/pop-up/dashboard", label: "Dashboard"},
-    { href: "/vendor/pop-up/profile", label: "Profile"},
+    { href: "/vendor/pop-up/dashboard", label: "Dashboard" },
+    { href: "/vendor/pop-up/products",  label: "My Products" },
+    { href: "/vendor/pop-up/schedule",  label: "Schedule" },
+    { href: "/vendor/pop-up/profile",   label: "Profile" },
   ],
   'market': [
-    { href: "/", label: "Home" },
-    { href: "/vendor/market/dashboard", label: "Dashboard"},
-    { href: "/vendor/market/profile", label: "Profile"},
+    { href: "/vendor/market/dashboard", label: "Dashboard" },
+    { href: "/vendor/market/products",  label: "My Products" },
+    { href: "/vendor/market/orders",    label: "Orders" },
+    { href: "/vendor/market/profile",   label: "Profile" },
   ],
   'customer': [
-    { href: "/", label: "Home"},
-    { href: "/orders", label: "Orders"},
-    { href: "/cart", label: "Cart"},
-    {href: "/profile", label: "Profile"},
+    { href: "/",        label: "Home" },
+    { href: "/orders",  label: "Orders" },
+    { href: "/cart",    label: "Cart" },
+    { href: "/profile", label: "Profile" },
   ],
   'default': [
-    { href: "/", label: "Home" },
+    { href: "/",               label: "Home" },
     { href: "/browse-flowers", label: "Flowers" },
-    { href: "/browse-shops", label: "Shops" },
-    { href: "/about-us", label: "About" },
-  ]
+    { href: "/browse-shops",   label: "Shops" },
+    { href: "/about-us",       label: "About" },
+  ],
 };
 
 export default function NavBar({ type = "default" }: { type: navTypes | "default" }) {
@@ -55,20 +57,23 @@ export default function NavBar({ type = "default" }: { type: navTypes | "default
           .from("users")
           .select("role")
           .eq("id", user.id)
-          .single()
-        
-        if(userCheck?.role === "customer")
-          setResolvedType(userCheck.role);
-        else{ 
-          if(userCheck?.role === "vendor"){
-            const { data: vendor } = await supabase
+          .single();
+
+        if (userCheck?.role === "admin") {
+          router.push("/admin/vendor-applications"); // redirect to admin panel
+          return;
+        }
+
+        if (userCheck?.role === "customer") {
+          setResolvedType("customer");
+        } else if (userCheck?.role === "vendor") {
+          const { data: vendor } = await supabase
             .from("vendors")
             .select("vendor_type")
             .eq("owner_id", user.id)
-            .single()
+            .single();
 
-            setResolvedType(vendor?.vendor_type);
-          }
+          setResolvedType(vendor?.vendor_type); // "market" or "pop-up"
         }
       }
     }
@@ -149,13 +154,22 @@ export default function NavBar({ type = "default" }: { type: navTypes | "default
             </Link>
           ))}
           <div className="px-6 pt-3">
-            <Link
-              href="/login"
-              className="block bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="w-full bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="block bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

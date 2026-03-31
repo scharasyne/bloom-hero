@@ -85,7 +85,9 @@ export default function Login() {
       role = "customer";
     }
 
-    if (role === "vendor") {
+    if (role === "admin") {
+      router.push("/admin/vendor-applications");
+    } else if (role === "vendor") {
       const { data: vendorData, error: vendorError } = await supabase
         .from("vendors")
         .select("vendor_type")

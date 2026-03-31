@@ -1,7 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
-
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -12,8 +11,8 @@ export async function GET(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    if(!user)
-        return NextResponse.redirect(`${origin}/sign-up`);
+    if (!user)
+      return NextResponse.redirect(`${origin}/login`); // ← was /sign-up, changed to /login
 
     const { data: roleData } = await supabase
       .from("users")
@@ -53,14 +52,17 @@ export async function GET(request: NextRequest) {
       .single();
     const vendorType = vendorData?.vendor_type;
 
-    if (userRole === "vendor") {
-      if(vendorType === "market")
-        return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
-      else if(vendorType === "pop-up"){
-        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
-        // return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);        
-      }
+    // ↓ ADD THIS BLOCK HERE
+    if (userRole === "admin") {
+      return NextResponse.redirect(`${origin}/admin/vendor-applications`);
+    }
+    // ↑ END OF NEW BLOCK
 
+    if (userRole === "vendor") {
+      if (vendorType === "market")
+        return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
+      else if (vendorType === "pop-up")
+        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
     } else if (userRole === "customer") {
       return NextResponse.redirect(`${origin}/customer/dashboard`);
     }
