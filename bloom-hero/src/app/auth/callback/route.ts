@@ -60,12 +60,21 @@ export async function GET(request: NextRequest) {
 
     if (userRole === "vendor") {
       if (vendorType === "market")
-        return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
+        return NextResponse.redirect(`${origin}/market/dashboard`);
       else if (vendorType === "pop-up")
-        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
+        return NextResponse.redirect(`${origin}/pop-up/dashboard`);
     } else if (userRole === "customer") {
-      return NextResponse.redirect(`${origin}/customer/dashboard`);
+      return NextResponse.redirect(`${origin}/dashboard`);
     }
+
+    // if (userRole === "vendor") {
+    //   if (vendorType === "market")
+    //     return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
+    //   else if (vendorType === "pop-up")
+    //     return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
+    // } else if (userRole === "customer") {
+    //   return NextResponse.redirect(`${origin}/customer/dashboard`);
+    // }
 
     return NextResponse.redirect(`${origin}/customer/dashboard`);
   }

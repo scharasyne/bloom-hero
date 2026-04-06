@@ -1,5 +1,5 @@
 import { Quicksand } from "next/font/google";
-import NavBar from "@/components/navbar";
+// import NavBar from "@/components/navbar";
 import "./globals.css";
 
 const quicksand = Quicksand({
@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>
-        {/* <NavBar /> */}
         {children}
       </body>
     </html>

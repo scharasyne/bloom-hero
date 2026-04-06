@@ -9,22 +9,22 @@ type navTypes = 'market' | 'pop-up' | 'customer';
 
 const navLinks = {
   'pop-up': [
-    { href: "/vendor/pop-up/dashboard", label: "Dashboard" },
-    { href: "/vendor/pop-up/products",  label: "My Products" },
-    { href: "/vendor/pop-up/schedule",  label: "Schedule" },
-    { href: "/vendor/pop-up/profile",   label: "Profile" },
+    { href: "/pop-up/dashboard", label: "Dashboard" },
+    { href: "/pop-up/products",  label: "My Products" },
+    { href: "/pop-up/schedule",  label: "Schedule" },
+    { href: "/pop-up/profile",   label: "Profile" },
   ],
   'market': [
-    { href: "/vendor/market/dashboard", label: "Dashboard" },
-    { href: "/vendor/market/products",  label: "My Products" },
-    { href: "/vendor/market/orders",    label: "Orders" },
-    { href: "/vendor/market/profile",   label: "Profile" },
+    { href: "/market/dashboard", label: "Dashboard" },
+    { href: "/market/products",  label: "My Products" },
+    { href: "/market/orders",    label: "Orders" },
+    { href: "/market/profile",   label: "Profile" },
   ],
   'customer': [
     { href: "/",        label: "Home" },
-    { href: "/customer/orders",  label: "Orders" },
+    { href: "/orders",  label: "Orders" },
     { href: "/cart",    label: "Cart" },
-    { href: "/customer/profile", label: "Profile" },
+    { href: "/profile", label: "Profile" },
   ],
   'default': [
     { href: "/",               label: "Home" },
