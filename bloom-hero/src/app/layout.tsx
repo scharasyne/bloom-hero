@@ -12,6 +12,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  console.log("ROOT LAYOUT");
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>

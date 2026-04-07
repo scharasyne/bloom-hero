@@ -1,90 +1,90 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
-type navTypes = 'market' | 'pop-up' | 'customer';
-
-const navLinks = {
-  'pop-up': [
-    { href: "/pop-up/dashboard", label: "Dashboard" },
-    { href: "/pop-up/products",  label: "My Products" },
-    { href: "/pop-up/schedule",  label: "Schedule" },
-    { href: "/pop-up/profile",   label: "Profile" },
-  ],
-  'market': [
-    { href: "/market/dashboard", label: "Dashboard" },
-    { href: "/market/products",  label: "My Products" },
-    { href: "/market/orders",    label: "Orders" },
-    { href: "/market/profile",   label: "Profile" },
-  ],
-  'customer': [
-    { href: "/",        label: "Home" },
-    { href: "/orders",  label: "Orders" },
-    { href: "/cart",    label: "Cart" },
-    { href: "/profile", label: "Profile" },
-  ],
-  'default': [
-    { href: "/",               label: "Home" },
-    { href: "/browse-flowers", label: "Flowers" },
-    { href: "/browse-shops",   label: "Shops" },
-    { href: "/about-us",       label: "About" },
-  ],
+type Session = {
+  user: any | null;
+  profile: {
+    role?: string;
+    vendor_type?: string;
+  } | null;
 };
 
-export default function NavBar({ type = "default" }: { type: navTypes | "default" }) {
-  const [user, setUser] = useState< any|null >(null);
-  const [resolvedType, setResolvedType] = useState<navTypes | "default">(type)
+export default function NavBar({ session }: { session: Session }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const supabase = createSupabaseBrowserClient();
   const router = useRouter();
 
+  console.log("SESSION:", session);
+  // console.log(session)
+
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+    await fetch("/auth/logout", { method: "POST" });
+    router.push("/login");
+  };
 
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (type !== "default") return
+  const role = session.profile?.role;
+  const vendorType = session.profile?.vendor_type;
 
-      if (user) {
-        const { data: userCheck } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", user.id)
-          .single();
+  const navLinks = {
+    default: [
+      { href: "/", label: "Home" },
+      { href: "/browse-flowers", label: "Flowers" },
+      { href: "/browse-shops", label: "Shops" },
+      { href: "/about-us", label: "About" },
+    ],
+    customer: [
+      { href: "/", label: "Home" },
+      { href: "/orders", label: "Orders" },
+      { href: "/cart", label: "Cart" },
+      { href: "/profile", label: "Profile" },
+    ],
+    vendor_market: [
+      { href: "/market/dashboard", label: "Dashboard" },
+      { href: "/market/products", label: "Products" },
+      { href: "/market/orders", label: "Orders" },
+      { href: "/market/profile", label: "Profile" },
+    ],
+    vendor_popup: [
+      { href: "/pop-up/dashboard", label: "Dashboard" },
+      { href: "/pop-up/products", label: "Products" },
+      { href: "/pop-up/schedule", label: "Schedule" },
+      { href: "/pop-up/profile", label: "Profile" },
+    ],
+    admin: [
+      { href: "/admin/vendor-applications", label: "Applications" },
+      { href: "/admin/users", label: "Users" },
+    ],
+  };
 
-        if (userCheck?.role === "admin") {
-          router.push("/admin/vendor-applications"); // redirect to admin panel
-          return;
-        }
+  let items = navLinks.default;
 
-        if (userCheck?.role === "customer") {
-          setResolvedType("customer");
-        } else if (userCheck?.role === "vendor") {
-          const { data: vendor } = await supabase
-            .from("vendors")
-            .select("vendor_type")
-            .eq("owner_id", user.id)
-            .single();
 
-          setResolvedType(vendor?.vendor_type); // "market" or "pop-up"
-        }
+  if (session.user && session.profile) {
+
+    const role = session.profile.role;
+
+    if (role === "admin") {
+      items = navLinks.admin;
+    } else if (role === "customer") {
+      items = navLinks.customer;
+    } else if (role === "vendor") {
+      if (session.profile.vendor_type === "market") {
+        items = navLinks.vendor_market;
+      } else if (session.profile.vendor_type === "pop-up") {
+        items = navLinks.vendor_popup;
+      } else {
+        items = navLinks.default; // fallback
       }
     }
-    init()
-  }, [type])
-  
-  const items = navLinks[resolvedType]
+  }
 
   return (
-    <nav className="relative w-full border-b border-[#edeae6]">
+    
+    <nav className="relative w-full border-b border-[#edeae6] bg-white">
       <div className="flex items-center justify-between px-6 py-4">
+        
         {/* Logo */}
         <Link href="/" className="relative h-12 w-9 shrink-0 overflow-hidden">
           <img
@@ -94,78 +94,74 @@ export default function NavBar({ type = "default" }: { type: navTypes | "default
           />
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
+        {/* <div className="flex items-center gap-8"> */}
           {items.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="text-[16px] font-semibold text-black tracking-[-0.07px] hover:text-[#d24b46] transition-colors"
+              className="text-[16px] font-semibold hover:text-[#d24b46] transition-colors"
             >
               {label}
             </Link>
           ))}
-          {/* <Link
-            href="/login"
-            className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
-          >
-            Sign In
-          </Link> */}
-          {
-            user ? (
-              <button onClick={handleSignOut} className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors">
-                Sign Out
-              </button>              
-            ) : (
-              <Link
-                href="/login"
-                className="bg-[#d24b46] text-white text-[16px] font-medium tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
-              >
-                Sign In
-              </Link>
-            )
-          }
+
+          {session.user ? (
+            <button
+              onClick={handleSignOut}
+              className="bg-[#d24b46] text-white px-5 py-3 rounded-full hover:bg-[#bb3f3a]"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="bg-[#d24b46] text-white px-5 py-3 rounded-full hover:bg-[#bb3f3a]"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
 
-        {/* Hamburger button (mobile only) */}
+        {/* Mobile Toggle */}
         <button
-          className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5"
+          className="md:hidden flex flex-col gap-1.5"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={menuOpen}
         >
-          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`block h-0.5 w-6 bg-black transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-black ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-black ${menuOpen ? "opacity-0" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-black ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
         </button>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile Dropdown */}
       {menuOpen && (
-        <div className="md:hidden border-t border-[#edeae6] bg-white shadow-md flex flex-col py-4">
+        <div className="md:hidden border-t bg-white shadow-md flex flex-col py-4">
           {items.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="px-6 py-3 text-[16px] font-semibold text-black tracking-[-0.07px] hover:bg-[#fdf8f4] transition-colors"
               onClick={() => setMenuOpen(false)}
+              className="px-6 py-3 font-semibold hover:bg-[#fdf8f4]"
             >
               {label}
             </Link>
           ))}
+
           <div className="px-6 pt-3">
-            {user ? (
+            {session.user ? (
               <button
                 onClick={handleSignOut}
-                className="w-full bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
+                className="w-full bg-[#d24b46] text-white py-3 rounded-full"
               >
                 Sign Out
               </button>
             ) : (
               <Link
                 href="/login"
-                className="block bg-[#d24b46] text-white text-[16px] font-medium text-center tracking-[0.56px] px-5 py-3 rounded-[999px] shadow-[0px_6px_16px_0px_rgba(0,0,0,0.12)] hover:bg-[#bb3f3a] transition-colors"
                 onClick={() => setMenuOpen(false)}
+                className="block text-center bg-[#d24b46] text-white py-3 rounded-full"
               >
                 Sign In
               </Link>

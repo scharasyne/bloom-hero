@@ -23,4 +23,9 @@ WHY IS IT SO SLOW? apply caching, make sure GET/fetching of data is a lot faster
 AS OF APRIL 7
 1. changed routing. from /vendor/pop-up/dashboard and /customer/dashboard, used routing instead. (vendor)/pop-up/dashboard only - on users: /pop-up/dashboard and /dashboard only
 
-to do: rendering of the sign out takes too long. just use the supabase authenticator (is it the right term lol) to check if the user is logged in
+to do:
+1. rendering of the sign out takes too long. just use the supabase authenticator (is it the right term lol) to check if the user is logged in
+2. check if the routing of all the pages are correct
+3. always check if a user is logged in. this wasn't implemented yet
+4. fix the proxy - use cookies. JWTs. whatever's needed to make this more secure
+ 
