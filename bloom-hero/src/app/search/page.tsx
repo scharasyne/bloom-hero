@@ -249,7 +249,7 @@ export default function SearchPage() {
 
   return (
     <>
-      <NavBar type = "customer"/>
+      {/* <NavBar type = "customer"/> */}
 
       <main className="py-8 min-h-screen max-w-7xl mx-auto px-10">
         <div className="max-w-240 mx-auto">

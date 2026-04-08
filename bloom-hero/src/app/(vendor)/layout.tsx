@@ -1,10 +1,10 @@
 import { requireRole } from "@/lib/auth/require-role";
 
-export default async function CustomerLayout({
+export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireRole(["customer"]);
+  await requireRole(["vendor"]);
   return <>{children}</>;
 }

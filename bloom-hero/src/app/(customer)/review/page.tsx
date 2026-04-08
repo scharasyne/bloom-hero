@@ -77,11 +77,35 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
 
   const items = rows ?? [];
   const first = items[0];
+  const order = first?.orders?.[0] ?? null;
+  const product = first?.products?.[0] ?? null;
 
-  const vendorName = first?.orders?.vendors?.shop_name ?? "Vendor";
-  const productName = first?.products?.product_name ?? "Product";
-  const productImage = first?.products?.product_image_url ?? null;
-  const vendorId = first?.orders?.vendors?.id ?? null;
+  if (!first || loadError || !order || !product) {
+    return (
+      <>
+        <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-[#e2ddd4] px-8 py-10 text-center max-w-md w-full">
+            <h1 className="text-xl font-semibold text-[#2f2f2f] mb-2">Review unavailable</h1>
+            <p className="text-sm text-gray-700 mb-6">
+              We could not load the order details needed for this review.
+            </p>
+            <a
+              href="/customer/orders"
+              className="inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#25492e]"
+            >
+              Back to Purchase History
+            </a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const vendorName = order.vendors?.[0]?.shop_name ?? "Vendor";
+  const productName = product.product_name ?? "Product";
+  const productImage = product.product_image_url ?? null;
+  const vendorId = order.vendors?.[0]?.id ?? null;
 
   // Load existing review (if any) for this vendor & customer
   let existingReview: { id: string; rating: number; comment: string | null } | null =
@@ -109,16 +133,14 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {vendorName}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {first?.orders?.order_date
-                    ? new Date(first.orders.order_date).toLocaleString()
-                    : ""}
+                  {order.order_date ? new Date(order.order_date).toLocaleString() : ""}
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
                 Completed
               </span>
             </div>
-            {first && first.products && (
+            {product && (
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-full bg-[#f7f3ec] overflow-hidden shrink-0">
                   {productImage ? (
@@ -135,7 +157,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                     {productName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    ₱ {Number(first.products.price) || 0} per stem
+                    ₱ {Number(product.price) || 0} per stem
                   </p>
                 </div>
                 <div className="text-right text-sm">
@@ -170,7 +192,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {productName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  ₱ {first?.products ? Number(first.products.price) || 0 : 0} per stem
+                  ₱ {Number(product.price) || 0} per stem
                 </p>
               </div>
             </div>
