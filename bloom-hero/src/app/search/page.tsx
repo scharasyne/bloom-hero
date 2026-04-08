@@ -1,8 +1,6 @@
 "use client";
 
-'use client';
-
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -13,7 +11,7 @@ import BouquetCard from "@/components/BouquetCard";
 import { mockBouquets } from "@/lib/mockData";
 import SkeletonCard from "@/components/SkeletonCard";
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") || "";
   const [price, setPrice] = React.useState("Any");
@@ -194,7 +192,7 @@ export default function SearchPage() {
         }
 
         // Go straight to purchase history
-        window.location.href = "/customer/orders";
+        window.location.href = "/orders";
       } catch (err) {
         console.error("Buy now failed:", err);
         alert("Failed to place order. Please try again.");
@@ -338,5 +336,13 @@ export default function SearchPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

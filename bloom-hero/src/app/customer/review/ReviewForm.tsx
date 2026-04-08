@@ -52,7 +52,7 @@ export function ReviewForm({ orderId, vendorId, customerId, existingReview }: Re
       }
 
       alert("Thank you for your review!");
-      window.location.href = "/customer/orders";
+      window.location.href = "/orders?tab=completed";
     } catch (err) {
       console.error("submit review failed:", err);
       alert("Failed to submit review. Please try again.");

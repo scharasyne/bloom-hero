@@ -27,15 +27,15 @@ export async function uploadOrderReceiptProof(formData: FormData) {
   const file = formData.get("receipt") as File | null;
 
   if (!orderId || !file || file.size === 0) {
-    redirect("/customer/orders?tab=to_pay&error=Missing+receipt+upload");
+    redirect("/orders?tab=to-pay&error=Missing+receipt+upload");
   }
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    redirect("/customer/orders?tab=to_pay&error=Only+JPEG+and+PNG+images+are+accepted");
+    redirect("/orders?tab=to-pay&error=Only+JPEG+and+PNG+images+are+accepted");
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    redirect("/customer/orders?tab=to_pay&error=File+size+must+be+under+5+MB");
+    redirect("/orders?tab=to-pay&error=File+size+must+be+under+5+MB");
   }
 
   try {
@@ -83,16 +83,16 @@ export async function uploadOrderReceiptProof(formData: FormData) {
       throw updateError;
     }
 
-    revalidatePath("/customer/orders");
+    revalidatePath("/orders");
     revalidatePath("/vendor/market/orders");
     revalidatePath("/vendor/pop-up/orders");
-    redirect("/customer/orders?tab=to_pay&success=Receipt+uploaded");
+    redirect("/orders?tab=to-pay&success=Receipt+uploaded");
   } catch (error) {
     unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Upload+failed";
-    redirect(`/customer/orders?tab=to_pay&error=${message}`);
+    redirect(`/orders?tab=to-pay&error=${message}`);
   }
 }
 
@@ -100,7 +100,7 @@ export async function markOrderReceived(formData: FormData) {
   const orderId = String(formData.get("orderId") || "");
 
   if (!orderId) {
-    redirect("/customer/orders?tab=to_receive&error=Invalid+order");
+    redirect("/orders?tab=to-receive&error=Invalid+order");
   }
 
   try {
@@ -133,14 +133,62 @@ export async function markOrderReceived(formData: FormData) {
       throw updateError;
     }
 
-    revalidatePath("/customer/orders");
-    redirect("/customer/orders?tab=completed&success=Order+completed");
+    revalidatePath("/orders");
+    redirect("/orders?tab=completed&success=Order+completed");
   } catch (error) {
     unstable_rethrow(error);
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Update+failed";
-    redirect(`/customer/orders?tab=to_receive&error=${message}`);
+    redirect(`/orders?tab=to-receive&error=${message}`);
+  }
+}
+
+export async function cancelCustomerOrder(formData: FormData) {
+  const orderId = String(formData.get("orderId") || "");
+
+  if (!orderId) {
+    redirect("/orders?tab=to-pay&error=Invalid+order");
+  }
+
+  try {
+    const { supabase, userId } = await getSessionUserId();
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("id, customer_id, status")
+      .eq("id", orderId)
+      .single();
+
+    if (orderError || !order) {
+      throw new Error("Order not found.");
+    }
+
+    if (order.customer_id !== userId) {
+      throw new Error("You are not allowed to cancel this order.");
+    }
+
+    if (order.status !== "to_pay" && order.status !== "pending") {
+      throw new Error("Only unpaid orders can be cancelled.");
+    }
+
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("id", orderId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    revalidatePath("/orders");
+    redirect("/orders?tab=to-pay&success=Order+cancelled");
+  } catch (error) {
+    unstable_rethrow(error);
+
+    const message =
+      error instanceof Error ? encodeURIComponent(error.message) : "Cancel+failed";
+    redirect(`/orders?tab=to-pay&error=${message}`);
   }
 }
 
@@ -202,7 +250,7 @@ export async function vendorConfirmPayment(formData: FormData) {
 
     revalidatePath("/vendor/market/orders");
     revalidatePath("/vendor/pop-up/orders");
-    revalidatePath("/customer/orders");
+    revalidatePath("/orders");
     redirect(`${vendorRoute}?success=Payment+confirmed`);
   } catch (error) {
     unstable_rethrow(error);
@@ -264,7 +312,7 @@ export async function vendorMarkAsShipped(formData: FormData) {
 
     revalidatePath("/vendor/market/orders");
     revalidatePath("/vendor/pop-up/orders");
-    revalidatePath("/customer/orders");
+    revalidatePath("/orders");
     redirect(`${vendorRoute}?success=Order+marked+as+shipped`);
   } catch (error) {
     unstable_rethrow(error);

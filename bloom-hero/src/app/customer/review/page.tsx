@@ -53,7 +53,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
               Go back to your purchase history to choose an order to rate.
             </p>
             <a
-              href="/customer/orders"
+              href="/orders"
               className="inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#25492e]"
             >
               Back to Purchase History

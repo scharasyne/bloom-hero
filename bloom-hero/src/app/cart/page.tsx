@@ -376,7 +376,7 @@ export default function CartPage() {
       // Add a small delay to ensure database updates propagate
       setTimeout(() => {
         const nextTab = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
-        window.location.href = `/customer/orders?tab=${nextTab}`;
+        window.location.href = `/orders?tab=${nextTab}`;
       }, 500);
     } catch (error) {
       console.error("Checkout failed:", error);

@@ -21,7 +21,7 @@ const navLinks = {
   'customer': [
     { href: "/", label: "Home"},
     { href: "/customer/dashboard", label: "Dashboard"},
-    { href: "/customer/orders", label: "Orders"},
+    { href: "/orders", label: "Orders"},
     { href: "/cart", label: "Cart"},
     { href: "/customer/settings", label: "Settings"},
   ],

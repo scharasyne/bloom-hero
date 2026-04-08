@@ -48,6 +48,8 @@ export default async function CustomerDashboardPage() {
           className="inline-block bg-[#d24b46] text-white px-4 py-2 rounded hover:bg-[#bb3f3a]"
         >
           Account Settings
+        </a>
+        <a
           href="/customer/vendor-application"
           className="inline-block bg-[#d24b46] text-white px-4 py-2 rounded hover:bg-[#bb3f3a]"
         >
