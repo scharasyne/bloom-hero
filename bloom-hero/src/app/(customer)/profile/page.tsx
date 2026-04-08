@@ -1,7 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { ProfileForm } from "./_components/profile-form";
+import { ProfileForm } from "../_components/profile-form";
 
 function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
   return (
@@ -22,7 +21,7 @@ export default async function CustomerProfilePage() {
   if (!session) {
     return (
       <>
-        <NavBar type="customer" />
+        {/* <NavBar type="customer" /> */}
         <main className="min-h-screen flex items-center justify-center bg-[#fbf7f4] px-4">
           <div className="bg-white rounded-2xl shadow-lg border border-red-100 px-8 py-10 text-center max-w-md w-full">
             <h1 className="text-xl font-semibold text-[#2f2f2f] mb-2">Sign in to view your profile</h1>
@@ -86,15 +85,15 @@ export default async function CustomerProfilePage() {
 
   return (
     <>
-      <NavBar type="customer" />
+      {/* <NavBar type="customer" /> */}
       <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="mx-auto w-full max-w-[920px] pt-8 space-y-6">
+        <div className="mx-auto w-full max-w-230 pt-8 space-y-6">
 
           {/* Hero card */}
           <div className="bg-white rounded-2xl border border-[#e6e2dd] px-6 sm:px-8 py-8 relative overflow-hidden shadow-sm">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#f8f5f0] pointer-events-none" />
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
-              <div className="h-16 w-16 rounded-full bg-[#eef6ee] border border-[#b8d9b8] flex items-center justify-center flex-shrink-0">
+              <div className="h-16 w-16 rounded-full bg-[#eef6ee] border border-[#b8d9b8] flex items-center justify-center shrink-0">
                 <span className="text-xl font-bold text-[#2f5d3a]">
                   {(displayName || user.email || "?").charAt(0).toUpperCase()}
                 </span>

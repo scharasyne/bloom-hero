@@ -1,7 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { OrderCard } from "./_components/order-card";
+import { OrderCard } from "../_components/order-card";
 import { TABS } from "./_lib/constants";
 import { groupOrders } from "./_lib/utils";
 import type { OrderItemRow } from "./_lib/types";
@@ -29,7 +28,7 @@ export default async function CustomerOrdersPage({
   if (!user) {
     return (
       <>
-        <NavBar type="customer" />
+        {/* <NavBar type="customer" /> */}
         <main className="min-h-screen flex items-center justify-center bg-[#fbf7f4] px-4">
           <div className="bg-white rounded-2xl shadow-lg border border-[#e6e2dd] px-8 py-10 text-center max-w-md w-full">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0]">
@@ -85,9 +84,9 @@ export default async function CustomerOrdersPage({
 
   return (
     <>
-      <NavBar type="customer" />
+      {/* <NavBar type="customer" /> */}
       <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="mx-auto w-full max-w-[920px] pt-8">
+        <div className="mx-auto w-full max-w-230 pt-8">
 
           {/*
             FIX 3: Slimmed header — removed the large white card and user avatar pill.

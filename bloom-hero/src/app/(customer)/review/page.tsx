@@ -1,7 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { ReviewForm } from "./ReviewForm";
+import { ReviewForm } from "../_components/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +19,6 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
   if (!session) {
     return (
       <>
-        <NavBar />
         <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
           <div className="bg-white rounded-2xl shadow-lg border border-red-100 px-8 py-10 text-center max-w-md w-full">
             <h1 className="text-xl font-semibold text-red-600 mb-2">Please sign in</h1>
@@ -45,7 +43,6 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
   if (!orderId) {
     return (
       <>
-        <NavBar />
         <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
           <div className="bg-white rounded-2xl shadow-lg border border-amber-100 px-8 py-10 text-center max-w-md w-full">
             <h1 className="text-xl font-semibold text-amber-700 mb-2">No order selected</h1>
@@ -102,7 +99,6 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
 
   return (
     <>
-      <NavBar />
       <main className="min-h-screen bg-[#f5f2eb] px-4 py-10 flex justify-center">
         <div className="w-full max-w-5xl flex flex-col items-center gap-8">
           {/* Top summary card like in history */}
@@ -124,7 +120,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
             </div>
             {first && first.products && (
               <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-full bg-[#f7f3ec] overflow-hidden flex-shrink-0">
+                <div className="h-14 w-14 rounded-full bg-[#f7f3ec] overflow-hidden shrink-0">
                   {productImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -182,7 +178,6 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
             <ReviewForm
               orderId={orderId}
               vendorId={vendorId}
-              customerId={session.user.id}
               existingReview={existingReview}
             />
           </section>

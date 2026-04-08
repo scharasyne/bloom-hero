@@ -1,7 +1,7 @@
-import type { OrderGroup } from "../_lib/types";
-import { STATUS_BADGE } from "../_lib/constants";
-import type { TabKey } from "../_lib/constants";
-import { formatPeso, friendlyDate } from "../_lib/utils";
+import type { OrderGroup } from "../orders/_lib/types";
+import { STATUS_BADGE } from "../orders/_lib/constants";
+import type { TabKey } from "../orders/_lib/constants";
+import { formatPeso, friendlyDate } from "../orders/_lib/utils";
 import { PaymentCountdown } from "./PaymentCountdown";
 
 function IconStorefront({ className = "" }: { className?: string }) {
@@ -196,7 +196,7 @@ export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: 
       {/* Vendor header */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#faf8f5] px-5 sm:px-6 py-4 border-b border-[#eeebe6]">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-[#e6e2dd] text-[#2f5d3a] flex-shrink-0 shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-[#e6e2dd] text-[#2f5d3a] shrink-0 shadow-sm">
             <IconStorefront />
           </div>
           <div className="min-w-0">
@@ -230,7 +230,7 @@ export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: 
           if (!product) return null;
           return (
             <div key={i} className="flex items-center gap-4 py-5">
-              <div className="h-20 w-20 rounded-2xl bg-[#f7f3ec] overflow-hidden flex-shrink-0 border border-[#eee9e1]">
+              <div className="h-20 w-20 rounded-2xl bg-[#f7f3ec] overflow-hidden shrink-0 border border-[#eee9e1]">
                 {product.product_image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={product.product_image_url} alt={product.product_name} className="h-full w-full object-cover" />
@@ -247,7 +247,7 @@ export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: 
                   <span className="text-[#c0b8b0]">/ stem</span>
                 </p>
               </div>
-              <div className="text-right flex-shrink-0 space-y-1">
+              <div className="text-right shrink-0 space-y-1">
                 {row.quantity > 1 && (
                   <p className="text-sm font-bold text-[#2f2f2f]">
                     {formatPeso(Number(row.subtotal) || 0)}

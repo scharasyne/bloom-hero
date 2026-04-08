@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCustomerProfile } from "../actions";
+import { updateCustomerProfile } from "../profile/actions";
 
 export function ProfileForm({
   defaultName,

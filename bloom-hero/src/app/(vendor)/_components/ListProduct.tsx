@@ -60,7 +60,8 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   const products: ProductRow[] = (productsData ?? []) as ProductRow[]
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    // <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className = "flex-h screen">
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
         <VendorDashboardSidebarCard activeTab="products" vendorType={type} />
 

@@ -3,7 +3,7 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { saveVendorApplicationDraft, submitVendorApplication } from "./actions";
+import { saveVendorApplicationDraft, submitVendorApplication } from "../vendor-application/actions";
 import { Upload, CheckCircle2, Info, Check } from "lucide-react";
 import { Icon } from "@iconify/react";
 

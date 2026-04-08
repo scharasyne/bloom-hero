@@ -32,7 +32,11 @@ const tabs: Record<"pop-up" | "market", Array<{ id: TabId; label: string; icon: 
 function getTabRoutes(vendorType: VendorType): Partial<Record<TabId, string>> {
   return {
     dashboard: `/${vendorType}/dashboard`,
-    products:  `/${vendorType}/list-product`,
+    products:  `/${vendorType}/products`,
+    profile: `/${vendorType}/profile`,
+    orders: `/${vendorType}/orders`,
+    messages: `/${vendorType}/messages`,
+    schedule: `/pop-up/schedule`,
   };
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { paymentCountdown } from "../_lib/utils";
+import { paymentCountdown } from "../orders/_lib/utils";
 
 function IconClock({ className = "" }: { className?: string }) {
   return (

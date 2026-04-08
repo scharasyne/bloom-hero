@@ -21,6 +21,7 @@ export default function PopUpDashboardPage() {
 
       {/* Main */}
       <main className="flex-1 flex flex-col overflow-hidden">
+      {/* <main> */}
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-7xl mx-auto">
 
