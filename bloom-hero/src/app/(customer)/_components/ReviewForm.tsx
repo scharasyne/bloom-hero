@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { submitCustomerReview } from "./actions";
+import { submitCustomerReview } from "../review/actions";
 
 type ReviewFormProps = {
   orderId: string;

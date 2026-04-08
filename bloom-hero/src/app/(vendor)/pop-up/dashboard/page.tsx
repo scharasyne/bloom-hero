@@ -64,7 +64,8 @@ export default function VendorPopUpDashboardPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    // <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className = "flex-h screen">
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
         <VendorDashboardSidebarCard activeTab="dashboard" vendorType="pop-up" />
 

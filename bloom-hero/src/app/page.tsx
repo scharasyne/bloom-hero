@@ -216,7 +216,7 @@ function ShopByCategory() {
 export default function Desktop() {
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
-      <NavBar type="default"/>
+      {/* <NavBar type="default"/> */}
       <Hero />
       <BestSellers />
       <ShopByCategory />

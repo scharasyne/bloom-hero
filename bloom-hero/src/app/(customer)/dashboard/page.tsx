@@ -1,27 +1,23 @@
-import NavBar from "@/components/navbar";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { redirect } from "next/navigation";
-
 export default async function CustomerDashboardPage() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // const supabase = await createSupabaseServerClient();
+  // const {
+  //   data: { session },
+  // } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect("/login");
-  }
+  // if (!session) {
+  //   redirect("/login");
+  // }
 
-  const { data: profile } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("user_id", session.user.id)
-    .single();
+  // const { data: profile } = await supabase
+  //   .from("customers")
+  //   .select("*")
+  //   .eq("user_id", session.user.id)
+  //   .single();
 
   return (
     <main>
       <h1>BloomHero</h1>
-      <p>Welcome {profile?.name || session.user.email}!</p>
+      {/* <p>Welcome {profile?.name || session.user.email}!</p> */}
       <p>This is your customer dashboard.</p>
       <div className="mt-6 flex flex-wrap gap-3">
         <a
