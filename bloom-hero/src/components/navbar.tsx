@@ -61,10 +61,10 @@ export default function NavBar({
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
   
-  const user = session.user;
-  const role = session.profile?.role;
-  const vendor_type = session.profile?.vendor_type;
-  const vendor_name = session.profile?.vendor_shop_name;
+  const user = session?.user || null;
+  const role = session?.profile?.role;
+  const vendor_type = session?.profile?.vendor_type;
+  const vendor_name = session?.profile?.vendor_shop_name;
 
   const isVendor = role === "vendor";
 
