@@ -145,9 +145,6 @@ export default function Login() {
     //   .single();
 
     // const role = user?.user_metadata?.role as string | undefined;
-    
-    // if(!role)
-    //   router.push("/select-role");
     // if (role === "vendor") {
     //   if(vendor?.vendor_type === "market")
     //     router.push("/vendor/market/dashboard");

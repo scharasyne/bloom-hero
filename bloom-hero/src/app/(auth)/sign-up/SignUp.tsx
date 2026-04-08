@@ -1,5 +1,4 @@
 //this file was edited - the original could be found in the same folder, with the name signup-copy.txt
-//this should be a general registration page. role selection is handled by select-role upon signing up
 "use client";
 
 import { useMemo, useState } from "react";
