@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 
 interface SearchBarProps {
   initialQuery?: string;
+  onSearch? : () => void;
 }
 
 function SearchButton() {
@@ -32,13 +33,14 @@ function Location() {
 }
 
 
-export default function SearchBar({ initialQuery = "" }: SearchBarProps) {
+export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProps) {
   const router = useRouter();
   const [term, setTerm] = useState(initialQuery);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = term.trim();
+    onSearch?.();
     router.push(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
   };
 
@@ -57,8 +59,15 @@ export default function SearchBar({ initialQuery = "" }: SearchBarProps) {
           placeholder="Search bouquets, vendors, or occasions…"
           className="flex-1 bg-transparent text-[16px] text-[#1f1f1f] placeholder-[#9a948f] outline-none px-2"
         />
-        <SearchButton />
+        {/* Submit button instead of Link */}
+        <button
+          type="submit"
+          className="bg-[#2f6b4f] content-stretch flex h-13.75 items-center justify-center px-4.5 py-3 relative rounded-br-[24px] rounded-tr-[24px] shrink-0 w-21"
+        >
+          <Icon icon="mdi:magnify" width={28} height={28} color="white" />
+        </button>
       </div>
     </form>
   );
 }
+

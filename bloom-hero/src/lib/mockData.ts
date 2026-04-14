@@ -43,7 +43,7 @@ export const mockVendorApplications: VendorApplication[] = [
     vendorName: "Bloom & Co.",
     ownerName: "Maria Santos",      
     type: "stall",
-    dateApplied: "2026-03-10",
+    dateApplied: "2026-03-14",
     email: "bloom@email.com",
     phone: "(+63) 912 345 6789",
     location: "Carbon Market, Cebu City",
@@ -55,7 +55,7 @@ export const mockVendorApplications: VendorApplication[] = [
     vendorName: "Petal & Stem",
     ownerName: "Jake Reyes",       
     type: "popup",
-    dateApplied: "2026-03-08",
+    dateApplied: "2026-03-10",
     email: "petal@email.com",
     phone: "(+63) 998 765 4321",
     location: "Ayala Center, Cebu City",
@@ -67,7 +67,7 @@ export const mockVendorApplications: VendorApplication[] = [
     vendorName: "Rose Garden",
     ownerName: "Clara Lim",        
     type: "stall",
-    dateApplied: "2026-03-09",
+    dateApplied: "2026-03-13",
     email: "rosegarden@email.com",
     phone: "(+63) 917 123 4567",
     location: "SM City Cebu, Cebu City",
@@ -154,3 +154,47 @@ export const mockBouquets = [
   { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
   { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
 ];
+
+// ─── VENDOR DASHBOARD (POP-UP) ────────────────────────────
+
+export type MostRequestedItem = {
+  city: string;
+  count: number;
+};
+
+export type RecentRequestItem = {
+  date: string;
+  city: string;
+  barangay: string;
+  landmark: string;
+};
+
+export type UpcomingEventItem = {
+  title: string;
+  time: string;
+  location: string;
+  date: { month: string; day: string };
+  status: string;
+};
+
+export const mockMostRequested: MostRequestedItem[] = [
+  { city: "Muntinlupa", count: 73 },
+  { city: "Ortigas",    count: 51 },
+  { city: "Diliman",    count: 33 },
+  { city: "Makati",     count: 27 },
+];
+
+export const mockRecentRequests: RecentRequestItem[] = [
+  { date: "Jan 18, 2026", city: "Quezon City", barangay: "Loyola Heights", landmark: "UP Town" },
+  { date: "Jan 18, 2026", city: "Taguig",      barangay: "BGC",            landmark: "High Street" },
+  { date: "Jan 17, 2026", city: "Pasig",       barangay: "Kapitolyo",      landmark: "Estancia" },
+  { date: "Jan 16, 2026", city: "Manila",      barangay: "Malate",         landmark: "Robinsons" },
+];
+
+export const mockUpcomingEvents: UpcomingEventItem[] = [
+  { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "14" }, status: "Open" },
+  { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "14" }, status: "Open" },
+  { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "15" }, status: "Open" },
+  { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "16" }, status: "Open" },
+];
+

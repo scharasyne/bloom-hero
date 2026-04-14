@@ -3,24 +3,35 @@
 import React, { useEffect, useState, useCallback } from "react";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import CartItem from "@/components/CartItem";
 import CartSummary from "@/components/CartSummary";
 import VendorCard from "@/components/VendorCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { Icon } from "@iconify/react";
+import { ShoppingCart } from "lucide-react";
 
-// const GRID = "grid grid-cols-[minmax(0,1fr)_160px_120px_140px] items-center gap-[12px]";
+// ── Empty Cart State ──────────────────────────────────────────────────────────
 
 function EmptyCart() {
   return (
-    <div className="flex flex-col items-center justify-center py-[48px] gap-[12px]">
-      <p className="text-[#aaa] text-[14px]">Your cart is empty.</p>
-      <a href="/" className="text-[#3f6f52] font-semibold text-[13px] underline">
+    <div className="flex flex-col items-center justify-center py-16 gap-4">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f0ece8] text-[#c0b8b0]">
+        <ShoppingCart size={28} strokeWidth={1.5} />
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-sm font-semibold text-[#2D2926]">Your cart is empty</p>
+        <p className="text-xs text-[#A39E96]">Looks like you haven't added anything yet.</p>
+      </div>
+      <a
+        href="/"
+        className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#D24B46] px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#D24B46]/20 transition-all hover:bg-[#A53A35] active:scale-95"
+      >
         Browse Products
       </a>
     </div>
   );
 }
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function CartPage() {
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
@@ -31,9 +42,9 @@ export default function CartPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const allSelected = cartItems.length > 0 && selectedIds.size === cartItems.length;
+  const isEmpty = cartItems.length === 0;
+  const allSelected = !isEmpty && selectedIds.size === cartItems.length;
 
-  // Group flat cartItems array by vendorName
   const groupedItems = cartItems.reduce<Record<string, typeof cartItems>>((acc, item) => {
     const vendor = item.vendorName || "BloomHero Vendor";
     if (!acc[vendor]) acc[vendor] = [];
@@ -42,15 +53,11 @@ export default function CartPage() {
   }, {});
 
   const toggleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(cartItems.map((i) => i.id)));
-    }
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(cartItems.map((i) => i.id)));
   };
 
-  const getVendorItemIds = (vendorName: string) =>
-  groupedItems[vendorName]?.map((i) => i.id) ?? [];
+  const getVendorItemIds = (vendorName: string) => groupedItems[vendorName]?.map((i) => i.id) ?? [];
 
   const isVendorSelected = (vendorName: string) => {
     const ids = getVendorItemIds(vendorName);
@@ -61,11 +68,8 @@ export default function CartPage() {
     const ids = getVendorItemIds(vendorName);
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (isVendorSelected(vendorName)) {
-        ids.forEach((id) => next.delete(id));
-      } else {
-        ids.forEach((id) => next.add(id));
-      }
+      if (isVendorSelected(vendorName)) ids.forEach((id) => next.delete(id));
+      else ids.forEach((id) => next.add(id));
       return next;
     });
   };
@@ -80,9 +84,7 @@ export default function CartPage() {
   };
 
   const handleDeleteSelected = async () => {
-    for (const id of selectedIds) {
-      await handleRemove(id);
-    }
+    for (const id of selectedIds) await handleRemove(id);
     setSelectedIds(new Set());
   };
 
@@ -161,7 +163,9 @@ export default function CartPage() {
   }, [supabase]);
 
   const getTotal = useCallback(() => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
+    return cartItems
+      .filter(item => item.status !== "out-of-stock")
+      .reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
   }, [cartItems]);
 
   const updateCartItem = async (productId: string, newQty: number) => {
@@ -226,7 +230,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
-        <div className="text-lg text-gray-600">Loading cart...</div>
+        <div className="text-sm font-semibold text-[#6D6863]">Loading cart…</div>
       </div>
     );
   }
@@ -234,10 +238,13 @@ export default function CartPage() {
   if (!customerId) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
-        <div className="bg-white max-w-md w-full rounded-lg shadow-xl p-8 text-center border border-red-200">
-          <h2 className="text-xl font-bold text-red-600 mb-4">Please Sign In</h2>
-          <p className="text-gray-700 mb-6">You need to be logged in to view your cart.</p>
-          <a href="/login" className="bg-[#D96A63] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#c45e58] transition-colors">
+        <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-8 text-center border border-[#e8e8e8]">
+          <h2 className="text-lg font-bold text-[#2D2926] mb-2">Sign in to view your cart</h2>
+          <p className="text-sm text-[#6D6863] mb-6">You need to be logged in to continue.</p>
+          <a
+            href="/login"
+            className="inline-block rounded-full bg-[#D24B46] px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#A53A35] active:scale-95"
+          >
             Sign In
           </a>
         </div>
@@ -247,47 +254,49 @@ export default function CartPage() {
 
   return (
     <>
-      <NavBar />
+      {/* <NavBar type="customer" /> */}
       <main
-        className="w-full bg-[#f5f5f5] min-h-screen px-[24px] py-[32px]"
+        className="w-full bg-[#f5f5f5] min-h-screen px-6 py-8"
         style={{ fontFamily: "'Quicksand', sans-serif" }}
       >
-        <div className="max-w-[1100px] mx-auto flex gap-[24px] items-start">
+        <div className="max-w-[1100px] mx-auto flex gap-6 items-start">
 
-          {/* ── Left: Items list ── */}
-          <div className="flex-1 flex flex-col gap-[12px]">
+          {/* Left: Items list */}
+          <div className="flex-1 flex flex-col gap-3">
 
-            {/* Select All bar */}
-            <div className="bg-white rounded-[8px] px-[20px] py-[14px] flex items-center justify-between border border-[#e8e8e8]">
-              <div className="flex items-center gap-[12px]">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                  className="w-[18px] h-[18px] accent-[#D96A63] cursor-pointer"
-                />
-                <span className="text-[13px] font-medium text-[#333]">
-                  SELECT ALL ({cartItems.length} ITEMS)
-                </span>
-                {selectedIds.size > 0 && (
-                  <span className="text-[13px] text-[#D96A63] font-semibold">
-                    {selectedIds.size} selected
+            {/* Select All bar — only visible when cart has items */}
+            {!isEmpty && (
+              <div className="bg-white rounded-xl px-5 py-3.5 flex items-center justify-between border border-[#e8e8e8]">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 accent-[#D24B46] cursor-pointer"
+                  />
+                  <span className="text-xs font-semibold text-[#2D2926] uppercase tracking-wide">
+                    Select All ({cartItems.length} {cartItems.length === 1 ? "item" : "items"})
                   </span>
-                )}
+                  {selectedIds.size > 0 && (
+                    <span className="text-xs text-[#D24B46] font-semibold">
+                      {selectedIds.size} selected
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleDeleteSelected}
+                  disabled={selectedIds.size === 0}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#888] hover:text-[#D24B46] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Icon icon="mdi:delete-outline" width={15} height={15} />
+                  Delete
+                </button>
               </div>
-              <button
-                onClick={handleDeleteSelected}
-                disabled={selectedIds.size === 0}
-                className="flex items-center gap-[6px] text-[13px] text-[#888] hover:text-[#D96A63] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              >
-                <Icon icon="mdi:delete-outline" width={16} height={16} />
-                DELETE
-              </button>
-            </div>
+            )}
 
-            {/* Cart Items grouped by vendor */}
-            {cartItems.length === 0 ? (
-              <div className="bg-white rounded-[8px] border border-[#e8e8e8]">
+            {/* Empty state or vendor-grouped items */}
+            {isEmpty ? (
+              <div className="bg-white rounded-xl border border-[#e8e8e8]">
                 <EmptyCart />
               </div>
             ) : (
@@ -308,8 +317,8 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* ── Right: Order Summary ── */}
-          <div className="w-[280px] shrink-0 sticky top-[24px]">
+          {/* Right: CartSummary handles empty state internally — no wrapper needed */}
+          <div className="w-[280px] shrink-0 sticky top-6">
             <CartSummary cartItems={cartItems} onCheckout={handleCheckout} />
           </div>
 

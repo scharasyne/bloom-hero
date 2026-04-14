@@ -17,6 +17,31 @@ export interface CartItem {
 export type VendorType = "stall" | "popup";
 export type ApplicationStatus = "pending" | "approved" | "rejected";
 
+export type VendorApplicationVendorType = "market" | "pop-up";
+export type VendorApplicationSubmissionStatus = "draft" | "submitted";
+
+export interface VendorApplicationRecord {
+  id: string;
+  owner_id: string;
+  shop_name: string | null;
+  shop_address: string | null;
+  email: string | null;
+  phone_number: string | null;
+  vendor_type: VendorApplicationVendorType | null;
+  business_submission_timing: "now" | "later" | null;
+  primary_business_document_type: string | null;
+  primary_business_document_url: string | null;
+  government_id_type: string | null;
+  government_id_document_url: string | null;
+  taxpayer_identification_number: string | null;
+  vat_registration_status: "vat-registered" | "non-vat-registered" | null;
+  bir_certificate_url: string | null;
+  submission_status: VendorApplicationSubmissionStatus;
+  submitted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface VendorApplication {
   id: string;
   vendorName: string;

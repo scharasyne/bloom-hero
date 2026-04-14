@@ -11,21 +11,26 @@ import SearchBar from "../../components/SearchBar";
 import SearchFilters from "../../components/SearchFilters";
 import BouquetCard from "@/components/BouquetCard";
 import { mockBouquets } from "@/lib/mockData";
+import SkeletonCard from "@/components/SkeletonCard";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") || "";
-
   const [price, setPrice] = React.useState("Any");
   const [sort, setSort] = React.useState("Best Sellers");
-
   const [results, setResults] = React.useState<any[]>([]);
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
-
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [addingId, setAddingId] = React.useState<string | null>(null);
   const [buyingId, setBuyingId] = React.useState<string | null>(null);
+  const ITEMS_PER_PAGE = 9;
+  const [currentPage, setCurrentPage] = React.useState(1);
+
+  // Reset page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [q, price, sort]);
 
   const handleAddToCart = React.useCallback(
     async (product: any) => {
@@ -244,62 +249,92 @@ export default function SearchPage() {
 
   return (
     <>
-      <NavBar />
+      {/* <NavBar type = "customer"/> */}
 
-      <main className="px-4 py-8 min-h-screen max-w-7xl mx-auto">
-        <div className="mb-6 px-10">
-          <SearchBar initialQuery={q} />
-        </div>
-
-        {/* filters copied from landing page */}
-        <div className="mb-8 px-10">
-          <SearchFilters
-            price={price}
-            onPriceChange={setPrice}
-            sort={sort}
-            onSortChange={setSort}
-          />
-        </div>
-
-        {q && (
-          <p className="mt-6 mb-4">
-            Showing results for <strong>{q}</strong>
-          </p>
-        )}
-
-        {loading && <p className="text-center">Loading…</p>}
-        {errorMsg && <p className="text-center text-red-500">{errorMsg}</p>}
-
-        {results.length > 0 ? (
-          <div className="px-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {results.map((bouquet) => (
-                <BouquetCard
-                  key={bouquet.id}
-                  image={bouquet.product_image_url || bouquet.image_url || null}
-                  name={bouquet.product_name}
-                  price={bouquet.price}
-                  shop={bouquet.shop_name || ""}
-                  distance={bouquet.distance || ""}
-                  category={bouquet.category || ""}
-                  rating={bouquet.rating || 0}
-                  sold={bouquet.stocks}
-                  onAddToCart={() => handleAddToCart(bouquet)}
-                  adding={addingId === bouquet.id}
-                  onBuyNow={() => handleBuyNow(bouquet)}
-                  buying={buyingId === bouquet.id}
-                />
-              ))}
-            </div>
+      <main className="py-8 min-h-screen max-w-7xl mx-auto px-10">
+        <div className="max-w-240 mx-auto">
+          
+          <div className="mb-6">
+            <SearchBar 
+              initialQuery={q} 
+              onSearch={() => setCurrentPage(1)} 
+            />
           </div>
-        ) : (
-          <div className="px-4 text-center text-gray-500 mt-8">
-            {q
-              ? "No results to display"
-              : "Use the search bar above to start a query."}
+
+          <div className="mb-8">
+            <SearchFilters
+              price={price}
+              onPriceChange={setPrice}
+              sort={sort}
+              onSortChange={setSort}
+            />
           </div>
-        )}
+
+          {q && (
+            <p className="mt-6 mb-4">
+              Showing results for <strong>{q}</strong>
+            </p>
+          )}
+
+          {errorMsg && <p className="text-center text-red-500">{errorMsg}</p>}
+
+          {loading ? (
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    {Array.from({ length: 9 }).map((_, i) => (
+      <SkeletonCard key={i} />
+    ))}
+  </div>
+) : results.length > 0 ? (
+  <div>
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {results
+        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+        .map((bouquet, i) => (
+          <div
+            key={bouquet.id}
+            className="animate-fade-in"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
+            <BouquetCard
+              image={bouquet.product_image_url ?? bouquet.image_url ?? null}
+              name={bouquet.product_name}
+              price={bouquet.price}
+              shop={bouquet.shop_name || ""}
+              distance={bouquet.distance || ""}
+              category={bouquet.category || ""}
+              rating={bouquet.rating > 0 ? bouquet.rating : undefined}
+              sold={bouquet.sold_count ?? undefined}
+              onAddToCart={() => handleAddToCart(bouquet)}
+              adding={addingId === bouquet.id}
+              onBuyNow={() => handleBuyNow(bouquet)}
+              buying={buyingId === bouquet.id}
+            />
+          </div>
+        ))}
+    </div>
+
+    {/* Pagination */}
+    <div className="flex items-center justify-end gap-3 mt-10">
+      <p className="text-[#7a7a7a] text-sm font-medium">
+        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, results.length)} of {results.length} results
+      </p>
+      <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} className="text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30 text-lg px-1">{"<"}</button>
+      {Array.from({ length: Math.ceil(results.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+        <button key={page} onClick={() => setCurrentPage(page)} className={`w-9 h-9 rounded-xl text-sm font-semibold transition-colors ${page === currentPage ? "bg-[#e8f3ed] text-[#2f5d3a]" : "text-[#7a7a7a] hover:text-[#1f1f1f]"}`}>{page}</button>
+      ))}
+      <button onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.ceil(results.length / ITEMS_PER_PAGE)))} disabled={currentPage === Math.ceil(results.length / ITEMS_PER_PAGE)} className="text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30 text-lg px-1">{">"}</button>
+    </div>
+  </div>
+) : (
+  <div className="text-center text-gray-500 mt-8">
+    {q ? "No results to display" : "Use the search bar above to start a query."}
+  </div>
+)}
+
+
+        </div>
       </main>
+
 
       <Footer />
     </>

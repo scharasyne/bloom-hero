@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getSession } from "@/lib/auth/getSession";
 import { NextRequest, NextResponse } from "next/server";
-
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -10,13 +10,36 @@ export async function GET(request: NextRequest) {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.exchangeCodeForSession(code);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const session = await getSession();
+    const user = session.user;
 
-    if(!user)
-        return NextResponse.redirect(`${origin}/sign-up`);
+    if (!user)
+      return NextResponse.redirect(`${origin}/login`); // ← was /sign-up, changed to /login
 
-    const { data: roleData } = await supabase.from("users").select("role").eq("id",user.id).single();
-    const userRole = roleData?.role;
+    let userRole = session.profile?.role;
+
+    if (!userRole) {
+      await supabase.from("users").upsert(
+        {
+          id: user.id,
+          email: user.email ?? "",
+          role: "customer",
+        },
+        { onConflict: "id" }
+      );
+
+      await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+
+      userRole = "customer";
+    }
+
+    if (userRole === "customer") {
+      await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+    }
 
     const { data: vendorData } = await supabase
       .from("vendors")
@@ -25,19 +48,31 @@ export async function GET(request: NextRequest) {
       .single();
     const vendorType = vendorData?.vendor_type;
 
-    if (userRole === "vendor") {
-      if(vendorType === "market")
-        return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
-      else if(vendorType === "pop-up"){
-        return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
-        // return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);        
-      }
-
-    } else if (userRole === "customer") {
-      return NextResponse.redirect(`${origin}/customer/dashboard`);
-    } else if (!userRole) {
-      return NextResponse.redirect(`${origin}/select-role`);
+    if (userRole === "admin") {
+      return NextResponse.redirect(`${origin}/admin/vendor-applications`);
     }
+
+    if (userRole === "vendor") {
+      const vendorType = session.profile?.vendor_type;
+
+      if (vendorType === "market")
+        return NextResponse.redirect(`${origin}/market/dashboard`);
+      else if (vendorType === "pop-up")
+        return NextResponse.redirect(`${origin}/pop-up/dashboard`);
+    } else if (userRole === "customer") {
+      return NextResponse.redirect(`${origin}/dashboard`);
+    }
+
+    // if (userRole === "vendor") {
+    //   if (vendorType === "market")
+    //     return NextResponse.redirect(`${origin}/vendor/market/dashboard`);
+    //   else if (vendorType === "pop-up")
+    //     return NextResponse.redirect(`${origin}/vendor/pop-up/dashboard`);
+    // } else if (userRole === "customer") {
+    //   return NextResponse.redirect(`${origin}/customer/dashboard`);
+    // }
+
+    return NextResponse.redirect(`${origin}/dashboard`);
   }
 
   return NextResponse.redirect(`${origin}/login`);
