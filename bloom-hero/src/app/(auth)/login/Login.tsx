@@ -106,7 +106,8 @@ export default function Login() {
         router.push("/vendor/pop-up/dashboard");
       }
     } else if (role === "customer") {
-      router.push("/customer/dashboard");
+      // router.push("/customer/dashboard"); // For testing purposes, redirect to home page instead of customer dashboard
+      router.push("/");
     } else {
       router.push("/");
     }

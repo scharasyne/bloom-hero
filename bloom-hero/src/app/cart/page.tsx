@@ -229,7 +229,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FBF7F4] flex items-center justify-center p-4">
         <div className="text-sm font-semibold text-[#6D6863]">Loading cart…</div>
       </div>
     );
@@ -256,7 +256,7 @@ export default function CartPage() {
     <>
       {/* <NavBar type="customer" /> */}
       <main
-        className="w-full bg-[#f5f5f5] min-h-screen px-6 py-8"
+        className="w-full bg-[#FBF7F4] min-h-screen px-6 py-8"
         style={{ fontFamily: "'Quicksand', sans-serif" }}
       >
         <div className="max-w-[1100px] mx-auto flex gap-6 items-start">
