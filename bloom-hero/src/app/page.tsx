@@ -1,8 +1,10 @@
 import Footer from "@/components/footer";
 import BouquetCard from "@/components/BouquetCard";
 import { Icon } from "@iconify/react";
+import Link from "next/link";
 import NavBar from "@/components/navbar";
 import SearchBar from "@/components/SearchBar";
+import { getSession } from "@/lib/auth/getSession";
 import { mockBouquets } from "@/lib/mockData";
 
 const navLogo = "/icon.png";
@@ -76,7 +78,7 @@ function CategFilter() {
   );
 }
 
-function Hero() {
+function Hero({ signUpHref }: { signUpHref: string }) {
   return (
     <div className="content-stretch flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
@@ -87,9 +89,9 @@ function Hero() {
       <div className="flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[#7a7a7a] text-[15px] text-center tracking-[0.3px]">
         <p className="tracking-[0.32px]">
           <span className="leading-normal">Are you a local florist? </span>
-          <a className="cursor-pointer font-bold leading-normal text-[#2f5d3a]" href="/sign-up">
+          <Link className="cursor-pointer font-bold leading-normal text-[#2f5d3a]" href={signUpHref}>
             <span className="leading-normal">Join BloomHero as a Vendor</span>
-          </a>
+          </Link>
         </p>
       </div>
     </div>
@@ -213,11 +215,14 @@ function ShopByCategory() {
   );
 }
 
-export default function Desktop() {
+export default async function Desktop() {
+  const session = await getSession();
+  const signUpHref = session.user ? "/vendor-application" : "/sign-up";
+
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
       {/* <NavBar type="default"/> */}
-      <Hero />
+      <Hero signUpHref={signUpHref} />
       <BestSellers />
       <ShopByCategory />
       <Footer />
