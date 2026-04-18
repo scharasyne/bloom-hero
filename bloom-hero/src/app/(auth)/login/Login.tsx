@@ -101,9 +101,9 @@ export default function Login() {
       }
 
       if (vendorData?.vendor_type === "market") {
-        router.push("/vendor/market/dashboard");
+        router.push("/market/dashboard");
       } else {
-        router.push("/vendor/pop-up/dashboard");
+        router.push("/pop-up/dashboard");
       }
     } else if (role === "customer") {
       // router.push("/customer/dashboard"); // For testing purposes, redirect to home page instead of customer dashboard
