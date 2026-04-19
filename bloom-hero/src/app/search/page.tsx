@@ -13,12 +13,32 @@ import BouquetCard from "@/components/BouquetCard";
 import { mockBouquets } from "@/lib/mockData";
 import SkeletonCard from "@/components/SkeletonCard";
 
+type ProductImageRow = {
+  image_url: string;
+  display_order: number;
+};
+
+type SearchProductRow = {
+  id: string;
+  vendor_id: string;
+  product_name: string;
+  product_image_url: string | null;
+  image_url?: string | null;
+  price: number;
+  shop_name?: string | null;
+  distance?: string | null;
+  category?: string | null;
+  rating?: number | null;
+  sold_count?: number | null;
+  product_images?: ProductImageRow[] | null;
+};
+
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") || "";
   const [price, setPrice] = React.useState("Any");
   const [sort, setSort] = React.useState("Best Sellers");
-  const [results, setResults] = React.useState<any[]>([]);
+  const [results, setResults] = React.useState<SearchProductRow[]>([]);
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -210,36 +230,55 @@ export default function SearchPage() {
       setLoading(true);
       setErrorMsg(null);
 
-      let builder = supabase.from("products").select("*");
+      const buildQuery = (includeProductImages: boolean) => {
+        const baseSelect = includeProductImages
+          ? "*, product_images(image_url, display_order)"
+          : "*";
 
-      if (q) {
-        const pat = `%${q}%`;
-        builder = builder.or(
-          `product_name.ilike.${pat},description.ilike.${pat}`
-        );
+        let builder = supabase.from("products").select(baseSelect);
+
+        if (q) {
+          const pat = `%${q}%`;
+          builder = builder.or(
+            `product_name.ilike.${pat},description.ilike.${pat}`
+          );
+        }
+
+        if (price !== "Any") {
+          if (price === "<500") builder = builder.lt("price", 500);
+          else if (price === "500-700")
+            builder = builder.gte("price", 500).lte("price", 700);
+          else if (price === ">700") builder = builder.gt("price", 700);
+        }
+
+        if (sort === "Price: Low to High") {
+          builder = builder.order("price", { ascending: true });
+        } else if (sort === "Price: High to Low") {
+          builder = builder.order("price", { ascending: false });
+        }
+
+        return builder;
+      };
+
+      let { data, error } = await buildQuery(true);
+
+      const missingProductImagesRelation =
+        !!error && /product_images|relationship|schema cache|does not exist/i.test(error.message);
+
+      if (missingProductImagesRelation) {
+        const fallbackResult = await buildQuery(false);
+        data = fallbackResult.data;
+        error = fallbackResult.error;
       }
 
-      if (price !== "Any") {
-        if (price === "<500") builder = builder.lt("price", 500);
-        else if (price === "500-700")
-          builder = builder.gte("price", 500).lte("price", 700);
-        else if (price === ">700") builder = builder.gt("price", 700);
-      }
-
-      if (sort === "Price: Low to High") {
-        builder = builder.order("price", { ascending: true });
-      } else if (sort === "Price: High to Low") {
-        builder = builder.order("price", { ascending: false });
-      }
-
-      const { data, error } = await builder;
+      const normalizedResults = (data ?? []) as unknown as SearchProductRow[];
       console.log("supabase query result", { q, price, sort, data, error });
       if (error) {
         console.error("fetch products:", error);
         setErrorMsg(error.message);
         setResults([]);
       } else {
-        setResults(data ?? []);
+        setResults(normalizedResults);
       }
       setLoading(false);
     }
@@ -289,20 +328,33 @@ export default function SearchPage() {
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {results
         .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-        .map((bouquet, i) => (
+        .map((bouquet, i) => {
+          const imageUrls = (bouquet.product_images ?? [])
+            .slice()
+            .sort((a, b) => a.display_order - b.display_order)
+            .map((img) => img.image_url)
+            .filter((url) => typeof url === "string" && url.trim().length > 0);
+          const primaryImageUrl =
+            imageUrls[0] ??
+            bouquet.product_image_url ??
+            bouquet.image_url ??
+            null;
+
+          return (
           <div
             key={bouquet.id}
             className="animate-fade-in"
             style={{ animationDelay: `${i * 40}ms` }}
           >
             <BouquetCard
-              image={bouquet.product_image_url ?? bouquet.image_url ?? null}
+              image={primaryImageUrl}
+              images={imageUrls}
               name={bouquet.product_name}
               price={bouquet.price}
               shop={bouquet.shop_name || ""}
               distance={bouquet.distance || ""}
               category={bouquet.category || ""}
-              rating={bouquet.rating > 0 ? bouquet.rating : undefined}
+              rating={typeof bouquet.rating === "number" && bouquet.rating > 0 ? bouquet.rating : undefined}
               sold={bouquet.sold_count ?? undefined}
               onAddToCart={() => handleAddToCart(bouquet)}
               adding={addingId === bouquet.id}
@@ -310,7 +362,8 @@ export default function SearchPage() {
               buying={buyingId === bouquet.id}
             />
           </div>
-        ))}
+          )
+        })}
     </div>
 
     {/* Pagination */}
