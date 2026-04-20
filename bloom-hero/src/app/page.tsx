@@ -22,7 +22,7 @@ function Headline() {
         <h2 className="block mb-0">Find flowers fast.</h2>
         <h2 className="block">Buy with confidence.</h2>
       </div>
-      <p className="font-semibold text-[#6f6a65] text-[18px] tracking-[-0.09px] max-w-xl leading-normal">
+      <p className="font-semibold text-[#6f6a65] text-[16px] tracking-[-0.09px] max-w-xl leading-normal">
         Search bouquets, local florists, or special occasions—all in one place.
       </p>
     </div>
@@ -86,8 +86,8 @@ function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; 
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <Headline />
       <SearchBar />
-      <CategoryChips active={activeCategory} onChange={onCategoryChange} />
-      <Filters />
+      {/* <CategoryChips active={activeCategory} onChange={onCategoryChange} />
+      <Filters /> */}
       <div className="bg-[#edeae6] h-px w-40" />
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="font-medium text-[#7a7a7a] text-[15px] tracking-[0.3px]">
@@ -96,13 +96,6 @@ function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; 
             Join BloomHero as a Vendor
           </a>
         </p>
-        {/* <p className="text-[#a8a39d] text-[13px]">
-          You&apos;ll need to{" "}
-          <a href="/sign-up" className="underline text-[#7a7a7a] hover:text-[#2f5d3a]">
-            create a free account
-          </a>{" "}
-          first before applying as a vendor.
-        </p> */}
       </div>
     </div>
   );
@@ -167,7 +160,6 @@ const categoryGroups = [
       { icon: "mdi:cake-variant-outline", label: "Birthday Blooms", href: "/search?category=birthday" },
       { icon: "mdi:school-outline", label: "Graduation Cheers", href: "/search?category=graduation" },
       { icon: "mdi:star-shooting-outline", label: "New Beginnings", href: "/search?category=new-beginnings" },
-      { icon: "mdi:flower-outline", label: "Just Because", href: "/search?category=just-because" },
     ],
   },
   {
@@ -199,6 +191,7 @@ const categoryGroups = [
     items: [
       { icon: "mdi:pencil-ruler-outline", label: "Build Your Own Bouquet", href: "/custom-bouquet" },
       { icon: "mdi:gift-outline", label: "Made Just for You", href: "/custom-bouquet" },
+      { icon: "mdi:flower-outline", label: "Just Because", href: "/search?category=just-because" },
     ],
   },
 ];
@@ -206,7 +199,7 @@ const categoryGroups = [
 function CategoryItem({ icon, label, href }: { icon: string; label: string; href: string }) {
   return (
     <a href={href} className="flex gap-3 items-center group">
-      <Icon icon={icon} width={24} height={24} color="#E05850" />
+      <Icon icon={icon} width={24} height={24} color="#d24b46" />
       <span className="font-normal text-[#2f5d3a] text-[16px] tracking-[1.28px] leading-5.5 group-hover:underline group-hover:text-[#1f3d26] transition-colors whitespace-nowrap">
         {label}
       </span>
@@ -230,13 +223,20 @@ function CategoryGroup({ title, items }: { title: string; items: { icon: string;
 function ShopByCategory() {
   return (
     <div className="relative shrink-0 w-full">
-      <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
-      <div className="flex flex-col gap-8 md:gap-12 items-center justify-center p-6 md:p-16 w-full">
-        <p className="font-medium text-[#7a7a7a] text-[12px] text-center tracking-[0.96px]">SHOP BY CATEGORY</p>
+      <div
+        aria-hidden="true"
+        className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none"
+      />
+      <div className="flex flex-col gap-5 md:gap-8 items-center justify-center p-6 md:p-16 w-full">
+        <p className="font-medium text-[#7a7a7a] text-[14px] text-center tracking-[0.96px]">
+          SHOP BY CATEGORY
+        </p>
         <p className="font-semibold text-[#1f1f1f] text-[24px] md:text-[36px] text-center tracking-[0.36px] leading-[1.2]">
           Pick a vibe. We&apos;ll handle the flowers.
         </p>
-        <div className="flex flex-wrap gap-8 md:gap-12 items-start justify-center w-full">
+
+        {/* Grid layout for equal spacing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-8 w-full">
           {categoryGroups.map((group) => (
             <CategoryGroup key={group.title} title={group.title} items={group.items} />
           ))}
@@ -245,6 +245,7 @@ function ShopByCategory() {
     </div>
   );
 }
+
 
 // ─── PAGE ─────────────────────────────────────────────────
 export default function Desktop() {

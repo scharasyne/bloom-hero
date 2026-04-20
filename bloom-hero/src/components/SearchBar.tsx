@@ -46,12 +46,11 @@ export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProp
     <form onSubmit={handleSubmit} className="flex justify-center w-full">
       <div className="bg-white flex items-center h-14 relative rounded-[22px] w-full max-w-2xl shadow-[0px_4px_24px_0px_rgba(0,0,0,0.09)] border border-[#eae6e0]">
 
-        {/* Type Dropdown — sits where "Cebu City" was */}
         <div ref={dropdownRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setDropdownOpen((o) => !o)}
-            className="flex items-center gap-1.5 pl-5 pr-3 h-14 text-[14px] font-semibold text-[#1f1f1f] hover:text-[#2f5d3a] transition-colors whitespace-nowrap rounded-l-[22px]"
+            className="flex items-center gap-1.5 pl-5 pr-3 h-14 text-[14px] font-semibold text-[#d24b46] hover:text-[#bb3f3a] transition-colors whitespace-nowrap rounded-l-[22px]"
           >
             {searchType}
             <Icon
@@ -70,7 +69,7 @@ export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProp
                   type="button"
                   onClick={() => { setSearchType(type); setDropdownOpen(false); }}
                   className={`w-full text-left px-4 py-2 text-[14px] transition-colors hover:bg-[#f5f1eb] rounded-lg ${
-                    searchType === type ? "text-[#2f5d3a] font-semibold" : "text-[#1f1f1f] font-normal"
+                    searchType === type ? "text-[#d24b46] font-semibold" : "text-[#1f1f1f] font-normal"
                   }`}
                 >
                   {type}
@@ -95,7 +94,7 @@ export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProp
         {/* Search Button */}
         <button
           type="submit"
-          className="bg-[#2f5d3a] hover:bg-[#264d30] active:bg-[#1e3d25] transition-colors flex items-center justify-center shrink-0 h-[46px] w-[46px] rounded-[14px] mr-[5px]"
+          className="bg-[#d24b46] hover:bg-[#bb3f3a] active:bg-[#822C28] transition-colors flex items-center justify-center shrink-0 h-[46px] w-[46px] rounded-[18px] mr-[5px]"
           aria-label="Search"
         >
           <Icon icon="mdi:magnify" width={20} height={20} color="white" />
