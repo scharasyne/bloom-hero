@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 
+import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
 
@@ -9,6 +10,7 @@ type ProductRow = {
   id: string
   product_name: string
   product_image_url: string | null
+  product_images?: { image_url: string; display_order: number }[] | null
   description: string | null
   price: number
 }
@@ -74,11 +76,33 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
     throw new Error(vendorError?.message || "Market vendor profile not found.")
   }
 
-  const { data: productsData, error: productsError } = await supabase
-    .from("products")
-    .select("id, product_name, product_image_url, description, price")
-    .eq("vendor_id", vendor.id)
-    .order("created_at", { ascending: false })
+  let productsData: ProductRow[] | null = null
+  let productsError: Error | null = null
+
+  {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, product_name, product_image_url, description, price, product_images(image_url, display_order)")
+      .eq("vendor_id", vendor.id)
+      .order("created_at", { ascending: false })
+
+    productsData = data as ProductRow[] | null
+    productsError = error
+  }
+
+  if (
+    productsError &&
+    /product_images|relationship|schema cache|does not exist/i.test(productsError.message)
+  ) {
+    const fallback = await supabase
+      .from("products")
+      .select("id, product_name, product_image_url, description, price")
+      .eq("vendor_id", vendor.id)
+      .order("created_at", { ascending: false })
+
+    productsData = fallback.data as ProductRow[] | null
+    productsError = fallback.error
+  }
 
   if (productsError) {
     throw new Error(productsError.message)
@@ -130,18 +154,30 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
                   key={product.id}
                   className="overflow-hidden rounded-2xl border border-[#ece5dd] bg-[#faf8f5] shadow-[0_4px_18px_rgba(0,0,0,0.05)]"
                 >
-                  <div className="h-44 w-full bg-[#e8dfd5]">
-                    {product.product_image_url ? (
-                      <img
-                        src={product.product_image_url}
-                        alt={product.product_name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-[#998f84]">
-                        {shopInitial}
-                      </div>
-                    )}
+                  <div className="relative h-44 w-full bg-[#e8dfd5]">
+                    {(() => {
+                      const imageUrls = (product.product_images ?? [])
+                        .slice()
+                        .sort((a, b) => a.display_order - b.display_order)
+                        .map((img) => img.image_url)
+                        .filter((url) => typeof url === "string" && url.trim().length > 0)
+                      const primaryImageUrl =
+                        imageUrls[0] ?? product.product_image_url
+
+                      return primaryImageUrl ? (
+                        <>
+                          <ProductCardImageCarousel
+                            imageUrls={imageUrls.length > 0 ? imageUrls : [primaryImageUrl]}
+                            productName={product.product_name}
+                            imageClassName="h-full w-full object-cover"
+                          />
+                        </>
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-[#998f84]">
+                          {shopInitial}
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   <div className="space-y-2 px-4 pb-4 pt-3">

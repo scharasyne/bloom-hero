@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import EditProductModalTrigger from "@/app/(vendor)/_components/EditProductModalTrigger"
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
+import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
 
@@ -10,7 +12,9 @@ type vendorType = 'market' | 'pop-up';
 type ProductRow = {
   id: string
   product_name: string
+  description: string | null
   product_image_url: string | null
+  product_images?: { id: string; image_url: string; display_order: number }[] | null
   price: number
   stocks: number
   categories: { category_name: string } | { category_name: string }[] | null
@@ -47,11 +51,33 @@ export default async function VendorListProductPage({ type }: { type: vendorType
     throw new Error(vendorError?.message || "Vendor profile not found.")
   }
 
-  const { data: productsData, error: productsError } = await supabase
-    .from("products")
-    .select("id, product_name, product_image_url, price, stocks, categories(category_name)")
-    .eq("vendor_id", vendor.id)
-    .order("created_at", { ascending: false })
+  let productsData: ProductRow[] | null = null
+  let productsError: Error | null = null
+
+  {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name), product_images(id, image_url, display_order)")
+      .eq("vendor_id", vendor.id)
+      .order("created_at", { ascending: false })
+
+    productsData = data as ProductRow[] | null
+    productsError = error
+  }
+
+  if (
+    productsError &&
+    /product_images|relationship|schema cache|does not exist/i.test(productsError.message)
+  ) {
+    const fallback = await supabase
+      .from("products")
+      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name)")
+      .eq("vendor_id", vendor.id)
+      .order("created_at", { ascending: false })
+
+    productsData = fallback.data as ProductRow[] | null
+    productsError = fallback.error
+  }
 
   if (productsError) {
     throw new Error(productsError.message)
@@ -103,13 +129,25 @@ export default async function VendorListProductPage({ type }: { type: vendorType
                     className="overflow-hidden rounded-3xl border bg-white shadow-sm"
                   >
                     <div className="relative h-52 w-full bg-muted">
-                      {product.product_image_url ? (
-                        <img
-                          src={product.product_image_url}
-                          alt={product.product_name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : null}
+                      {(() => {
+                        const imageUrls = (product.product_images ?? [])
+                          .slice()
+                          .sort((a, b) => a.display_order - b.display_order)
+                          .map((img) => img.image_url)
+                          .filter((url) => typeof url === "string" && url.trim().length > 0)
+                        const primaryImageUrl =
+                          imageUrls[0] ?? product.product_image_url
+
+                        return primaryImageUrl ? (
+                          <>
+                            <ProductCardImageCarousel
+                              imageUrls={imageUrls.length > 0 ? imageUrls : [primaryImageUrl]}
+                              productName={product.product_name}
+                              imageClassName="h-full w-full object-cover"
+                            />
+                          </>
+                        ) : null
+                      })()}
 
                       <span
                         className={[
@@ -135,12 +173,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
                       </p>
 
                       <div className="pt-1">
-                        <Button
-                          type="button"
-                          className="h-8 w-full rounded-lg bg-accent text-accent-foreground hover:bg-accent/90"
-                        >
-                          Edit Product
-                        </Button>
+                        <EditProductModalTrigger product={product} />
                       </div>
                     </div>
                   </article>
