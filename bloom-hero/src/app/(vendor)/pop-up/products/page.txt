@@ -3,6 +3,13 @@ import VendorListProductPage from "@/app/(vendor)/_components/ListProduct";
 
 export default function PopupProductPage(){
   return(
+    // <div>
+    // <main className = "flex">
+      {/* <div className="lg:p-6">
+        <VendorDashboardSidebarCard activeTab="products" vendorType="pop-up" />
+      </div> */}
+      {/* <div className="flex flex-wrap h-screen">
+       */}
     <div>
       <VendorListProductPage type="pop-up"/>
     </div>      

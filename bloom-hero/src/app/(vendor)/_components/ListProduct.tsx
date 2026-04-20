@@ -85,12 +85,18 @@ export default async function VendorListProductPage({ type }: { type: vendorType
 
   const products: ProductRow[] = (productsData ?? []) as ProductRow[]
 
-  return (
+  {/*
+    
     // <main className="mx-auto max-w-6xl px-6 py-10">
-    <main className = "flex-h screen">
-      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-        <VendorDashboardSidebarCard activeTab="products" vendorType={type} />
-
+    {/* // <main className = "flex-h screen"> */}
+    {/* // <main className= "flex flex-wrap min-h-screen"> */}
+    {/* // <main> */}
+  return (
+    <main className = "flex">
+      <div className="lg:p-6">
+        <VendorDashboardSidebarCard activeTab="products" vendorType="pop-up" />
+      </div>
+      <div className = "w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
         <div>
           <div className="mb-8 flex items-center justify-between gap-4">
             <div>
@@ -100,7 +106,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
               </p>
             </div>
 
-            <Button asChild>
+            <Button asChild className="bg-[#2f5d3a] text-white">
               <Link href={`/${type}/add-product`}>Add Product</Link>
             </Button>
           </div>
