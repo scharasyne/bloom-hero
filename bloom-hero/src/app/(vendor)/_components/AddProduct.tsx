@@ -143,7 +143,7 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
       }
 
       // router.push(`/vendor/${type}/add-product`)
-      router.push(`/vendor/${type}/list-product`)
+      router.push(`/${type}/list-product`)
       router.refresh()
     } catch (error) {
       const message =
@@ -165,7 +165,7 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
         </div>
 
         <Link
-          href={`/vendor/${type}/list-product`}
+          href={`/${type}/products`}
           className="text-sm text-muted-foreground underline underline-offset-4"
         >
           Back to Product List

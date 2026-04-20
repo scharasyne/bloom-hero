@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
+import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
 
 type vendorType = 'market' | 'pop-up';
 
@@ -87,7 +88,11 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
   const shopInitial = getShopInitial(vendor.shop_name)
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
+    // <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
+    <main className = "flex">
+      <div className="lg:p-6">
+        <VendorDashboardSidebarCard activeTab="profile" vendorType="pop-up" />
+      </div>
       <section className="px-4 py-6 sm:px-8">
         <div className="mt-7 flex flex-col items-center text-center">
           <div className="flex h-40 w-40 items-center justify-center rounded-full bg-[#d9e7da] text-6xl font-bold text-[#2f5d3a] sm:h-48 sm:w-48 sm:text-7xl">
