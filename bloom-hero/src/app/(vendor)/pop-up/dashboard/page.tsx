@@ -65,10 +65,12 @@ export default function VendorPopUpDashboardPage() {
 
   return (
     // <main className="mx-auto max-w-6xl px-6 py-10">
-    <main className = "flex-h screen">
-      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+    // <main className = "flex-h screen lg:p-6">
+    <main className = "flex">
+      <div className="lg:p-6">
         <VendorDashboardSidebarCard activeTab="dashboard" vendorType="pop-up" />
-
+      </div>
+      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
         <div className="flex flex-col gap-6">
           {status === "pending" && (
             <div className="flex gap-4 items-start p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -82,12 +84,12 @@ export default function VendorPopUpDashboardPage() {
             </div>
           )}
 
-          <div className="mb-8 flex flex-col justify-between">
+          {/* <div className="mb-8 flex flex-col justify-between">
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <p className="text-muted-foreground text-sm">
               Here's what's happening with your shop.
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </main>

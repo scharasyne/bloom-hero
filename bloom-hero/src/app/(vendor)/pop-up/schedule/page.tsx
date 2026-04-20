@@ -13,7 +13,7 @@ const upcomingEvents = mockUpcomingEvents;
 export default function PopUpDashboardPage() {
   return (
     <div
-      className="flex h-screen bg-[#fbf7f4] text-[#1f1f1f]"
+      className="flex h-screen bg-[#fbf7f4] text-[#1f1f1f]" p-6
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
       {/* Sidebar */}
