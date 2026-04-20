@@ -17,19 +17,19 @@ export const getSession = cache(async () => {
     .eq("id", user.id)
     .single();
 
-    let vendor_type = null;
-    let vendor_shop_name = null;
+  let vendor_type = null;
+  let vendor_shop_name = null;
 
-    if(profile?.role === "vendor"){
-        const { data: vendor } = await supabase
-            .from("vendors")
-            .select("vendor_type, shop_name")
-            .eq("owner_id", user.id)
-            .maybeSingle();
-        
-        vendor_type = vendor?.vendor_type ?? null;
-        vendor_shop_name = vendor?.shop_name ?? null;
-    }
+  if (profile?.role === "vendor") {
+    const { data: vendor } = await supabase
+      .from("vendors")
+      .select("vendor_type, shop_name")
+      .eq("owner_id", user.id)
+      .maybeSingle();
+
+    vendor_type = vendor?.vendor_type ?? null;
+    vendor_shop_name = vendor?.shop_name ?? null;
+  }
 
   return {
     user,
