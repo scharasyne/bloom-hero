@@ -9,6 +9,8 @@ interface ProductGalleryProps {
   primaryImageUrl?: string | null
 }
 
+type GalleryImage = Pick<ProductImage, "id" | "image_url">
+
 /**
  * Product Gallery Component - Displays multiple product images with a main image and thumbnails
  */
@@ -18,7 +20,12 @@ export function ProductGallery({
   primaryImageUrl,
 }: ProductGalleryProps) {
   // Use product_images table data if available, otherwise fallback to primary image
-  const allImages = images.length > 0 ? images : (primaryImageUrl ? [{ id: "primary", image_url: primaryImageUrl }] as any : [])
+  const allImages: GalleryImage[] =
+    images.length > 0
+      ? images.map(({ id, image_url }) => ({ id, image_url }))
+      : primaryImageUrl
+        ? [{ id: "primary", image_url: primaryImageUrl }]
+        : []
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const currentImage = allImages[selectedImageIndex]
@@ -90,7 +97,12 @@ export function CompactProductGallery({
   primaryImageUrl,
   maxDisplay = 4,
 }: ProductGalleryProps & { maxDisplay?: number }) {
-  const allImages = images.length > 0 ? images : (primaryImageUrl ? [{ id: "primary", image_url: primaryImageUrl }] as any : [])
+  const allImages: GalleryImage[] =
+    images.length > 0
+      ? images.map(({ id, image_url }) => ({ id, image_url }))
+      : primaryImageUrl
+        ? [{ id: "primary", image_url: primaryImageUrl }]
+        : []
   const displayImages = allImages.slice(0, maxDisplay)
   const moreCount = Math.max(0, allImages.length - maxDisplay)
 
@@ -103,7 +115,7 @@ export function CompactProductGallery({
       {displayImages.map((image, index) => (
         <div
           key={image.id}
-        <div className="relative h-12 w-12 shrink-0 rounded border border-muted overflow-hidden">
+          className="relative h-12 w-12 shrink-0 rounded border border-muted overflow-hidden"
         >
           <img
             src={image.image_url}

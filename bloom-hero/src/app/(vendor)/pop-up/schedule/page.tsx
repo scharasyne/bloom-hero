@@ -34,7 +34,7 @@ export default function PopUpDashboardPage() {
                 </p>
               </div>
               {/* Vendor CTA → green */}
-              <button className="flex items-center gap-2 bg-[#2f5d3a] hover:bg-[#264d30] active:scale-95 text-white px-5 py-2.5 mr-1 rounded-[12px] font-semibold text-sm transition-all shadow-sm shadow-[#2f5d3a]/20">
+              <button className="flex items-center gap-2 bg-[#2f5d3a] hover:bg-[#264d30] active:scale-95 text-white px-5 py-2.5 mr-1 rounded-2xl font-semibold text-sm transition-all shadow-sm shadow-[#2f5d3a]/20">
                 <Icon icon="mdi:plus" width={18} height={18} />
                 New Schedule
               </button>
@@ -47,7 +47,7 @@ export default function PopUpDashboardPage() {
               <div className="col-span-12 lg:col-span-7 flex flex-col gap-6">
 
                 {/* Most Requested */}
-                <section className="bg-white rounded-[20px] p-6 border border-[#edeae6]">
+                <section className="bg-white rounded-4xl p-6 border border-[#edeae6]">
                   <div className="flex justify-between items-center mb-5">
                     <h2 className="text-[17px] font-bold text-[#1f1f1f] flex items-center gap-2">
                       Most Requested
@@ -92,7 +92,7 @@ export default function PopUpDashboardPage() {
                 </section>
 
                 {/* Recent Requests */}
-                <section className="bg-white rounded-[20px] p-6 border border-[#edeae6]">
+                <section className="bg-white rounded-4xl p-6 border border-[#edeae6]">
                   <div className="flex justify-between items-center mb-5">
                     <h2 className="text-[17px] font-bold text-[#1f1f1f]">Recent Requests</h2>
                     <button className="text-sm font-semibold text-[#2f5d3a] hover:underline">
@@ -140,7 +140,7 @@ export default function PopUpDashboardPage() {
 
               {/* ── Right Column ── */}
               <div className="col-span-12 lg:col-span-5">
-                <section className="bg-white rounded-[20px] p-6 border border-[#edeae6] h-full flex flex-col">
+                <section className="bg-white rounded-4xl p-6 border border-[#edeae6] h-full flex flex-col">
                   <div className="flex justify-between items-center mb-5">
                     <h2 className="text-[17px] font-bold text-[#1f1f1f]">Upcoming Pop Ups</h2>
                     <button className="p-2 text-[#6f6a65] hover:text-[#1f1f1f] hover:bg-[#f7f4ef] rounded-[10px] transition-colors">
@@ -157,7 +157,7 @@ export default function PopUpDashboardPage() {
                       upcomingEvents.map((event, idx) => (
                         <div key={idx} className="flex gap-3 group cursor-pointer">
                           {/* Date block hover → green */}
-                          <div className="flex flex-col items-center justify-center min-w-[60px] h-[72px] bg-white border border-[#d6d0c8] rounded-[14px] transition-all duration-200 group-hover:bg-[#eef4f0] group-hover:border-[#2f5d3a]">
+                          <div className="flex flex-col items-center justify-center min-w-15 h-18 bg-white border border-[#d6d0c8] rounded-[14px] transition-all duration-200 group-hover:bg-[#eef4f0] group-hover:border-[#2f5d3a]">
                             <span className="text-[10px] font-bold text-[#7a7a7a] group-hover:text-[#2f5d3a] transition-colors duration-200">
                               {event.date.month}
                             </span>
@@ -177,7 +177,7 @@ export default function PopUpDashboardPage() {
                                 </div>
                               </div>
                               {/* Edit pencil → green hover (manage action) */}
-                              <button className="p-1.5 text-[#7a7a7a] hover:text-[#2f5d3a] rounded-[8px] transition-colors duration-200">
+                              <button className="p-1.5 text-[#7a7a7a] hover:text-[#2f5d3a] rounded-xl transition-colors duration-200">
                                 <Icon icon="mdi:pencil-outline" width={14} height={14} />
                               </button>
                             </div>
