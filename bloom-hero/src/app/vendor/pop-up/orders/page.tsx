@@ -1,5 +1,5 @@
-import { VendorDashboardSidebarCard } from "@/app/vendor/_components/vendor-dashboard-sidebar-card";
-import VendorOrdersTable from "@/app/vendor/_components/VendorOrdersTable";
+import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
+import VendorOrdersTable from "@/app/(vendor)/_components/VendorOrdersTable";
 
 type VendorOrdersPageProps = {
   searchParams: Promise<{ success?: string; error?: string }>;

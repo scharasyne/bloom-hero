@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+﻿import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import Footer from "@/components/footer";
 import { OrderCard } from "../_components/order-card";
 import { TABS } from "./_lib/constants";
@@ -54,14 +54,24 @@ export default async function CustomerOrdersPage({
 
   const validTabs: TabKey[] = ["to-pay", "to-ship", "to-receive", "completed"];
   const rawTab = tab ?? "to-pay";
-  const activeTab: TabKey = validTabs.includes(rawTab as TabKey) ? (rawTab as TabKey) : "to-pay";
-  const activeStatus = TAB_STATUS_MAP[activeTab];
+  const normalizedTab =
+    rawTab === "to_pay"
+      ? "to-pay"
+      : rawTab === "to_ship"
+        ? "to-ship"
+        : rawTab === "to_receive"
+          ? "to-receive"
+          : rawTab;
+  const activeTab: TabKey = validTabs.includes(normalizedTab as TabKey)
+    ? (normalizedTab as TabKey)
+    : "to-pay";
+  const activeStatuses = TAB_STATUS_MAP[activeTab];
 
   const { data: rows } = (await supabase
     .from("order_items")
     .select("order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, vendors(id, shop_name))")
     .eq("orders.customer_id", user.id)
-    .eq("orders.status", activeStatus)) as { data: OrderItemRow[] | null };
+    .in("orders.status", activeStatuses)) as { data: OrderItemRow[] | null };
 
   const ordersArray = groupOrders(rows ?? []);
 

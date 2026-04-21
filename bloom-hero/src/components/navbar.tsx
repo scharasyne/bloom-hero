@@ -29,10 +29,8 @@ type navTypes = 'market' | 'pop-up' | 'customer';
 const navLinks = {
   'customer': [
     { href: "/", label: "Home" },
-    { href: "/dashboard", label: "Dashboard" },
     { href: "/orders", label: "Orders" },
     { href: "/cart", label: "Cart" },
-    { href: "/settings", label: "Settings" },
     { href: "/profile", label: "Profile" },
   ],
   'default': [

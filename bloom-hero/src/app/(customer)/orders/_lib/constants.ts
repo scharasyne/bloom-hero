@@ -7,11 +7,11 @@ export const TABS: { key: TabKey; label: string }[] = [
   { key: "completed",  label: "Completed" },
 ];
 
-export const TAB_STATUS_MAP: Record<TabKey, string> = {
-  "to-pay":     "pending",
-  "to-ship":    "confirmed",
-  "to-receive": "shipped",
-  "completed":  "completed",
+export const TAB_STATUS_MAP: Record<TabKey, string[]> = {
+  "to-pay":     ["to_pay", "pending"],
+  "to-ship":    ["to_ship", "confirmed"],
+  "to-receive": ["to_receive", "shipped"],
+  "completed":  ["completed"],
 };
 
 /*
