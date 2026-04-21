@@ -10,7 +10,6 @@ export const metadata = {
 export default function PopUpMapPage() {
   return (
     <div className="content-stretch flex flex-col items-center justify-center relative size-full">
-      <NavBar />
       <PopUpMap />
       <Footer />
     </div>
