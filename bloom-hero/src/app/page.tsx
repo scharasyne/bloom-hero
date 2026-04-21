@@ -6,6 +6,8 @@ import NavBar from "@/components/navbar";
 import SearchBar from "@/components/SearchBar";
 import { getSession } from "@/lib/auth/getSession";
 import { mockBouquets } from "@/lib/mockData";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 const navLogo = "/icon.png";
 
@@ -217,6 +219,23 @@ function ShopByCategory() {
 
 export default async function Desktop() {
   const session = await getSession();
+  
+  // Redirect vendors to their dashboard
+  if (session.user && session.profile?.role === "vendor") {
+    const supabase = await createSupabaseServerClient();
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("vendor_type")
+      .eq("owner_id", session.user.id)
+      .single();
+    
+    if (vendorData?.vendor_type === "market") {
+      redirect("/market/dashboard");
+    } else if (vendorData?.vendor_type === "pop-up") {
+      redirect("/pop-up/dashboard");
+    }
+  }
+  
   const signUpHref = session.user ? "/vendor-application" : "/sign-up";
 
   return (
