@@ -235,7 +235,6 @@ function ShopByCategory() {
           Pick a vibe. We&apos;ll handle the flowers.
         </p>
 
-        {/* Grid layout for equal spacing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-8 w-full">
           {categoryGroups.map((group) => (
             <CategoryGroup key={group.title} title={group.title} items={group.items} />

@@ -90,4 +90,5 @@ export default function VendorPopUpDashboardPage() {
       </div>
     </div>
   </main>
-);
+)
+};
