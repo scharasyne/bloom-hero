@@ -10,6 +10,17 @@ type LinkedVendorCredentials = {
   issued_at: string;
 };
 
+const LINKED_VENDOR_CREDENTIALS_TTL_MS = 48 * 60 * 60 * 1000;
+
+function isLinkedVendorCredentialsActive(issuedAt: string | null | undefined) {
+  if (!issuedAt) return false;
+
+  const issuedTime = new Date(issuedAt).getTime();
+  if (Number.isNaN(issuedTime)) return false;
+
+  return Date.now() - issuedTime <= LINKED_VENDOR_CREDENTIALS_TTL_MS;
+}
+
 function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
   return (
     <div className="bg-white rounded-2xl border border-[#e6e2dd] px-5 py-5 shadow-sm">
@@ -93,7 +104,9 @@ export default async function CustomerProfilePage() {
   const linkedVendorCredentials =
     (user.user_metadata?.linked_vendor_credentials as LinkedVendorCredentials | undefined) ?? null;
   const hasLinkedVendorCredentials =
-    Boolean(linkedVendorCredentials?.email) && Boolean(linkedVendorCredentials?.password);
+    Boolean(linkedVendorCredentials?.email) &&
+    Boolean(linkedVendorCredentials?.password) &&
+    isLinkedVendorCredentialsActive(linkedVendorCredentials?.issued_at);
 
   const memberSince = new Date(user.created_at).toLocaleDateString("en-PH", {
     month: "long", year: "numeric",
