@@ -149,10 +149,103 @@ export const mockActivityLogs: ActivityLog[] = [
 ];
 
 // simple bouquet list used by home/search pages
+// Add this `images` field to each bouquet in your mockBouquets array in mockData.ts:
+
 export const mockBouquets = [
-  { id: 1, image_url: "/bouquets/roses.jpg", name: "Classic Red Roses", price: 600, shop_name: "Econo Flowers", distance: "1.2 km", category: "All-occasion", rating: 4.9, sold_count: 67 },
-  { id: 2, image_url: "/bouquets/sunflower.jpg", name: "Sunflower Bliss", price: 450, shop_name: "Bloom Studio", distance: "0.8 km", category: "Birthday", rating: 4.8, sold_count: 43 },
-  { id: 3, image_url: "/bouquets/pink-peonies.jpg", name: "Pink Peonies", price: 750, shop_name: "Petal & Co.", distance: "2.1 km", category: "Anniversary", rating: 5.0, sold_count: 91 },
+  {
+    id: 1,
+    image_url: "/bouquets/roses.jpg",
+    images: [
+      "/bouquets/roses.jpg",
+      "https://images.unsplash.com/photo-1518895312237-a9e23508077d?w=400&q=80",
+      "https://images.unsplash.com/photo-1490750967868-88df5691cc0e?w=400&q=80",
+    ],
+    name: "Classic Red Roses",
+    price: 600,
+    shop_name: "Econo Flowers",
+    distance: "1.2 km",
+    category: "All-occasion",
+    rating: 4.9,
+    sold_count: 67,
+  },
+  {
+    id: 2,
+    image_url: "/bouquets/sunflower.jpg",
+    images: [
+      "/bouquets/sunflower.jpg",
+      "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=400&q=80",
+    ],
+    name: "Sunflower Bliss",
+    price: 450,
+    shop_name: "Bloom Studio",
+    distance: "0.8 km",
+    category: "Birthday",
+    rating: 4.8,
+    sold_count: 43,
+  },
+  {
+    id: 3,
+    image_url: "/bouquets/pink-peonies.jpg",
+    images: [
+      "/bouquets/pink-peonies.jpg",
+      "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=400&q=80",
+    ],
+    name: "Pink Peonies",
+    price: 750,
+    shop_name: "Petal & Co.",
+    distance: "2.1 km",
+    category: "Anniversary",
+    rating: 5.0,
+    sold_count: 91,
+  },
+  {
+    id: 4,
+    image_url: "/bouquets/roses.jpg",
+    images: [
+      "/bouquets/roses.jpg",
+      "https://images.unsplash.com/photo-1518895312237-a9e23508077d?w=400&q=80",
+      "https://images.unsplash.com/photo-1490750967868-88df5691cc0e?w=400&q=80",
+    ],
+    name: "Classic Red Roses",
+    price: 600,
+    shop_name: "Econo Flowers",
+    distance: "1.2 km",
+    category: "All-occasion",
+    rating: 4.9,
+    sold_count: 67,
+  },
+  {
+    id: 5,
+    image_url: "/bouquets/roses.jpg",
+    images: [
+      "/bouquets/roses.jpg",
+      "https://images.unsplash.com/photo-1518895312237-a9e23508077d?w=400&q=80",
+      "https://images.unsplash.com/photo-1490750967868-88df5691cc0e?w=400&q=80",
+    ],
+    name: "Classic Red Roses",
+    price: 600,
+    shop_name: "Econo Flowers",
+    distance: "1.2 km",
+    category: "All-occasion",
+    rating: 4.9,
+    sold_count: 67,
+  },
+  {
+    id: 6,
+    image_url: "/bouquets/roses.jpg",
+    images: [
+      "/bouquets/roses.jpg",
+      "https://images.unsplash.com/photo-1518895312237-a9e23508077d?w=400&q=80",
+      "https://images.unsplash.com/photo-1490750967868-88df5691cc0e?w=400&q=80",
+    ],
+    name: "Classic Red Roses",
+    price: 600,
+    shop_name: "Econo Flowers",
+    distance: "1.2 km",
+    category: "All-occasion",
+    rating: 4.9,
+    sold_count: 67,
+  },
 ];
 
 // ─── VENDOR DASHBOARD (POP-UP) ────────────────────────────
@@ -197,4 +290,3 @@ export const mockUpcomingEvents: UpcomingEventItem[] = [
   { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "15" }, status: "Open" },
   { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "16" }, status: "Open" },
 ];
-
