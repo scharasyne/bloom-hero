@@ -26,8 +26,42 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [vendorStatus, setVendorStatus] = useState<string | null>(null)
+  const [statusLoading, setStatusLoading] = useState(true)
 
   useEffect(() => {
+    async function fetchVendorStatus() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          setVendorStatus(null)
+          return
+        }
+
+        const { data, error } = await supabase
+          .from("vendors")
+          .select("status")
+          .eq("owner_id", user.id)
+          .eq("vendor_type", type)
+          .maybeSingle()
+
+        if (error) {
+          console.error("Failed to fetch vendor status:", error)
+          setVendorStatus(null)
+          return
+        }
+
+        setVendorStatus((data as { status?: string | null } | null)?.status ?? null)
+      } finally {
+        setStatusLoading(false)
+      }
+    }
+
+    fetchVendorStatus()
+
     return () => {
       imagePreviews.forEach((preview) => {
         URL.revokeObjectURL(preview.previewUrl)
@@ -38,6 +72,12 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage(null)
+
+    if (vendorStatus === "pending") {
+      setErrorMessage("Your vendor application is still pending. You cannot add products yet.")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -222,6 +262,21 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
       </div>
 
       <section className="rounded-lg border p-5 bg-white shadow-2xl">
+        {vendorStatus === "pending" ? (
+          <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 shadow-sm">
+            <p className="text-sm font-semibold text-amber-900">Application pending</p>
+            <p className="mt-1 text-sm text-amber-800">
+              Your vendor application is still pending. You are unable to add products yet.
+            </p>
+          </div>
+        ) : null}
+
+        {statusLoading ? (
+          <div className="mb-5 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            Checking vendor application status...
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="productImages">Product Images Upload</Label>
@@ -368,10 +423,14 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
           <div className="flex justify-center pt-2">
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="min-w-40 bg-accent text-accent-foreground hover:bg-accent/90"
+              disabled={isSubmitting || vendorStatus === "pending"}
+              className="min-w-40 bg-accent text-accent-foreground hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:hover:bg-slate-300"
             >
-              {isSubmitting ? "Adding..." : "Add Product"}
+              {vendorStatus === "pending"
+                ? "Unavailable while pending"
+                : isSubmitting
+                  ? "Adding..."
+                  : "Add Product"}
             </Button>
           </div>
         </form>
