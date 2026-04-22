@@ -1,11 +1,12 @@
 import React from "react";
-import { Icon } from "@iconify/react";
 
 export interface SearchFiltersProps {
   price: string;
   onPriceChange: (price: string) => void;
   sort: string;
   onSortChange: (sort: string) => void;
+  scope: string;
+  onScopeChange: (scope: string) => void;
 }
 
 function Chip({ label, active = false, onClick }: { label: string; active?: boolean; onClick: () => void }) {
@@ -37,6 +38,9 @@ interface DropdownPillProps {
 }
 
 function DropdownPill({ value, options, onChange }: DropdownPillProps) {
+  const getLabel = (option: string) =>
+    option === "all" ? "All" : option === "flowers" ? "Flowers" : option === "vendors" ? "Vendors" : option;
+
   return (
     <div className="relative">
       <select
@@ -46,25 +50,28 @@ function DropdownPill({ value, options, onChange }: DropdownPillProps) {
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
-            {opt}
+            {getLabel(opt)}
           </option>
         ))}
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-        <Icon icon="mdi:chevron-down" width={12} height={12} color="#1f1f1f" />
+        <div className="h-0 w-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-[#1f1f1f]" />
       </div>
     </div>
   );
 }
 
-function Filters({ price, sort, onPriceChange, onSortChange }: {
+function Filters({ price, sort, scope, onPriceChange, onSortChange, onScopeChange }: {
   price: string;
   sort: string;
+  scope: string;
   onPriceChange: (val: string) => void;
   onSortChange: (val: string) => void;
+  onScopeChange: (val: string) => void;
 }) {
   const priceOptions = ["Any", "<500", "500-700", ">700"];
   const sortOptions = ["Best Sellers", "Price: Low to High", "Price: High to Low"];
+  const scopeOptions = ["all", "flowers", "vendors"];
 
   return (
     <div className="bg-[#f7f4ef] content-stretch flex flex-wrap gap-3 items-center justify-center relative rounded-2xl shrink-0">
@@ -74,7 +81,7 @@ function Filters({ price, sort, onPriceChange, onSortChange }: {
       />
       <DropdownPill value={price} options={priceOptions} onChange={onPriceChange} />
       <DropdownPill value={sort} options={sortOptions} onChange={onSortChange} />
-      <DropdownPill value="More Filters" options={["More Filters"]} onChange={() => {}} />
+      <DropdownPill value={scope} options={scopeOptions} onChange={onScopeChange} />
     </div>
   );
 }
@@ -84,10 +91,19 @@ export default function SearchFilters({
   onPriceChange,
   sort,
   onSortChange,
+  scope,
+  onScopeChange,
 }: SearchFiltersProps) {
   return (
     <div className="content-stretch flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 lg:gap-27 items-center justify-center relative shrink-0 w-full">
-      <Filters price={price} sort={sort} onPriceChange={onPriceChange} onSortChange={onSortChange} />
+      <Filters
+        price={price}
+        sort={sort}
+        scope={scope}
+        onPriceChange={onPriceChange}
+        onSortChange={onSortChange}
+        onScopeChange={onScopeChange}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 
 interface SearchBarProps {
   initialQuery?: string;
+  scope?: string;
   onSearch? : () => void;
 }
 
@@ -33,15 +34,29 @@ function Location() {
 }
 
 
-export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProps) {
+export default function SearchBar({ initialQuery = "", scope, onSearch }: SearchBarProps) {
   const router = useRouter();
   const [term, setTerm] = useState(initialQuery);
+
+  React.useEffect(() => {
+    setTerm(initialQuery);
+  }, [initialQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = term.trim();
     onSearch?.();
-    router.push(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    const params = new URLSearchParams();
+
+    if (query) {
+      params.set("q", query);
+    }
+
+    if (scope) {
+      params.set("scope", scope);
+    }
+
+    router.push(`/search${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   return (
