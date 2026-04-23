@@ -5,6 +5,8 @@ import Footer from "@/components/footer";
 import BouquetCard from "@/components/BouquetCard";
 import { Icon } from "@iconify/react";
 import SearchBar from "@/components/SearchBar";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/getSession";
 import { mockBouquets } from "@/lib/mockData";
 import Link from "next/link";
 
@@ -245,13 +247,23 @@ function ShopByCategory() {
   );
 }
 
-
-// ─── PAGE ─────────────────────────────────────────────────
-export default function Desktop() {
+export default async function Desktop() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const session = await getSession();
+
+  if (session?.profile?.role === "admin") {
+    redirect("/admin/vendor-applications"); //change to admin dashboard when ready
+  }
+
+  if (session?.profile?.role === "vendor") {
+    redirect("/market/dashboard");
+  }
+
+  const signUpHref = session?.user ? "/vendor-application" : "/sign-up";
 
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
+      <Hero signUpHref={signUpHref} />
       <Hero activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       <BestSellers activeCategory={activeCategory} />
       <ShopByCategory />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 
-type TabId = "dashboard" | "products" | "orders" | "messages" | "profile" | "schedule";
+type TabId = "dashboard" | "products" | "orders" | "messages" | "profile" | "schedule" | "settings";
 type VendorType = "market" | "pop-up";
 
 type VendorDashboardSidebarCardProps = {
@@ -19,13 +19,14 @@ const tabs: Record<"pop-up" | "market", Array<{ id: TabId; label: string; icon: 
     // { id: "messages",  label: "Messages",  icon: "mdi:message-outline" },
     { id: "profile",   label: "Profile",   icon: "mdi:account-outline" },
     { id: "schedule",  label: "Schedule",  icon: "mdi:calendar-outline" },
+    { id: "settings",  label: "Settings",  icon: "mdi:cog-outline" },
   ],
   market: [
     { id: "dashboard", label: "Dashboard", icon: "mdi:home-outline" },
     { id: "products",  label: "Products",  icon: "mdi:package-variant" },
     { id: "orders",    label: "Orders",    icon: "mdi:clipboard-list-outline" },
-    // { id: "messages",  label: "Messages",  icon: "mdi:message-outline" },
     { id: "profile",   label: "Profile",   icon: "mdi:account-outline" },
+    { id: "settings",  label: "Settings",  icon: "mdi:cog-outline" },
   ],
 };
 
@@ -33,10 +34,11 @@ function getTabRoutes(vendorType: VendorType): Partial<Record<TabId, string>> {
   return {
     dashboard: `/${vendorType}/dashboard`,
     products:  `/${vendorType}/products`,
-    profile: `/${vendorType}/profile`,
-    orders: `/${vendorType}/orders`,
-    messages: `/${vendorType}/messages`,
-    schedule: `/pop-up/schedule`,
+    profile:   `/${vendorType}/profile`,
+    orders:    `/${vendorType}/orders`,
+    messages:  `/${vendorType}/messages`,
+    schedule:  `/${vendorType}/schedule`,
+    settings:  `/${vendorType}/settings`,
   };
 }
 
@@ -100,12 +102,7 @@ export function VendorDashboardSidebarCard({
       </nav>
 
       {/* Sign Out */}
-      {/* <div className="px-[16px] py-[16px] border-t border-slate-100">
-        <button className="flex items-center gap-[12px] h-[48px] px-[16px] rounded-[12px] w-full text-slate-500 hover:bg-red-50 hover:text-[#D24B46] transition-all duration-200 cursor-pointer">
-          <Icon icon="mdi:logout" width={20} height={20} className="shrink-0" />
-          <span className="text-[15px] font-medium tracking-[0.3px]">Sign Out</span>
-        </button>
-      </div> */}
+      {/* <div className="px-[16px] py-[16px] border-t border-slate-100"> ... </div> */}
     </aside>
   );
 }

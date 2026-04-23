@@ -290,3 +290,84 @@ export const mockUpcomingEvents: UpcomingEventItem[] = [
   { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "15" }, status: "Open" },
   { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "16" }, status: "Open" },
 ];
+
+// ─── VENDOR DASHBOARD (MARKET) ───────────────────────────
+export type MarketKPIItem = {
+  label: string;
+  value: string;
+  change?: string;
+  positive?: boolean;
+  icon: string;
+  href: string;
+};
+
+export type MarketRecentOrder = {
+  id: string;
+  customerName: string;
+  item: string;
+  status: "Pending" | "Completed" | "Cancelled";
+  amount: string;
+  date: string;
+};
+
+export type MarketLowStockProduct = {
+  id: string;
+  name: string;
+  stock: number;
+};
+
+export type MarketUpcomingOrder = {
+  date: string;
+  day: string;
+  count: number;
+  isToday?: boolean;
+};
+
+export type MarketTrendPoint = {
+  label: string;
+  value: number;
+};
+
+export const mockMarketKPIs: MarketKPIItem[] = [
+  { label: "Revenue (7 days)",   value: "₱8,420", change: "+12.3%", positive: true,  icon: "mdi:cash-multiple",          href: "/market/orders"   },
+  { label: "Orders (7 days)",    value: "54",      change: "+2%",    positive: true,  icon: "mdi:shopping-outline",       href: "/market/orders"   },
+  { label: "Pending Fulfilment", value: "6",       change: "",       positive: false, icon: "mdi:clock-alert-outline",    href: "/market/orders"   },
+  { label: "Low-Stock Products", value: "3",       change: "",       positive: false, icon: "mdi:package-variant-closed", href: "/market/products" },
+];
+
+export const mockMarketRecentOrders: MarketRecentOrder[] = [
+  { id: "1", customerName: "Maria Santos",  item: "Red Rose Bouquet",     status: "Pending",   amount: "₱1,200", date: "Apr 22, 2026 · 2:00 PM"  },
+  { id: "2", customerName: "Jose Reyes",    item: "Sunflower Bundle",     status: "Completed", amount: "₱850",   date: "Apr 21, 2026 · 4:30 PM"  },
+  { id: "3", customerName: "Ana Cruz",      item: "White Lily Wrap",      status: "Completed", amount: "₱1,400", date: "Apr 21, 2026 · 11:00 AM" },
+  { id: "4", customerName: "Pedro Lim",     item: "Mixed Spring Bouquet", status: "Cancelled", amount: "₱960",   date: "Apr 20, 2026 · 9:15 AM"  },
+  { id: "5", customerName: "Carla Mendoza", item: "Tulip Arrangement",    status: "Pending",   amount: "₱1,050", date: "Apr 20, 2026 · 8:00 AM"  },
+];
+
+export const mockMarketLowStock: MarketLowStockProduct[] = [
+  { id: "1", name: "Red Rose Bouquet",  stock: 2 },
+  { id: "2", name: "White Lily Wrap",   stock: 1 },
+  { id: "3", name: "Tulip Arrangement", stock: 3 },
+];
+
+export const mockMarketUpcomingOrders: MarketUpcomingOrder[] = [
+  { date: "22", day: "Wed", count: 3, isToday: true },
+  { date: "23", day: "Thu", count: 2 },
+  { date: "24", day: "Fri", count: 6 },
+  { date: "25", day: "Sat", count: 1 },
+  { date: "26", day: "Sun", count: 4 },
+];
+
+export const mockMarketRevenueTrend: MarketTrendPoint[] = [
+  { label: "Apr 10", value: 360 },
+  { label: "Apr 11", value: 390 },
+  { label: "Apr 12", value: 410 },
+  { label: "Apr 13", value: 425 },
+  { label: "Apr 14", value: 445 },
+  { label: "Apr 15", value: 430 },
+  { label: "Apr 16", value: 460 },
+  { label: "Apr 17", value: 480 },
+  { label: "Apr 18", value: 500 },
+  { label: "Apr 19", value: 515 },
+  { label: "Apr 21", value: 555 },
+  { label: "Apr 22", value: 600 },
+];
