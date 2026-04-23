@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import NavBar from "@/components/navbar";
 import SearchBar from "@/components/SearchBar";
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/getSession";
 import { mockBouquets } from "@/lib/mockData";
 
@@ -215,13 +216,36 @@ function ShopByCategory() {
   );
 }
 
+// export default async function Desktop() {
+//   const session = await getSession();
+//   const signUpHref = session.user ? "/vendor-application" : "/sign-up";
+
+//   return (
+//     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
+//       {/* <NavBar type="default"/> */}
+//       <Hero signUpHref={signUpHref} />
+//       <BestSellers />
+//       <ShopByCategory />
+//       <Footer />
+//     </div>
+//   );
+// }
+
 export default async function Desktop() {
   const session = await getSession();
-  const signUpHref = session.user ? "/vendor-application" : "/sign-up";
+
+  if (session?.profile?.role === "admin") {
+    redirect("/admin/vendor-applications"); //change to admin dashboard when ready
+  }
+
+  if (session?.profile?.role === "vendor") {
+    redirect("/market/dashboard");
+  }
+
+  const signUpHref = session?.user ? "/vendor-application" : "/sign-up";
 
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
-      {/* <NavBar type="default"/> */}
       <Hero signUpHref={signUpHref} />
       <BestSellers />
       <ShopByCategory />
