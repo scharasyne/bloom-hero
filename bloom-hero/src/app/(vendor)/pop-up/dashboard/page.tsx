@@ -64,34 +64,31 @@ export default function VendorPopUpDashboardPage() {
   }
 
   return (
-    // <main className="mx-auto max-w-6xl px-6 py-10">
-    // <main className = "flex-h screen lg:p-6">
-    <main className = "flex">
-      <div className="lg:p-6">
-        <VendorDashboardSidebarCard activeTab="dashboard" vendorType="pop-up" />
-      </div>
-      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-        <div className="flex flex-col gap-6">
-          {status === "pending" && (
-            <div className="flex gap-4 items-start p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-yellow-900 mb-1">Application Pending</h3>
-                <p className="text-sm text-yellow-800">
-                  Your vendor application is currently under review. Some features will be unavailable until your application is approved.
-                </p>
-              </div>
-            </div>
-          )}
+  <main className="mx-auto max-w-6xl px-6 py-10">
+    <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+      <VendorDashboardSidebarCard activeTab="dashboard" vendorType="pop-up" />
 
-          {/* <div className="mb-8 flex flex-col justify-between">
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="text-muted-foreground text-sm">
-              Here's what's happening with your shop.
-            </p>
-          </div> */}
+      <div className="flex flex-col gap-6">
+        {status === "pending" && (
+          <div className="flex gap-4 items-start p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-900 mb-1">Application Pending</h3>
+              <p className="text-sm text-yellow-800">
+                Your vendor application is currently under review. Some features will be unavailable until your application is approved.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-8 flex flex-col justify-between">
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">
+            Here's what's happening with your shop.
+          </p>
         </div>
       </div>
-    </main>
-  );
-}
+    </div>
+  </main>
+)
+};
