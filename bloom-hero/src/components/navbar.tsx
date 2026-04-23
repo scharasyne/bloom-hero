@@ -73,7 +73,7 @@ export default function NavBar({
   // if (role === "vendor") resolvedType = vendor_type as navTypes;
 
   const items = navLinks[resolvedType]
-  const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user;
+  const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user && !isVendor;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -230,10 +230,21 @@ export default function NavBar({
           <>
             <span className="w-px h-5 bg-[#ddd9d4] shrink-0" />
             <p className="text-[14px] text-[#7a7a7a] whitespace-nowrap">
-              You are{" "}
-              <span className="font-semibold text-[#1f1f1f]">signed in</span>
-              {" "}as{" "}
-              <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+              {isVendor ? (
+                <>
+                  You're{" "}
+                  <span className="font-semibold text-[#1f1f1f]">blooming</span>
+                  {" "}as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{vendor_name ?? "Your Store"}</span>
+                </>
+              ) : (
+                <>
+                  You are{" "}
+                  <span className="font-semibold text-[#1f1f1f]">signed in</span>
+                  {" "}as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+                </>
+              )}
             </p>
           </>
         )}
@@ -259,14 +270,7 @@ export default function NavBar({
 
       {/* RIGHT: nav links + auth */}
       <div className="flex items-center gap-7 ml-auto shrink-0">
-        {isVendor ? (
-          <Link
-            href={`/${vendor_type}/dashboard`}
-            className="text-[14px] font-semibold text-[#1f1f1f] hover:text-[#d24b46] transition-colors"
-          >
-            {vendor_name ?? "Your Shop"}
-          </Link>
-        ) : (
+        {!isVendor && (
           items.map(({ href, label }) => (
             <Link
               key={href}
@@ -330,8 +334,17 @@ export default function NavBar({
         {user && (
           <div className="px-5 py-3 border-b border-[#f0ece8] mb-1">
             <p className="text-[13px] text-[#7a7a7a]">
-              Signed in as{" "}
-              <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+              {isVendor ? (
+                <>
+                  Blooming as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{vendor_name ?? "Your Store"}</span>
+                </>
+              ) : (
+                <>
+                  Signed in as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+                </>
+              )}
             </p>
           </div>
         )}
@@ -354,15 +367,7 @@ export default function NavBar({
         )}
 
         {/* Links */}
-        {isVendor ? (
-          <Link
-            href={`/${vendor_type}/dashboard`}
-            className="px-5 py-3 text-[15px] font-semibold text-[#1f1f1f] hover:bg-[#fdf8f4]"
-            onClick={() => setMenuOpen(false)}
-          >
-            {vendor_name ?? "Your Shop"}
-          </Link>
-        ) : (
+        {!isVendor && (
           items.map(({ href, label }) => (
             <Link
               key={href}
