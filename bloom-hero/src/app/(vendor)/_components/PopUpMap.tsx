@@ -26,7 +26,7 @@ interface PopUpLocationRow {
   longitude: number | string | null;
   vendors: {
     shop_name: string | null;
-  } | null;
+  }[] | null;
 }
 
 const supabase = createSupabaseBrowserClient();
@@ -101,7 +101,7 @@ export default function PopUpMap() {
           return {
             id: row.id,
             displayNumber: index + 1,
-            name: row.vendors?.shop_name?.trim() || "Pop-up Store",
+            name: row.vendors?.[0]?.shop_name?.trim() || "Pop-up Store",
             address: row.location,
             startDate: formatShortDate(startSource),
             endDate: formatShortDate(endSource),
