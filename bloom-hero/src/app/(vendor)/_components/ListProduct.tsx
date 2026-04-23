@@ -57,7 +57,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   {
     const { data, error } = await supabase
       .from("products")
-      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name), product_images(id, image_url, display_order)")
+      .select("id, product_name, description, product_image_url, price, stocks, categories!products_category_id_fkey(category_name), product_images(id, image_url, display_order)")
       .eq("vendor_id", vendor.id)
       .order("created_at", { ascending: false })
 
@@ -71,7 +71,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   ) {
     const fallback = await supabase
       .from("products")
-      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name)")
+      .select("id, product_name, description, product_image_url, price, stocks, categories!products_category_id_fkey(category_name)")
       .eq("vendor_id", vendor.id)
       .order("created_at", { ascending: false })
 
