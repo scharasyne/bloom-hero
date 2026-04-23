@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 export interface PopUpVendor {
-  id: number;
+  id: string;
+  displayNumber: number;
   name: string;
   address: string;
   startDate: string;
@@ -14,61 +16,107 @@ export interface PopUpVendor {
   lng: number;
 }
 
-// ─── Mock data — swap with fetch("/api/popup-vendors") when backend is ready ──
-const MOCK_VENDORS: PopUpVendor[] = [
-  {
-    id: 1,
-    name: "Bloom & Co.",
-    address: "Ayala Central Bloc, Cebu IT Park",
-    startDate: "02/13/26",
-    endDate: "02/15/26",
-    lat: 10.3312,
-    lng: 123.9053,
-  },
-  {
-    id: 2,
-    name: "FreshHearts",
-    address: "University of the Philippines Cebu",
-    startDate: "02/12/26",
-    endDate: "02/14/26",
-    lat: 10.3131,
-    lng: 123.8934,
-  },
-  {
-    id: 3,
-    name: "Fleur",
-    address: "Mindanao Avenue, Cebu Business Park",
-    startDate: "02/13/26",
-    endDate: "02/13/26",
-    lat: 10.3172,
-    lng: 123.9004,
-  },
-  {
-    id: 4,
-    name: "Petal & Stem",
-    address: "Bonifacio District, F. Cabahug Street",
-    startDate: "02/14/26",
-    endDate: "02/15/26",
-    lat: 10.3289,
-    lng: 123.9121,
-  },
-  {
-    id: 5,
-    name: "Garden Place",
-    address: "Vibo Place, N. Escario Street",
-    startDate: "02/13/26",
-    endDate: "02/15/26",
-    lat: 10.3205,
-    lng: 123.8978,
-  },
-];
+interface PopUpLocationRow {
+  id: string;
+  location: string;
+  scheduled_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  vendors: {
+    shop_name: string | null;
+  } | null;
+}
+
+const supabase = createSupabaseBrowserClient();
+
+function formatShortDate(value: string | null) {
+  if (!value) return "N/A";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "N/A";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+  }).format(date);
+}
+
+function parseCoordinate(value: number | string | null) {
+  if (value === null || value === undefined) return null;
+
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) return null;
+
+  return parsed;
+}
 
 export default function PopUpMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
-  const [activeVendor, setActiveVendor] = useState<number | null>(null);
+  const [vendors, setVendors] = useState<PopUpVendor[]>([]);
+  const [activeVendor, setActiveVendor] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const vendors = MOCK_VENDORS;
+  const handleVendorSelect = (vendor: PopUpVendor) => {
+    setActiveVendor((current) => (current === vendor.id ? null : vendor.id));
+    
+    const map = mapInstanceRef.current as any;
+    if (map) {
+      map.setView([vendor.lat, vendor.lng], 17, { animate: true });
+    }
+  };
+
+  useEffect(() => {
+    const loadVendors = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from("popup_locations")
+        .select("id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(shop_name)")
+        .order("scheduled_date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+      if (fetchError) {
+        setVendors([]);
+        setError(fetchError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      const mapped = ((data ?? []) as PopUpLocationRow[])
+        .map((row, index) => {
+          const lat = parseCoordinate(row.latitude);
+          const lng = parseCoordinate(row.longitude);
+
+          if (lat === null || lng === null) return null;
+
+          const startSource = row.start_time ?? row.scheduled_date;
+          const endSource = row.end_time ?? row.scheduled_date;
+
+          return {
+            id: row.id,
+            displayNumber: index + 1,
+            name: row.vendors?.shop_name?.trim() || "Pop-up Store",
+            address: row.location,
+            startDate: formatShortDate(startSource),
+            endDate: formatShortDate(endSource),
+            lat,
+            lng,
+          };
+        })
+        .filter((vendor): vendor is PopUpVendor => vendor !== null);
+
+      setVendors(mapped);
+      setIsLoading(false);
+    };
+
+    void loadVendors();
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -119,13 +167,13 @@ export default function PopUpMap() {
             font-family:var(--font-quicksand),sans-serif;
             box-shadow:0 2px 8px rgba(0,0,0,0.2);
             border:2px solid white;
-          ">${vendor.id}</div>`,
+          ">${vendor.displayNumber}</div>`,
           iconSize: [30, 30],
           iconAnchor: [15, 15],
         });
 
         const marker = L.marker([vendor.lat, vendor.lng], { icon }).addTo(map);
-        marker.on("click", () => setActiveVendor(vendor.id));
+        marker.on("click", () => handleVendorSelect(vendor));
       });
 
       mapInstanceRef.current = map;
@@ -138,8 +186,7 @@ export default function PopUpMap() {
         mapInstanceRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [vendors]);
 
   return (
     <>
@@ -190,14 +237,19 @@ export default function PopUpMap() {
                 </p>
 
                 <div className="flex-1 overflow-y-auto space-y-1 -mx-2 pr-1">
+                  {isLoading && (
+                    <p className="px-3 py-2 text-[12px] text-[#7a7a7a]">Loading pop-up locations...</p>
+                  )}
+                  {!isLoading && error && (
+                    <p className="px-3 py-2 text-[12px] text-[#d24b46]">Failed to load pop-up locations: {error}</p>
+                  )}
+                  {!isLoading && !error && vendors.length === 0 && (
+                    <p className="px-3 py-2 text-[12px] text-[#7a7a7a]">No pop-up locations available.</p>
+                  )}
                   {vendors.map((vendor) => (
                     <button
                       key={vendor.id}
-                      onClick={() =>
-                        setActiveVendor(
-                          vendor.id === activeVendor ? null : vendor.id
-                        )
-                      }
+                      onClick={() => handleVendorSelect(vendor)}
                       className={`w-full text-left px-3 py-3 rounded-[10px] transition-all duration-150 ${
                         activeVendor === vendor.id
                           ? "bg-[#f5f1ec]"
@@ -206,7 +258,7 @@ export default function PopUpMap() {
                     >
                       <div className="flex items-start gap-3">
                         <span className="flex-shrink-0 mt-0.5 w-[22px] h-[22px] rounded-full bg-[#2f5d3a] text-white text-[11px] font-bold flex items-center justify-center">
-                          {vendor.id}
+                          {vendor.displayNumber}
                         </span>
                         <div className="min-w-0">
                           <p className="font-semibold text-[#1f1f1f] text-[14px] leading-snug tracking-[0.14px]">
