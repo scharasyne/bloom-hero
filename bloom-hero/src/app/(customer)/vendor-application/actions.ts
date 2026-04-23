@@ -36,10 +36,19 @@ type ActionResult = {
   error?: string;
 };
 
-function validateStepOne(input: DraftInput): string | null {
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function validateStepOne(input: DraftInput, accountEmail?: string | null): string | null {
   if (!input.shopName.trim()) return "Shop Name is required.";
   if (!input.shopAddress.trim()) return "Shop Address is required.";
-  if (!input.email.trim()) return "Email is required.";
+  if (!input.email.trim()) return "Business email is required.";
+  const businessEmail = normalizeEmail(input.email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail)) return "Please enter a valid business email.";
+  if (accountEmail && businessEmail === normalizeEmail(accountEmail)) {
+    return "Business email must be different from your account email.";
+  }
   if (!/^\d{10}$/.test(input.phoneNumber.trim())) return "Phone Number must be exactly 10 digits.";
   return null;
 }
@@ -62,15 +71,15 @@ function validateStepTwo(input: SubmitInput): string | null {
 }
 
 export async function saveVendorApplicationDraft(input: DraftInput): Promise<ActionResult> {
-  const stepOneError = validateStepOne(input);
-  if (stepOneError) return { ok: false, error: stepOneError };
-
   const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) return { ok: false, error: "You need to log in again." };
+
+  const stepOneError = validateStepOne(input, session.user.email);
+  if (stepOneError) return { ok: false, error: stepOneError };
 
   const { error } = await supabase.from("vendor_applications").upsert(
     {
@@ -97,18 +106,18 @@ export async function saveVendorApplicationDraft(input: DraftInput): Promise<Act
 }
 
 export async function submitVendorApplication(input: SubmitInput): Promise<ActionResult> {
-  const stepOneError = validateStepOne(input);
-  if (stepOneError) return { ok: false, error: stepOneError };
-
-  const stepTwoError = validateStepTwo(input);
-  if (stepTwoError) return { ok: false, error: stepTwoError };
-
   const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) return { ok: false, error: "You need to log in again." };
+
+  const stepOneError = validateStepOne(input, session.user.email);
+  if (stepOneError) return { ok: false, error: stepOneError };
+
+  const stepTwoError = validateStepTwo(input);
+  if (stepTwoError) return { ok: false, error: stepTwoError };
 
   const { error: applicationError } = await supabase.from("vendor_applications").upsert(
     {

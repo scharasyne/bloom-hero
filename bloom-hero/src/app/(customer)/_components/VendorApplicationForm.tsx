@@ -69,6 +69,10 @@ function digitsOnly(value: string) {
   return value.replace(/\D/g, "");
 }
 
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
 function parsePhoneNumber(value: string) {
   const compact = value.replace(/[\s-]/g, "");
   if (compact.startsWith("+63")) return { countryCode: "+63", localNumber: digitsOnly(compact.slice(3)) };
@@ -138,7 +142,7 @@ export default function VendorApplicationForm({
 
   const [shopName, setShopName] = useState("");
   const [shopAddress, setShopAddress] = useState("");
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState("");
   const raw = digitsOnly(initialPhoneParts.localNumber);
   const [phoneNumber, setPhoneNumber] = useState(raw.slice(-10));
   const [vendorType, setVendorType] = useState<VendorType>("market");
@@ -174,7 +178,7 @@ export default function VendorApplicationForm({
 
         setShopName(data.shop_name ?? "");
         setShopAddress(data.shop_address ?? "");
-        setEmail(data.email ?? initialEmail);
+        setEmail(data.email ?? "");
 
         const raw = digitsOnly(data.phone_number ?? "");
         const local10 = raw.replace(/^63/, "").slice(-10);
@@ -211,7 +215,12 @@ export default function VendorApplicationForm({
   function validateStepOne() {
     if (!shopName.trim()) return "Shop Name is required.";
     if (!shopAddress.trim()) return "Shop Address is required.";
-    if (!email.trim()) return "Email is required.";
+    if (!email.trim()) return "Business email is required.";
+    const businessEmail = normalizeEmail(email);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail)) return "Please enter a valid business email.";
+    if (businessEmail === normalizeEmail(initialEmail)) {
+      return "Business email must be different from your account email.";
+    }
     if (!phoneNumber.trim()) return "Phone Number is required.";
     if (!/^\d{10}$/.test(phoneNumber.trim())) return "Phone Number must be exactly 10 digits.";
     return "";
@@ -390,14 +399,14 @@ export default function VendorApplicationForm({
               </FormField>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <FormField label="Email Address *">
+                <FormField label="Business Email Address *" hint="Use an email different from your current BloomHero account.">
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
                     maxLength={50}
                     className="input-style"
-                    placeholder="name@email.com"
+                    placeholder="shop@business.com"
                   />
                 </FormField>
 

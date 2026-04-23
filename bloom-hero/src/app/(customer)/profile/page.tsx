@@ -1,6 +1,25 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import Footer from "@/components/footer";
 import { ProfileForm } from "../_components/profile-form";
+import { LinkedVendorCredentialsBox } from "../_components/LinkedVendorCredentialsBox";
+
+type LinkedVendorCredentials = {
+  vendor_user_id: string;
+  email: string;
+  password: string;
+  issued_at: string;
+};
+
+const LINKED_VENDOR_CREDENTIALS_TTL_MS = 48 * 60 * 60 * 1000;
+
+function isLinkedVendorCredentialsActive(issuedAt: string | null | undefined) {
+  if (!issuedAt) return false;
+
+  const issuedTime = new Date(issuedAt).getTime();
+  if (Number.isNaN(issuedTime)) return false;
+
+  return Date.now() - issuedTime <= LINKED_VENDOR_CREDENTIALS_TTL_MS;
+}
 
 function StatCard({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) {
   return (
@@ -34,6 +53,12 @@ export default async function CustomerProfilePage() {
       </>
     );
   }
+
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  const currentAuthUser = authUser ?? session.user;
 
   // Fetch completed order items for stats
   const { data: orderItems } = await supabase
@@ -73,9 +98,16 @@ export default async function CustomerProfilePage() {
     topVendorName = vendor?.shop_name ?? "Unknown Shop";
   }
 
-  const user = session.user;
+  const user = currentAuthUser;
   const displayName = user.user_metadata?.name ?? "";
   const phone = user.user_metadata?.phone ?? "";
+  const linkedVendorCredentials =
+    (user.user_metadata?.linked_vendor_credentials as LinkedVendorCredentials | undefined) ?? null;
+  const hasLinkedVendorCredentials =
+    Boolean(linkedVendorCredentials?.email) &&
+    Boolean(linkedVendorCredentials?.password) &&
+    isLinkedVendorCredentialsActive(linkedVendorCredentials?.issued_at);
+
   const memberSince = new Date(user.created_at).toLocaleDateString("en-PH", {
     month: "long", year: "numeric",
   });
@@ -149,6 +181,16 @@ export default async function CustomerProfilePage() {
             defaultPhone={phone}
             email={user.email ?? ""}
           />
+
+          {hasLinkedVendorCredentials && linkedVendorCredentials && (
+            <LinkedVendorCredentialsBox
+              credentials={{
+                email: linkedVendorCredentials.email,
+                password: linkedVendorCredentials.password,
+                issuedAt: linkedVendorCredentials.issued_at,
+              }}
+            />
+          )}
 
         </div>
       </main>

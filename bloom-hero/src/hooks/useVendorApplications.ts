@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import {
+  approveVendorApplication,
+  type IssuedVendorCredentials,
+  rejectVendorApplication,
+} from "@/app/admin/vendor-applications/actions";
 import { VendorApplicationRecord } from "@/typess";
 
 const supabase = createSupabaseBrowserClient();
@@ -42,75 +47,27 @@ export function useVendorApplications() {
     void loadApplications();
   }, []);
 
+  type ApproveResult = {
+    credentials: IssuedVendorCredentials;
+  };
+
   const approve = async (application: VendorApplicationRecord) => {
-    const vendorName = application.shop_name?.trim() || "Vendor Shop";
-    const vendorType = application.vendor_type ?? "market";
+    const result = await approveVendorApplication(application.id);
 
-    const { error: roleError } = await supabase
-      .from("users")
-      .update({ role: "vendor" })
-      .eq("id", application.owner_id);
-
-    if (roleError) {
-      throw new Error(roleError.message);
-    }
-
-    const { error: vendorError } = await supabase.from("vendors").upsert(
-      {
-        owner_id: application.owner_id,
-        shop_name: vendorName,
-        vendor_type: vendorType,
-        status: "approved",
-        rejection_reason: null,
-        approved_at: new Date().toISOString(),
-        rejected_at: null,
-      },
-      { onConflict: "owner_id" }
-    );
-
-    if (vendorError) {
-      throw new Error(vendorError.message);
-    }
-
-    const { error: deleteError } = await supabase
-      .from("vendor_applications")
-      .delete()
-      .eq("id", application.id);
-
-    if (deleteError) {
-      throw new Error(deleteError.message);
+    if (!result.ok || !result.data) {
+      throw new Error(result.error ?? "Failed to approve vendor application.");
     }
 
     setData((prev) => prev.filter((item) => item.id !== application.id));
+
+    return { credentials: result.data } satisfies ApproveResult;
   };
 
   const reject = async (application: VendorApplicationRecord, reason: string) => {
-    const vendorType = application.vendor_type ?? "market";
+    const result = await rejectVendorApplication(application.id, reason);
 
-    const { error: vendorError } = await supabase.from("vendors").upsert(
-      {
-        owner_id: application.owner_id,
-        shop_name: application.shop_name?.trim() || "Vendor Shop",
-        vendor_type: vendorType,
-        status: "rejected",
-        rejection_reason: reason,
-        approved_at: null,
-        rejected_at: new Date().toISOString(),
-      },
-      { onConflict: "owner_id" }
-    );
-
-    if (vendorError) {
-      throw new Error(vendorError.message);
-    }
-
-    const { error: deleteError } = await supabase
-      .from("vendor_applications")
-      .delete()
-      .eq("id", application.id);
-
-    if (deleteError) {
-      throw new Error(deleteError.message);
+    if (!result.ok) {
+      throw new Error(result.error ?? "Failed to reject vendor application.");
     }
 
     setData((prev) => prev.filter((item) => item.id !== application.id));

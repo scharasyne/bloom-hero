@@ -54,6 +54,12 @@ function getShopInitial(shopName: string) {
   return trimmed.length > 0 ? trimmed[0].toUpperCase() : "?"
 }
 
+function normalizeVendorType(value: unknown): vendorType | null {
+  if (value === "market") return "market"
+  if (value === "pop-up" || value === "popup" || value === "pop_up") return "pop-up"
+  return null
+}
+
 export default async function VendorProfilePage({ type }: { type: vendorType }) {
   const supabase = await createSupabaseServerClient()
 
@@ -67,13 +73,36 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
 
   const { data: vendor, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, shop_name")
+    .select("id, shop_name, vendor_type")
     .eq("owner_id", user.id)
-    .eq("vendor_type", type)
     .maybeSingle()
 
-  if (vendorError || !vendor) {
-    throw new Error(vendorError?.message || "Market vendor profile not found.")
+  if (vendorError) {
+    throw new Error(vendorError.message)
+  }
+
+  if (!vendor) {
+    const { data: application, error: applicationError } = await supabase
+      .from("vendor_applications")
+      .select("vendor_type")
+      .eq("owner_id", user.id)
+      .maybeSingle()
+
+    if (applicationError) {
+      throw new Error(applicationError.message)
+    }
+
+    const applicationType = normalizeVendorType(application?.vendor_type)
+    if (applicationType) {
+      redirect(`/${applicationType}/profile`)
+    }
+
+    redirect("/customer/vendor-application")
+  }
+
+  const actualVendorType = normalizeVendorType(vendor.vendor_type)
+  if (actualVendorType && actualVendorType !== type) {
+    redirect(`/${actualVendorType}/profile`)
   }
 
   let productsData: ProductRow[] | null = null
@@ -240,9 +269,9 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
   const shopInitial = getShopInitial(vendor.shop_name)
 
   return (
-    <main className="flex min-h-screen bg-[#f7f4f1]">
-      {/* Sidebar */}
-      <div className="hidden lg:block lg:p-6">
+    // <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
+    <main className = "flex">
+      <div className="lg:p-6">
         <VendorDashboardSidebarCard activeTab="profile" vendorType={type} />
       </div>
 
