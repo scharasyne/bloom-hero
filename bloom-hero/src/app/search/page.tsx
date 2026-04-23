@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import BouquetCard from "@/components/BouquetCard";
 import Footer from "@/components/footer";
@@ -61,6 +61,14 @@ function scopeLabel(scope: SearchScope) {
   return "All";
 }
 
+function mapPriceFilter(value: string) {
+  if (value === "Under P500") return "<500";
+  if (value === "Over P500") return ">500";
+  if (value === "Under P700") return "<700";
+  if (value === "Under P1000") return "<1000";
+  return "<1000";
+}
+
 function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
   const rating = typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
 
@@ -99,14 +107,13 @@ function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
 
   const q = searchParams.get("q") || "";
   const scope = normalizeScope(searchParams.get("scope"));
 
-  const [price, setPrice] = React.useState("Any");
+  const [price, setPrice] = React.useState("Under P1000");
   const [sort, setSort] = React.useState("Best Sellers");
+  const [moreFilter, setMoreFilter] = React.useState("All");
   const [results, setResults] = React.useState<SearchResults>({ flowers: [], vendors: [] });
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -117,18 +124,9 @@ export default function SearchPage() {
 
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
 
-  const updateSearchUrl = React.useCallback(
-    (nextScope: SearchScope) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("scope", nextScope);
-      router.replace(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams]
-  );
-
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, price, sort, scope]);
+  }, [q, scope]);
 
   const handleAddToCart = React.useCallback(
     async (product: SearchFlowerRow) => {
@@ -302,7 +300,7 @@ export default function SearchPage() {
       setErrorMsg(null);
 
       try {
-        const params = new URLSearchParams({ q, scope, price, sort });
+        const params = new URLSearchParams({ q, scope, price: mapPriceFilter(price), sort });
         const response = await fetch(`/api/search?${params.toString()}`, { signal: controller.signal });
 
         const payload = (await response.json()) as {
@@ -350,39 +348,40 @@ export default function SearchPage() {
       <main className="py-8 min-h-screen max-w-7xl mx-auto px-10">
         <div className="max-w-240 mx-auto">
           <div className="mb-6">
-            <SearchBar initialQuery={q} scope={scope} onSearch={() => setCurrentPage(1)} />
+            <SearchBar
+              initialQuery={q}
+              scope={scope}
+              onSearch={() => setCurrentPage(1)}
+            />
           </div>
-
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6">
             <SearchFilters
               price={price}
               onPriceChange={setPrice}
               sort={sort}
               onSortChange={setSort}
-              scope={scope}
-              onScopeChange={(nextScope) => {
-                setCurrentPage(1);
-                updateSearchUrl(nextScope as SearchScope);
-              }}
+              moreFilter={moreFilter}
+              onMoreFilterChange={setMoreFilter}
             />
           </div>
 
-          {q && (
-            <p className="mt-6 mb-4 text-[#7a7a7a]">
-              Showing {scopeLabel(scope)} results for <strong>{q}</strong>
-            </p>
-          )}
+          <section>
+            {q && (
+              <p className="mb-4 text-[#7a7a7a]">
+                Showing {scopeLabel(scope)} results for <strong>{q}</strong>
+              </p>
+            )}
 
-          {errorMsg && <p className="text-center text-red-500">{errorMsg}</p>}
+            {errorMsg && <p className="mb-4 text-red-500">{errorMsg}</p>}
 
-          {loading ? (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              {Array.from({ length: 9 }).map((_, index) => (
-                <SkeletonCard key={index} />
-              ))}
-            </div>
-          ) : flowerResults.length > 0 || vendorResults.length > 0 ? (
-            <div className="space-y-12">
+            {loading ? (
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))}
+              </div>
+            ) : flowerResults.length > 0 || vendorResults.length > 0 ? (
+              <div className="space-y-12">
               {showFlowers ? (
                 <section>
                   <div className="mb-4 flex items-center justify-between gap-3">
@@ -488,11 +487,13 @@ export default function SearchPage() {
                 </section>
               ) : null}
             </div>
-          ) : (
-            <div className="mt-8 text-center text-gray-500">
-              {q ? "No results to display" : "Use the search bar above to start a query."}
-            </div>
-          )}
+
+            ) : (
+              <div className="mt-8 text-center text-gray-500">
+                {q ? "No results to display" : "Use the search bar above to start a query."}
+              </div>
+            )}
+          </section>
         </div>
       </main>
 
