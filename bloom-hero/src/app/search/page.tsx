@@ -1,21 +1,20 @@
 "use client";
 
-'use client';
-
 import React from "react";
 import { useSearchParams } from "next/navigation";
-import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import SearchBar from "../../components/SearchBar";
 import SearchFilters from "../../components/SearchFilters";
 import BouquetCard from "@/components/BouquetCard";
-import { mockBouquets } from "@/lib/mockData";
 import SkeletonCard from "@/components/SkeletonCard";
+import { Icon } from "@iconify/react";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") || "";
+  const searchType = (searchParams.get("type") || "all").toLowerCase();
+  const isVendorSearch = searchType === "vendors";
   const [price, setPrice] = React.useState("Any");
   const [sort, setSort] = React.useState("Best Sellers");
   const [results, setResults] = React.useState<any[]>([]);
@@ -30,7 +29,7 @@ export default function SearchPage() {
   // Reset page when search changes
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, price, sort]);
+  }, [q, price, sort, searchType]);
 
   const handleAddToCart = React.useCallback(
     async (product: any) => {
@@ -210,6 +209,37 @@ export default function SearchPage() {
       setLoading(true);
       setErrorMsg(null);
 
+      if (isVendorSearch) {
+        const vendorQuery = q.trim();
+        if (!vendorQuery) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
+        let vendorBuilder = supabase
+          .from("vendors")
+          .select("id, shop_name, vendor_type");
+
+        const pat = `%${vendorQuery}%`;
+        vendorBuilder = vendorBuilder.ilike("shop_name", pat);
+
+        const { data, error } = await vendorBuilder.order("shop_name", {
+          ascending: true,
+        });
+
+        if (error) {
+          console.error("fetch vendors:", error);
+          setErrorMsg(error.message);
+          setResults([]);
+        } else {
+          setResults(data ?? []);
+        }
+
+        setLoading(false);
+        return;
+      }
+
       let builder = supabase.from("products").select("*");
 
       if (q) {
@@ -245,7 +275,7 @@ export default function SearchPage() {
     }
 
     load();
-  }, [q, price, sort, supabase]);
+  }, [q, price, sort, supabase, isVendorSearch]);
 
   return (
     <>
@@ -261,14 +291,16 @@ export default function SearchPage() {
             />
           </div>
 
-          <div className="mb-6 flex justify-center">
-            <SearchFilters
-              price={price}
-              onPriceChange={setPrice}
-              sort={sort}
-              onSortChange={setSort}
-            />
-          </div>
+          {!isVendorSearch && (
+            <div className="mb-6 flex justify-center">
+              <SearchFilters
+                price={price}
+                onPriceChange={setPrice}
+                sort={sort}
+                onSortChange={setSort}
+              />
+            </div>
+          )}
 
           {q && (
             <p className="mt-6 mb-4">
@@ -286,32 +318,71 @@ export default function SearchPage() {
   </div>
 ) : results.length > 0 ? (
   <div>
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {results
-        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-        .map((bouquet, i) => (
-          <div
-            key={bouquet.id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
-            <BouquetCard
-              image={bouquet.product_image_url ?? bouquet.image_url ?? null}
-              name={bouquet.product_name}
-              price={bouquet.price}
-              shop={bouquet.shop_name || ""}
-              distance={bouquet.distance || ""}
-              category={bouquet.category || ""}
-              rating={bouquet.rating > 0 ? bouquet.rating : undefined}
-              sold={bouquet.sold_count ?? undefined}
-              onAddToCart={() => handleAddToCart(bouquet)}
-              adding={addingId === bouquet.id}
-              onBuyNow={() => handleBuyNow(bouquet)}
-              buying={buyingId === bouquet.id}
-            />
-          </div>
-        ))}
-    </div>
+    {isVendorSearch ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {results
+          .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+          .map((vendor, i) => {
+            const type = vendor.vendor_type === "pop-up" ? "pop-up" : "market";
+            return (
+              <a
+                key={vendor.id}
+                href={`/${type}/${vendor.id}`}
+                className="animate-fade-in rounded-2xl border border-[#edeae6] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-0.5"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-lg font-semibold text-[#1f1f1f]">
+                      {vendor.shop_name || "Vendor"}
+                    </p>
+                    <p className="mt-1 text-sm text-[#7a7a7a]">
+                      {type === "pop-up"
+                        ? "Pop-up florist"
+                        : "Market florist"}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#f3f0ea] px-2.5 py-1 text-xs font-medium text-[#2f5d3a]">
+                    {type === "pop-up" ? "Pop-up" : "Market"}
+                  </span>
+                </div>
+
+                <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#d24b46]">
+                  <span>View profile</span>
+                  <Icon icon="mdi:arrow-right" width={16} height={16} />
+                </div>
+              </a>
+            );
+          })}
+      </div>
+    ) : (
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {results
+          .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+          .map((bouquet, i) => (
+            <div
+              key={bouquet.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${i * 40}ms` }}
+            >
+              <BouquetCard
+                image={bouquet.product_image_url ?? bouquet.image_url ?? null}
+                name={bouquet.product_name}
+                price={bouquet.price}
+                shop={bouquet.shop_name || ""}
+                distance={bouquet.distance || ""}
+                category={bouquet.category || ""}
+                rating={bouquet.rating > 0 ? bouquet.rating : undefined}
+                sold={bouquet.sold_count ?? undefined}
+                onAddToCart={() => handleAddToCart(bouquet)}
+                adding={addingId === bouquet.id}
+                onBuyNow={() => handleBuyNow(bouquet)}
+                buying={buyingId === bouquet.id}
+              />
+            </div>
+          ))}
+      </div>
+    )}
 
     {/* Pagination */}
     <div className="flex items-center justify-end gap-3 mt-10">
@@ -327,7 +398,13 @@ export default function SearchPage() {
   </div>
 ) : (
   <div className="text-center text-gray-500 mt-8">
-    {q ? "No results to display" : "Use the search bar above to start a query."}
+    {isVendorSearch
+      ? q
+        ? "No matching vendors found."
+        : "Type a vendor name to search."
+      : q
+      ? "No results to display"
+      : "Use the search bar above to start a query."}
   </div>
 )}
 
