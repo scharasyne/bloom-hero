@@ -6,7 +6,8 @@ import { Icon } from "@iconify/react";
 
 interface SearchBarProps {
   initialQuery?: string;
-  onSearch?: () => void;
+  scope?: string;
+  onSearch? : () => void;
 }
 
 type SearchType = "All" | "Flowers" | "Vendors";
@@ -17,7 +18,7 @@ const placeholders: Record<SearchType, string> = {
   Vendors: "Search local florists or shops…",
 };
 
-export default function SearchBar({ initialQuery = "", onSearch }: SearchBarProps) {
+export default function SearchBar({ initialQuery = "", scope, onSearch }: SearchBarProps) {
   const router = useRouter();
   const [term, setTerm] = useState(initialQuery);
   const [searchType, setSearchType] = useState<SearchType>("All");

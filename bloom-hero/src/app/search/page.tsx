@@ -1,39 +1,137 @@
 "use client";
 
-'use client';
-
 import React from "react";
-import { useSearchParams } from "next/navigation";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import SearchBar from "../../components/SearchBar";
-import SearchFilters from "../../components/SearchFilters";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import BouquetCard from "@/components/BouquetCard";
-import { mockBouquets } from "@/lib/mockData";
+import Footer from "@/components/footer";
+import SearchBar from "@/components/SearchBar";
+import SearchFilters from "@/components/SearchFilters";
 import SkeletonCard from "@/components/SkeletonCard";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+
+type SearchScope = "all" | "flowers" | "vendors";
+
+type ProductImageRow = {
+  image_url: string;
+  display_order: number;
+};
+
+type SearchFlowerRow = {
+  id: string;
+  vendor_id: string;
+  product_name: string;
+  product_image_url: string | null;
+  image_url?: string | null;
+  price: number;
+  description?: string | null;
+  shop_name?: string | null;
+  distance?: string | null;
+  category?: string | null;
+  rating?: number | null;
+  sold_count?: number | null;
+  vendor_type?: string | null;
+  average_rating?: number | null;
+  product_images?: ProductImageRow[] | null;
+};
+
+type SearchVendorRow = {
+  id: string;
+  shop_name: string | null;
+  vendor_type: string | null;
+  average_rating: number | null;
+};
+
+type SearchResults = {
+  flowers: SearchFlowerRow[];
+  vendors: SearchVendorRow[];
+};
+
+function normalizeScope(value: string | null): SearchScope {
+  if (value === "flowers" || value === "vendors" || value === "all") {
+    return value;
+  }
+
+  return "all";
+}
+
+function scopeLabel(scope: SearchScope) {
+  if (scope === "flowers") return "Flowers";
+  if (scope === "vendors") return "Vendors";
+  return "All";
+}
+
+function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
+  const rating = typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
+
+  return (
+    <div className="bg-white content-stretch flex flex-col gap-3 items-start p-5 relative rounded-[18px] shrink-0 w-full border border-[#edeae6] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)]">
+      <div className="flex items-start justify-between gap-4 w-full">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a7a7a]">
+            {vendor.vendor_type ?? "Vendor"}
+          </p>
+          <h3 className="mt-1 text-[18px] font-semibold text-[#1f1f1f]">
+            {vendor.shop_name ?? "Untitled vendor"}
+          </h3>
+        </div>
+
+        {rating ? (
+          <div className="rounded-full bg-[#f3f0ea] px-3 py-1 text-xs font-semibold text-[#2f5d3a]">
+            ★ {rating}
+          </div>
+        ) : null}
+      </div>
+
+      <p className="text-sm leading-6 text-[#7a7a7a]">
+        Browse this vendor&apos;s listings or narrow the search using the shop name.
+      </p>
+
+      <a
+        href={`/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
+        className="inline-flex items-center justify-center rounded-full bg-[#2f6b4f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#275940]"
+      >
+        View vendor
+      </a>
+    </div>
+  );
+}
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const q = searchParams.get("q") || "";
+  const scope = normalizeScope(searchParams.get("scope"));
+
   const [price, setPrice] = React.useState("Any");
   const [sort, setSort] = React.useState("Best Sellers");
-  const [results, setResults] = React.useState<any[]>([]);
-  const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
+  const [results, setResults] = React.useState<SearchResults>({ flowers: [], vendors: [] });
   const [loading, setLoading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [addingId, setAddingId] = React.useState<string | null>(null);
   const [buyingId, setBuyingId] = React.useState<string | null>(null);
-  const ITEMS_PER_PAGE = 9;
   const [currentPage, setCurrentPage] = React.useState(1);
+  const ITEMS_PER_PAGE = 9;
 
-  // Reset page when search changes
+  const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
+
+  const updateSearchUrl = React.useCallback(
+    (nextScope: SearchScope) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("scope", nextScope);
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams]
+  );
+
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, price, sort]);
+  }, [q, price, sort, scope]);
 
   const handleAddToCart = React.useCallback(
-    async (product: any) => {
+    async (product: SearchFlowerRow) => {
       try {
         setAddingId(product.id);
 
@@ -47,12 +145,8 @@ export default function SearchPage() {
           return;
         }
 
-        // Ensure customer row exists
-        await supabase
-          .from("customers")
-          .upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
 
-        // Find or create a pending order for this vendor
         const { data: existingOrder, error: orderError } = await supabase
           .from("orders")
           .select("id, total_amount")
@@ -91,7 +185,6 @@ export default function SearchPage() {
           currentTotal = Number(newOrder.total_amount) || 0;
         }
 
-        // Check if item already in cart
         const { data: existingItem, error: itemError } = await supabase
           .from("order_items")
           .select("id, quantity, subtotal")
@@ -103,11 +196,11 @@ export default function SearchPage() {
           console.error("find order item error:", itemError);
         }
 
-        const price = Number(product.price) || 0;
+        const priceValue = Number(product.price) || 0;
 
         if (existingItem) {
           const newQty = (existingItem.quantity || 0) + 1;
-          const newSubtotal = price * newQty;
+          const newSubtotal = priceValue * newQty;
 
           await supabase
             .from("order_items")
@@ -118,16 +211,11 @@ export default function SearchPage() {
             order_id: orderId,
             product_id: product.id,
             quantity: 1,
-            subtotal: price,
+            subtotal: priceValue,
           });
         }
 
-        const newTotal = currentTotal + price;
-        await supabase
-          .from("orders")
-          .update({ total_amount: newTotal })
-          .eq("id", orderId);
-
+        await supabase.from("orders").update({ total_amount: currentTotal + priceValue }).eq("id", orderId);
         alert("Added to cart!");
       } catch (err) {
         console.error("Add to cart failed:", err);
@@ -140,7 +228,7 @@ export default function SearchPage() {
   );
 
   const handleBuyNow = React.useCallback(
-    async (product: any) => {
+    async (product: SearchFlowerRow) => {
       try {
         setBuyingId(product.id);
 
@@ -154,20 +242,16 @@ export default function SearchPage() {
           return;
         }
 
-        // Ensure customer row exists
-        await supabase
-          .from("customers")
-          .upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
 
-        const price = Number(product.price) || 0;
+        const priceValue = Number(product.price) || 0;
 
-        // Create a new completed order immediately for this single item
         const { data: newOrder, error: insertOrderError } = await supabase
           .from("orders")
           .insert({
             customer_id: user.id,
             vendor_id: product.vendor_id,
-            total_amount: price,
+            total_amount: priceValue,
             status: "completed",
           })
           .select("id")
@@ -179,12 +263,11 @@ export default function SearchPage() {
           return;
         }
 
-        // Create the single order item
         const { error: itemError } = await supabase.from("order_items").insert({
           order_id: newOrder.id,
           product_id: product.id,
           quantity: 1,
-          subtotal: price,
+          subtotal: priceValue,
         });
 
         if (itemError) {
@@ -193,7 +276,6 @@ export default function SearchPage() {
           return;
         }
 
-        // Go straight to purchase history
         window.location.href = "/customer/orders";
       } catch (err) {
         console.error("Buy now failed:", err);
@@ -206,59 +288,69 @@ export default function SearchPage() {
   );
 
   React.useEffect(() => {
+    const controller = new AbortController();
+
     async function load() {
+      if (!q.trim()) {
+        setResults({ flowers: [], vendors: [] });
+        setErrorMsg(null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setErrorMsg(null);
 
-      let builder = supabase.from("products").select("*");
+      try {
+        const params = new URLSearchParams({ q, scope, price, sort });
+        const response = await fetch(`/api/search?${params.toString()}`, { signal: controller.signal });
 
-      if (q) {
-        const pat = `%${q}%`;
-        builder = builder.or(
-          `product_name.ilike.${pat},description.ilike.${pat}`
-        );
-      }
+        const payload = (await response.json()) as {
+          flowers?: SearchFlowerRow[];
+          vendors?: SearchVendorRow[];
+          errors?: string[];
+          message?: string;
+        };
 
-      if (price !== "Any") {
-        if (price === "<500") builder = builder.lt("price", 500);
-        else if (price === "500-700")
-          builder = builder.gte("price", 500).lte("price", 700);
-        else if (price === ">700") builder = builder.gt("price", 700);
-      }
+        if (!response.ok && response.status !== 207) {
+          throw new Error(payload.message ?? payload.errors?.[0] ?? "Failed to fetch search results.");
+        }
 
-      if (sort === "Price: Low to High") {
-        builder = builder.order("price", { ascending: true });
-      } else if (sort === "Price: High to Low") {
-        builder = builder.order("price", { ascending: false });
-      }
+        setResults({ flowers: payload.flowers ?? [], vendors: payload.vendors ?? [] });
+        const messages = payload.errors?.filter(Boolean) ?? [];
+        setErrorMsg(messages.length > 0 ? messages.join(" • ") : null);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
 
-      const { data, error } = await builder;
-      console.log("supabase query result", { q, price, sort, data, error });
-      if (error) {
-        console.error("fetch products:", error);
-        setErrorMsg(error.message);
-        setResults([]);
-      } else {
-        setResults(data ?? []);
+        console.error("fetch search results:", error);
+        setErrorMsg(error instanceof Error ? error.message : "Failed to fetch search results.");
+        setResults({ flowers: [], vendors: [] });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     load();
-  }, [q, price, sort, supabase]);
+    return () => controller.abort();
+  }, [q, price, sort, scope]);
+
+  const flowerResults = results.flowers;
+  const vendorResults = results.vendors;
+  const showFlowers = scope !== "vendors";
+  const showVendors = scope !== "flowers";
+  const flowerPageCount = Math.max(1, Math.ceil(flowerResults.length / ITEMS_PER_PAGE));
+  const paginatedFlowers = showFlowers
+    ? flowerResults.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : [];
 
   return (
     <>
-      {/* <NavBar type = "customer"/> */}
-
       <main className="py-8 min-h-screen max-w-7xl mx-auto px-10">
         <div className="max-w-240 mx-auto">
-          
           <div className="mb-6">
-            <SearchBar 
-              initialQuery={q} 
-              onSearch={() => setCurrentPage(1)} 
-            />
+            <SearchBar initialQuery={q} scope={scope} onSearch={() => setCurrentPage(1)} />
           </div>
 
           <div className="mb-6 flex justify-center">
@@ -267,71 +359,140 @@ export default function SearchPage() {
               onPriceChange={setPrice}
               sort={sort}
               onSortChange={setSort}
+              scope={scope}
+              onScopeChange={(nextScope) => {
+                setCurrentPage(1);
+                updateSearchUrl(nextScope as SearchScope);
+              }}
             />
           </div>
 
           {q && (
-            <p className="mt-6 mb-4">
-              Showing results for <strong>{q}</strong>
+            <p className="mt-6 mb-4 text-[#7a7a7a]">
+              Showing {scopeLabel(scope)} results for <strong>{q}</strong>
             </p>
           )}
 
           {errorMsg && <p className="text-center text-red-500">{errorMsg}</p>}
 
           {loading ? (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-    {Array.from({ length: 9 }).map((_, i) => (
-      <SkeletonCard key={i} />
-    ))}
-  </div>
-) : results.length > 0 ? (
-  <div>
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {results
-        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-        .map((bouquet, i) => (
-          <div
-            key={bouquet.id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
-            <BouquetCard
-              image={bouquet.product_image_url ?? bouquet.image_url ?? null}
-              name={bouquet.product_name}
-              price={bouquet.price}
-              shop={bouquet.shop_name || ""}
-              distance={bouquet.distance || ""}
-              category={bouquet.category || ""}
-              rating={bouquet.rating > 0 ? bouquet.rating : undefined}
-              sold={bouquet.sold_count ?? undefined}
-              onAddToCart={() => handleAddToCart(bouquet)}
-              adding={addingId === bouquet.id}
-              onBuyNow={() => handleBuyNow(bouquet)}
-              buying={buyingId === bouquet.id}
-            />
-          </div>
-        ))}
-    </div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
+            </div>
+          ) : flowerResults.length > 0 || vendorResults.length > 0 ? (
+            <div className="space-y-12">
+              {showFlowers ? (
+                <section>
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h2 className="text-xl font-semibold text-[#1f1f1f]">Flowers</h2>
+                    <p className="text-sm text-[#7a7a7a]">{flowerResults.length} results</p>
+                  </div>
 
-    {/* Pagination */}
-    <div className="flex items-center justify-end gap-3 mt-10">
-      <p className="text-[#7a7a7a] text-sm font-medium">
-        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, results.length)} of {results.length} results
-      </p>
-      <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} className="text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30 text-lg px-1">{"<"}</button>
-      {Array.from({ length: Math.ceil(results.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
-        <button key={page} onClick={() => setCurrentPage(page)} className={`w-9 h-9 rounded-xl text-sm font-semibold transition-colors ${page === currentPage ? "bg-[#e8f3ed] text-[#2f5d3a]" : "text-[#7a7a7a] hover:text-[#1f1f1f]"}`}>{page}</button>
-      ))}
-      <button onClick={() => setCurrentPage((p) => Math.min(p + 1, Math.ceil(results.length / ITEMS_PER_PAGE)))} disabled={currentPage === Math.ceil(results.length / ITEMS_PER_PAGE)} className="text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30 text-lg px-1">{">"}</button>
-    </div>
-  </div>
-) : (
-  <div className="text-center text-gray-500 mt-8">
-    {q ? "No results to display" : "Use the search bar above to start a query."}
-  </div>
-)}
+                  {paginatedFlowers.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                        {paginatedFlowers.map((flower, index) => {
+                          const imageUrls = (flower.product_images ?? [])
+                            .slice()
+                            .sort((a, b) => a.display_order - b.display_order)
+                            .map((image) => image.image_url)
+                            .filter((url) => typeof url === "string" && url.trim().length > 0);
+                          const primaryImageUrl = imageUrls[0] ?? flower.product_image_url ?? flower.image_url ?? null;
 
+                          return (
+                            <div key={flower.id} className="animate-fade-in" style={{ animationDelay: `${index * 40}ms` }}>
+                              <BouquetCard
+                                image={primaryImageUrl}
+                                images={imageUrls}
+                                name={flower.product_name}
+                                price={flower.price}
+                                shop={flower.shop_name || ""}
+                                distance={flower.distance || ""}
+                                category={flower.category || ""}
+                                rating={
+                                  typeof flower.rating === "number" && flower.rating > 0
+                                    ? flower.rating
+                                    : flower.average_rating ?? undefined
+                                }
+                                sold={flower.sold_count ?? undefined}
+                                onAddToCart={() => handleAddToCart(flower)}
+                                adding={addingId === flower.id}
+                                onBuyNow={() => handleBuyNow(flower)}
+                                buying={buyingId === flower.id}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
 
+                      <div className="mt-10 flex items-center justify-end gap-3">
+                        <p className="text-sm font-medium text-[#7a7a7a]">
+                          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                          {Math.min(currentPage * ITEMS_PER_PAGE, flowerResults.length)} of {flowerResults.length} results
+                        </p>
+                        <button
+                          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-1 text-lg text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30"
+                        >
+                          {"<"}
+                        </button>
+                        {Array.from({ length: flowerPageCount }, (_, index) => index + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`h-9 w-9 rounded-xl text-sm font-semibold transition-colors ${
+                              page === currentPage ? "bg-[#e8f3ed] text-[#2f5d3a]" : "text-[#7a7a7a] hover:text-[#1f1f1f]"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setCurrentPage((page) => Math.min(page + 1, flowerPageCount))}
+                          disabled={currentPage === flowerPageCount}
+                          className="px-1 text-lg text-[#7a7a7a] hover:text-[#1f1f1f] disabled:opacity-30"
+                        >
+                          {">"}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-[#ded7cf] px-6 py-10 text-center text-[#7a7a7a]">
+                      No flowers matched this search.
+                    </div>
+                  )}
+                </section>
+              ) : null}
+
+              {showVendors ? (
+                <section>
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h2 className="text-xl font-semibold text-[#1f1f1f]">Vendors</h2>
+                    <p className="text-sm text-[#7a7a7a]">{vendorResults.length} results</p>
+                  </div>
+
+                  {vendorResults.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      {vendorResults.map((vendor) => (
+                        <VendorResultCard key={vendor.id} vendor={vendor} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-[#ded7cf] px-6 py-10 text-center text-[#7a7a7a]">
+                      No vendors matched this search.
+                    </div>
+                  )}
+                </section>
+              ) : null}
+            </div>
+          ) : (
+            <div className="mt-8 text-center text-gray-500">
+              {q ? "No results to display" : "Use the search bar above to start a query."}
+            </div>
+          )}
         </div>
       </main>
 
