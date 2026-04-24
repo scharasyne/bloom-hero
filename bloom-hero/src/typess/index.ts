@@ -80,5 +80,17 @@ export type ActivityLog = {
   rating?: { score: number; max: number };
 };
 
+// POP-UP MAP
+export interface PopUpMapVendor {
+  id: string;
+  displayNumber: number;
+  name: string;
+  address: string;
+  startDate: string;
+  endDate: string;
+  lat: number;
+  lng: number;
+}
+
 
 

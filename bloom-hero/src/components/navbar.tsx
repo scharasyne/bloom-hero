@@ -128,7 +128,7 @@ export default function NavBar({
       </div>
 
       {/* CENTER: search bar (only for non-vendors) */}
-      {showVendorSearchBar && (
+      {showSearchBar && (
         <form role="search" onSubmit={handleNavSearch} className="absolute left-1/2 -translate-x-1/2 w-[340px]">
           <label htmlFor="navbar-search" className="sr-only">Search</label>
           <div className="flex items-center gap-2 bg-white border border-[#edeae6] rounded-full px-4 py-2 hover:border-[#c8c4bf] transition-colors">
@@ -227,7 +227,7 @@ export default function NavBar({
         )}
 
         {/* Search */}
-        {showVendorSearchBar && (
+        {showSearchBar && (
           <form onSubmit={handleNavSearch} className="px-5 py-2">
             <div className="flex items-center gap-2 bg-[#f7f4f1] border border-[#edeae6] rounded-full px-4 py-2">
               <Icon icon="mdi:magnify" width={16} height={16} className="shrink-0 text-[#b0aba5]" />
