@@ -94,13 +94,14 @@ export default function Login() {
         .eq("owner_id", user.id)
         .single();
 
-      if (vendorError) {
-        setStatus(vendorError.message);
+      // Only allow login if vendor record exists
+      if (vendorError || !vendorData) {
+        setStatus("Your account is not registered as a vendor. Please contact support or sign up as a vendor.");
         setIsSubmitting(false);
         return;
       }
 
-      if (vendorData?.vendor_type === "market") {
+      if (vendorData.vendor_type === "market") {
         router.push("/market/dashboard");
       } else {
         router.push("/pop-up/dashboard");
