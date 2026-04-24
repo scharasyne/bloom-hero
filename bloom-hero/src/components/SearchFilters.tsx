@@ -1,93 +1,130 @@
-import React from "react";
+"use client";
+
 import { Icon } from "@iconify/react";
 
-export interface SearchFiltersProps {
+const PRICE_OPTIONS = ["Any", "<500", "500-700", ">700"];
+const SORT_OPTIONS = ["Best Sellers", "Price: Low to High", "Price: High to Low"];
+
+const PRICE_LABELS: Record<string, string> = {
+  Any: "Price: Any",
+  "<500": "< ₱500",
+  "500-700": "₱500–700",
+  ">700": "> ₱700",
+};
+
+const SORT_LABELS: Record<string, string> = {
+  "Best Sellers": "Best Sellers",
+  "Price: Low to High": "Price: Low to High",
+  "Price: High to Low": "Price: High to Low",
+};
+
+interface Props {
   price: string;
-  onPriceChange: (price: string) => void;
+  onPriceChange: (v: string) => void;
   sort: string;
-  onSortChange: (sort: string) => void;
+  onSortChange: (v: string) => void;
 }
 
-function Chip({ label, active = false, onClick }: { label: string; active?: boolean; onClick: () => void }) {
+function FilterPill({
+  label,
+  active,
+  children,
+}: {
+  label: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div
-      onClick={onClick}
-      className={`cursor-pointer content-stretch flex items-center justify-center px-3.5 py-2 relative rounded-[999px] shrink-0 ${
-        active ? "bg-[#2f5d3a]" : "bg-[#efeae4]"
-      }`}
-    >
-      <div
-        className={`flex flex-col font-medium justify-center leading-0 relative shrink-0 text-[14px] text-center tracking-[-0.07px] whitespace-nowrap ${
-          active ? "text-white" : "text-[#1f1f1f]"
+    <div className="relative group">
+      <button
+        type="button"
+        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all border ${
+          active
+            ? "bg-[#2f5d3a] text-white border-[#2f5d3a]"
+            : "bg-white text-[#1f1f1f] border-[#e0dbd3] hover:border-[#c5bfb7] hover:bg-[#faf8f5]"
         }`}
       >
-        <p className="leading-[1.45]">{label}</p>
+        {label}
+        <Icon
+          icon="mdi:chevron-down"
+          width={14}
+          height={14}
+          color={active ? "white" : "#7a7a7a"}
+        />
+      </button>
+      <div className="absolute top-full left-0 mt-1.5 bg-white border border-[#e5e0d8] rounded-2xl shadow-[0px_4px_16px_rgba(0,0,0,0.08)] z-20 min-w-[160px] py-1.5 hidden group-focus-within:block">
+        {children}
       </div>
     </div>
   );
 }
 
-// category chips removed since products table has no category
-
-
-interface DropdownPillProps {
-  value: string;
-  options: string[];
-  onChange: (val: string) => void;
-}
-
-function DropdownPill({ value, options, onChange }: DropdownPillProps) {
-  return (
-    <div className="relative">
-      <select
-        className="bg-white appearance-none flex items-center gap-1.5 px-3.5 py-2 rounded-2xl shrink-0 text-[14px] text-[#1f1f1f]"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-        <Icon icon="mdi:chevron-down" width={12} height={12} color="#1f1f1f" />
-      </div>
-    </div>
-  );
-}
-
-function Filters({ price, sort, onPriceChange, onSortChange }: {
-  price: string;
-  sort: string;
-  onPriceChange: (val: string) => void;
-  onSortChange: (val: string) => void;
+function DropdownItem({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
 }) {
-  const priceOptions = ["Any", "<500", "500-700", ">700"];
-  const sortOptions = ["Best Sellers", "Price: Low to High", "Price: High to Low"];
-
   return (
-    <div className="bg-[#f7f4ef] content-stretch flex flex-wrap gap-3 items-center justify-center relative rounded-2xl shrink-0">
-      <div
-        aria-hidden="true"
-        className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-2xl"
-      />
-      <DropdownPill value={price} options={priceOptions} onChange={onPriceChange} />
-      <DropdownPill value={sort} options={sortOptions} onChange={onSortChange} />
-      <DropdownPill value="More Filters" options={["More Filters"]} onChange={() => {}} />
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full text-left px-4 py-2 text-[13px] transition-colors rounded-xl mx-auto flex items-center justify-between gap-3 hover:bg-[#f5f2ed] ${
+        selected ? "font-semibold text-[#d24b46]" : "text-[#1f1f1f]"
+      }`}
+    >
+      {label}
+      {selected && <Icon icon="mdi:check" width={14} height={14} color="#d24b46" />}
+    </button>
   );
 }
 
-export default function SearchFilters({
-  price,
-  onPriceChange,
-  sort,
-  onSortChange,
-}: SearchFiltersProps) {
+export default function SearchFilters({ price, onPriceChange, sort, onSortChange }: Props) {
   return (
-    <div className="content-stretch flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 lg:gap-27 items-center justify-center relative shrink-0 w-full">
-      <Filters price={price} sort={sort} onPriceChange={onPriceChange} onSortChange={onSortChange} />
+    <div className="flex flex-wrap gap-2 items-center justify-center">
+
+      {/* Price pill */}
+      <FilterPill
+        label={price === "Any" ? "Price" : PRICE_LABELS[price]}
+        active={price !== "Any"}
+      >
+        {PRICE_OPTIONS.map((opt) => (
+          <DropdownItem
+            key={opt}
+            label={PRICE_LABELS[opt]}
+            selected={price === opt}
+            onClick={() => onPriceChange(opt)}
+          />
+        ))}
+      </FilterPill>
+
+      {/* Sort pill */}
+      <FilterPill
+        label={SORT_LABELS[sort]}
+        active={sort !== "Best Sellers"}
+      >
+        {SORT_OPTIONS.map((opt) => (
+          <DropdownItem
+            key={opt}
+            label={SORT_LABELS[opt]}
+            selected={sort === opt}
+            onClick={() => onSortChange(opt)}
+          />
+        ))}
+      </FilterPill>
+
+      {/* More Filters pill — static for now */}
+      <button
+        type="button"
+        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium border border-[#e0dbd3] bg-white text-[#1f1f1f] hover:border-[#c5bfb7] hover:bg-[#faf8f5] transition-all"
+      >
+        <Icon icon="mdi:tune-variant" width={14} height={14} color="#7a7a7a" />
+        Filters
+      </button>
+
     </div>
   );
 }

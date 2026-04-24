@@ -1,6 +1,7 @@
 "use client"
 
-import { ChangeEvent, useMemo, useState } from "react"
+import { ChangeEvent, useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { Icon } from "@iconify/react"
 
@@ -85,6 +86,11 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
   const [stock, setStock] = useState(String(product.stocks ?? 0))
   const [images, setImages] = useState<ProductImageRow[]>(() => getInitialImages(product))
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const resetState = () => {
     setProductName(product.product_name)
@@ -429,21 +435,35 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
           setIsOpen(true)
           setErrorMessage(null)
         }}
-        className="h-8 w-full rounded-lg bg-accent text-accent-foreground hover:bg-accent/90 cursor-pointer"
+        className="h-8 w-full rounded-lg bg-[#2f5d3a] text-white hover:bg-[#26492f] cursor-pointer transition-colors"
       >
         Edit Product
       </Button>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white p-5 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Edit Product</h2>
+      {mounted && createPortal(
+        <div
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#1a1816]/40 backdrop-blur-[2px] p-4 transition-opacity duration-200 ${
+            isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div
+            className={`max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[24px] border border-[#ebe7e3] bg-[#fcfbf9] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)] transition-all duration-200 ${
+              isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-[0.98] opacity-0 translate-y-2"
+            }`}
+          >
+            <div className="mb-6 flex items-start justify-between border-b border-[#ece7e2] pb-4">
+              <div>
+                <h2 className="text-[22px] font-bold tracking-tight text-[#1e1c1a]">Edit Product</h2>
+                <p className="mt-1 text-sm text-[#8a847d]">
+                  Update product details, stock, and images.
+                </p>
+              </div>
+
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={isSaving || isDeletingProduct}
-                className="rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted cursor-pointer disabled:cursor-not-allowed"
+                className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium text-[#8a847d] transition-colors hover:bg-[#f3f0ec] hover:text-[#1e1c1a] cursor-pointer disabled:cursor-not-allowed"
               >
                 Close
               </button>
@@ -451,165 +471,210 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Product Name</label>
+              <label className="text-[13px] font-semibold uppercase tracking-wide text-[#6f6a64]">
+                Product Name
+              </label>
+              <Input
+                value={productName}
+                onChange={(event) => setProductName(event.target.value)}
+                disabled={isSaving || isDeletingProduct}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                rows={4}
+                disabled={isSaving || isDeletingProduct}
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Price</label>
                 <Input
-                  value={productName}
-                  onChange={(event) => setProductName(event.target.value)}
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
                   disabled={isSaving || isDeletingProduct}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <Textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  rows={4}
+                <label className="text-sm font-medium">Stock</label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={stock}
+                  onChange={(event) => setStock(event.target.value)}
                   disabled={isSaving || isDeletingProduct}
                 />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Price</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={price}
-                    onChange={(event) => setPrice(event.target.value)}
-                    disabled={isSaving || isDeletingProduct}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Stock</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    value={stock}
-                    onChange={(event) => setStock(event.target.value)}
-                    disabled={isSaving || isDeletingProduct}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">
-                    Images ({images.length}/{MAX_IMAGES})
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">Drag to reorder</span>
-                  </p>
-                  <Input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    disabled={isSaving || isDeletingProduct || images.length >= MAX_IMAGES}
-                    onChange={handleAddImages}
-                    className="max-w-xs"
-                  />
-                </div>
-
-                {images.length === 0 ? (
-                  <p className="rounded border border-dashed p-4 text-sm text-muted-foreground">
-                    No images available for this product.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {images.map((img, index) => (
-                      <div
-                        key={`${img.id ?? "legacy"}-${img.image_url}`}
-                        className="space-y-2"
-                        draggable={!isSaving && !isDeletingProduct}
-                        onDragStart={(event) => {
-                          setDraggedIndex(index)
-                          event.dataTransfer.effectAllowed = "move"
-                        }}
-                        onDragOver={(event) => {
-                          event.preventDefault()
-                          event.dataTransfer.dropEffect = "move"
-                        }}
-                        onDrop={(event) => {
-                          event.preventDefault()
-                          if (draggedIndex !== null) {
-                            void handleReorderImages(draggedIndex, index)
-                          }
-                        }}
-                        onDragEnd={() => {
-                          setDraggedIndex(null)
-                        }}
-                      >
-                        <div
-                          className={[
-                            "relative overflow-hidden rounded border bg-muted cursor-grab",
-                            draggedIndex === index ? "opacity-60" : "opacity-100",
-                          ].join(" ")}
-                        >
-                          <img
-                            src={img.image_url}
-                            alt={`${productName} ${index + 1}`}
-                            className="h-28 w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteImage(img)}
-                            disabled={isSaving || isDeletingProduct}
-                            className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent text-white transition hover:bg-red-600 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                            aria-label="Delete image"
-                            title={images.length <= 1 ? "A product must have at least one image." : "Delete image"}
-                          >
-                            <Icon icon="mdi:trash-can-outline" width={14} height={14} />
-                          </button>
-                          {index === 0 ? (
-                            <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-                              Primary
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {errorMessage ? <p className="text-sm text-accent">{errorMessage}</p> : null}
-
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDeleteProduct}
-                  disabled={isSaving || isDeletingProduct}
-                  className="bg-accent cursor-pointer hover:bg-accent/80 disabled:cursor-not-allowed"
-                >
-                  {isDeletingProduct ? "Deleting..." : "Delete Product"}
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={closeModal}
-                    disabled={isSaving || isDeletingProduct}
-                    className="cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSaveProduct}
-                    disabled={isSaving || isDeletingProduct}
-                    className="bg-secondary text-white hover:bg-secondary/80 cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-[#6f6a64]">
+                  Images ({images.length}/{MAX_IMAGES})
+                  <span className="ml-2 text-[11px] font-medium normal-case tracking-normal text-[#9a948d]">
+                    Drag to reorder
+                  </span>
+                </p>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  disabled={isSaving || isDeletingProduct || images.length >= MAX_IMAGES}
+                  onChange={handleAddImages}
+                  className="max-w-xs"
+                />
+              </div>
+
+              {images.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-[#ddd8d2] bg-[#faf9f7] p-5 text-sm text-[#8a847d]">
+                  No images available for this product.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                  {images.map((img, index) => (
+                    <div
+                      key={`${img.id ?? "legacy"}-${img.image_url}`}
+                      className="space-y-2"
+                      draggable={!isSaving && !isDeletingProduct}
+                      onDragStart={(event) => {
+                        setDraggedIndex(index)
+                        event.dataTransfer.effectAllowed = "move"
+                      }}
+                      onDragOver={(event) => {
+                        event.preventDefault()
+                        event.dataTransfer.dropEffect = "move"
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault()
+                        if (draggedIndex !== null) {
+                          void handleReorderImages(draggedIndex, index)
+                        }
+                      }}
+                      onDragEnd={() => {
+                        setDraggedIndex(null)
+                      }}
+                    >
+                      <div
+                        className={[
+                          "relative overflow-hidden rounded-2xl border border-[#ebe7e3] bg-[#f5f2ef] cursor-grab shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
+                          draggedIndex === index ? "opacity-60 scale-[0.98]" : "opacity-100",
+                        ].join(" ")}
+                      >
+                        <img
+                          src={img.image_url}
+                          alt={`${productName} ${index + 1}`}
+                          className="h-28 w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(img)}
+                          disabled={isSaving || isDeletingProduct}
+                          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#6f6a64] backdrop-blur-sm transition hover:bg-white hover:text-[#1e1c1a] cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                          aria-label="Delete image"
+                          title={images.length <= 1 ? "A product must have at least one image." : "Delete image"}
+                        >
+                          <Icon icon="mdi:trash-can-outline" width={14} height={14} />
+                        </button>
+                        {index === 0 ? (
+                          <span className="absolute left-2 top-2 rounded-full bg-[#2f5d3a] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                            Primary
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {errorMessage ? (
+              <p className="rounded-xl border border-[#eadfd6] bg-[#faf6f2] px-4 py-3 text-sm text-[#8a5a3b]">
+                {errorMessage}
+              </p>
+            ) : null}
+
+            <div className="mt-2 flex items-center justify-between gap-3 border-t border-[#ece7e2] pt-5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDeleteProduct}
+                disabled={isSaving || isDeletingProduct}
+                className="rounded-xl border border-[#ddd3ca] bg-[#f6f2ee] text-[#7a5c47] shadow-none transition-colors hover:bg-[#efe7e0] hover:text-[#5f4635] hover:border-[#cdbfb2] cursor-pointer disabled:cursor-not-allowed"
+              >
+                {isDeletingProduct ? "Deleting..." : "Delete Product"}
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  disabled={isSaving || isDeletingProduct}
+                  className="rounded-xl border border-[#ddd8d2] bg-white text-[#6f6a64] shadow-none transition-colors hover:bg-[#f5f2ef] hover:text-[#1e1c1a] hover:border-[#cfc7bf] cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleSaveProduct}
+                  disabled={isSaving || isDeletingProduct}
+                  className="rounded-xl bg-[#2f5d3a] text-white shadow-none transition-colors hover:bg-[#26492f] active:bg-[#1f3b26] cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+
+            {/* //mobile responsive buttons */}
+            {/* <div className="mt-2 flex flex-col-reverse gap-3 border-t border-[#ece7e2] pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDeleteProduct}
+                disabled={isSaving || isDeletingProduct}
+                className="w-full rounded-xl border border-[#ddd3ca] bg-[#f6f2ee] text-[#7a5c47] shadow-none transition-colors hover:bg-[#efe7e0] hover:text-[#5f4635] hover:border-[#cdbfb2] cursor-pointer disabled:cursor-not-allowed sm:w-auto"
+              >
+                {isDeletingProduct ? "Deleting..." : "Delete Product"}
+              </Button>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
+                  disabled={isSaving || isDeletingProduct}
+                  className="w-full rounded-xl border border-[#ddd8d2] bg-white text-[#6f6a64] shadow-none transition-colors hover:bg-[#f5f2ef] hover:text-[#1e1c1a] hover:border-[#cfc7bf] cursor-pointer disabled:cursor-not-allowed sm:w-auto"
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleSaveProduct}
+                  disabled={isSaving || isDeletingProduct}
+                  className="w-full rounded-xl bg-[#2f5d3a] text-white shadow-none transition-colors hover:bg-[#26492f] active:bg-[#1f3b26] cursor-pointer disabled:cursor-not-allowed sm:w-auto"
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div> */}
+            </div>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body
+      )}
+      {/* ) : null} */}
     </>
   )
 }

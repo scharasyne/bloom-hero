@@ -73,9 +73,8 @@ export default function NavBar({
   // if (role === "vendor") resolvedType = vendor_type as navTypes;
 
   const items = navLinks[resolvedType]
-  const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user;
-  // Vendors should not see the search bar
-  const showVendorSearchBar = !isVendor && showSearchBar;
+  const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user && !isVendor;
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/login');
@@ -108,7 +107,21 @@ export default function NavBar({
           <>
             <span className="w-px h-5 bg-[#ddd9d4] shrink-0" />
             <p className="text-[14px] text-[#7a7a7a] whitespace-nowrap">
-              You are <span className="font-semibold text-[#1f1f1f]">signed in</span> as <span className="font-semibold text-[#3f6f52]">{isVendor ? (vendor_name ?? displayName) : displayName}</span>
+              {isVendor ? (
+                <>
+                  You're{" "}
+                  <span className="font-semibold text-[#1f1f1f]">blooming</span>
+                  {" "}as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{vendor_name ?? "Your Store"}</span>
+                </>
+              ) : (
+                <>
+                  You are{" "}
+                  <span className="font-semibold text-[#1f1f1f]">signed in</span>
+                  {" "}as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+                </>
+              )}
             </p>
           </>
         )}
@@ -134,19 +147,21 @@ export default function NavBar({
 
       {/* RIGHT: nav links + auth */}
       <div className="flex items-center gap-7 ml-auto shrink-0">
-        {!isVendor && items.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`relative text-[14px] font-semibold transition-colors pb-0.5
-              ${pathname === href
-                ? "text-[#d24b46] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#d24b46] after:rounded-full"
-                : "text-[#1f1f1f] hover:text-[#d24b46]"
-              }`}
-          >
-            {label}
-          </Link>
-        ))}
+        {!isVendor && (
+          items.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`relative text-[14px] font-semibold transition-colors pb-0.5
+                ${pathname === href
+                  ? "text-[#d24b46] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#d24b46] after:rounded-full"
+                  : "text-[#1f1f1f] hover:text-[#d24b46]"
+                }`}
+            >
+              {label}
+            </Link>
+          ))
+        )}
 
         {user ? (
           <button
@@ -196,7 +211,17 @@ export default function NavBar({
         {user && (
           <div className="px-5 py-3 border-b border-[#f0ece8] mb-1">
             <p className="text-[13px] text-[#7a7a7a]">
-              Signed in as <span className="font-semibold text-[#3f6f52]">{isVendor ? (vendor_name ?? displayName) : displayName}</span>
+              {isVendor ? (
+                <>
+                  Blooming as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{vendor_name ?? "Your Store"}</span>
+                </>
+              ) : (
+                <>
+                  Signed in as{" "}
+                  <span className="font-semibold text-[#3f6f52]">{displayName}</span>
+                </>
+              )}
             </p>
           </div>
         )}
@@ -219,20 +244,22 @@ export default function NavBar({
         )}
 
         {/* Links */}
-        {!isVendor && items.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`px-5 py-3 text-[15px] font-semibold transition-colors
-              ${pathname === href
-                ? "text-[#d24b46] bg-[#fdf4f4]"
-                : "text-[#1f1f1f] hover:bg-[#fdf8f4]"
-              }`}
-            onClick={() => setMenuOpen(false)}
-          >
-            {label}
-          </Link>
-        ))}
+        {!isVendor && (
+          items.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`px-5 py-3 text-[15px] font-semibold transition-colors
+                ${pathname === href
+                  ? "text-[#d24b46] bg-[#fdf4f4]"
+                  : "text-[#1f1f1f] hover:bg-[#fdf8f4]"
+                }`}
+              onClick={() => setMenuOpen(false)}
+            >
+              {label}
+            </Link>
+          ))
+        )}
 
         {/* Auth */}
         <div className="px-5 pt-3 mt-1 border-t border-[#f0ece8]">
