@@ -3,16 +3,32 @@ import { CartItem } from "@/typess";
 
 type CartSummaryProps = {
   cartItems: CartItem[];
-  onCheckout: () => void;
+  selectedIds: Set<string>;
+  onCheckout: (paymentMethod: "online" | "cod") => void;
+  paymentMethod: "online" | "cod";
+  onPaymentMethodChange: (method: "online" | "cod") => void;
+  selectedIds: Set<string>;
+  onCheckout: (paymentMethod: "online" | "cod") => void;
+  paymentMethod: "online" | "cod";
+  onPaymentMethodChange: (method: "online" | "cod") => void;
   loading?: boolean;
+  checkoutLoading?: boolean;
   total?: number;
 };
 
-export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps) {
-  const isEmpty = cartItems.length === 0;
-  const availableItems = cartItems.filter(item => item.status !== "out-of-stock");
-  const subtotal = availableItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const deliveryFee = availableItems.length === 0 ? 0 : 40;
+export default function CartSummary({
+  cartItems,
+  selectedIds,
+  onCheckout,
+  paymentMethod,
+  onPaymentMethodChange,
+  checkoutLoading,
+}: CartSummaryProps) {
+  const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
+  const isEmpty = selectedItems.length === 0;
+  const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const uniqueVendors = new Set(selectedItems.map(item => item.vendorName));
+  const deliveryFee = uniqueVendors.size > 0 ? uniqueVendors.size * 40 : 0;
   const total = subtotal + deliveryFee;
 
   return (
@@ -25,20 +41,48 @@ export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps)
         <h2 className="text-sm font-bold text-[#2D2926] uppercase tracking-wide">Order Summary</h2>
       </div>
 
-      {/* Line Items */}
-      <div className="px-5 py-4 flex flex-col gap-3">
-        <div className="flex justify-between text-sm text-[#6D6863]">
-          <span>Subtotal ({availableItems.length} {availableItems.length === 1 ? "item" : "items"})</span>
-          <span className="font-semibold text-[#2D2926]">₱{subtotal.toFixed(2)}</span>
+      <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
+        <div className="flex justify-between text-[13px] text-[#888]">
+          <span>Subtotal ({selectedItems.length} selected)</span>
+          <span className="text-[#333]">₱{subtotal.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-[13px] text-[#888]">
+          <span>Delivery Fee</span>
+          <span className="text-[#333]">₱{deliveryFee.toFixed(2)}</span>
         </div>
 
-        {/* Delivery fee hidden when cart is empty */}
-        {!isEmpty && (
-          <div className="flex justify-between text-sm text-[#6D6863]">
-            <span>Delivery Fee</span>
-            <span className="font-semibold text-[#2D2926]">₱{deliveryFee.toFixed(2)}</span>
+        <div className="pt-1">
+          <p className="text-[12px] font-semibold text-[#555] mb-2">Payment Method</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onPaymentMethodChange("online")}
+              className={`flex-1 rounded-[4px] border px-3 py-2 text-[12px] font-semibold transition-colors ${
+                paymentMethod === "online"
+                  ? "border-[#D96A63] bg-[#fff3f2] text-[#D96A63]"
+                  : "border-[#e4e4e4] bg-white text-[#777] hover:bg-[#fafafa]"
+              }`}
+            >
+              Online
+            </button>
+            <button
+              type="button"
+              onClick={() => onPaymentMethodChange("cod")}
+              className={`flex-1 rounded-[4px] border px-3 py-2 text-[12px] font-semibold transition-colors ${
+                paymentMethod === "cod"
+                  ? "border-[#D96A63] bg-[#fff3f2] text-[#D96A63]"
+                  : "border-[#e4e4e4] bg-white text-[#777] hover:bg-[#fafafa]"
+              }`}
+            >
+              Cash on Delivery
+            </button>
           </div>
-        )}
+          <p className="mt-2 text-[11px] text-[#8a8a8a]">
+            {paymentMethod === "online"
+              ? "Online orders go to To Pay and require receipt upload."
+              : "COD orders skip To Pay and go straight to To Ship."}
+          </p>
+        </div>
       </div>
 
       {/* Total */}
@@ -50,18 +94,13 @@ export default function CartSummary({ cartItems, onCheckout }: CartSummaryProps)
       {/* Checkout Button */}
       <div className="px-5 pb-5">
         <button
-          onClick={onCheckout}
-          disabled={isEmpty}
-          className="w-full h-11 rounded-full bg-[#D24B46] font-bold text-sm text-white shadow-sm shadow-[#D24B46]/20 transition-all hover:bg-[#A53A35] active:scale-95 disabled:bg-[#e8e8e8] disabled:text-[#A39E96] disabled:cursor-not-allowed disabled:shadow-none"
+          onClick={() => onCheckout(paymentMethod)}
+          disabled={isEmpty || checkoutLoading}
+          className="w-full bg-[#D96A63] hover:bg-[#c45e58] disabled:bg-[#ddd] disabled:cursor-not-allowed transition-colors h-[44px] rounded-[4px] cursor-pointer"
         >
-          {isEmpty ? (
-            <span className="flex items-center justify-center gap-2">
-              <ShoppingCart size={15} strokeWidth={2} />
-              Check Out (0)
-            </span>
-          ) : (
-            `Check Out (${cartItems.length})`
-          )}
+          <span className="font-semibold text-[14px] text-white tracking-[0.5px]">
+            {checkoutLoading ? "Processing..." : `Check Out (${selectedItems.length})`}
+          </span>
         </button>
       </div>
 

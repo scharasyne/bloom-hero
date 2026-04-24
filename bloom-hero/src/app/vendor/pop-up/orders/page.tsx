@@ -5,7 +5,7 @@ type VendorOrdersPageProps = {
   searchParams: Promise<{ success?: string; error?: string }>;
 };
 
-export default async function VendorMarketOrdersPage({
+export default async function VendorPopUpOrdersPage({
   searchParams,
 }: VendorOrdersPageProps) {
   const params = await searchParams;
@@ -13,7 +13,7 @@ export default async function VendorMarketOrdersPage({
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
-        <VendorDashboardSidebarCard activeTab="orders" vendorType="market" />
+        <VendorDashboardSidebarCard activeTab="orders" vendorType="pop-up" />
 
         <section className="space-y-4">
           <div className="mb-2">
@@ -24,7 +24,7 @@ export default async function VendorMarketOrdersPage({
           </div>
 
           <VendorOrdersTable
-            vendorType="market"
+            vendorType="pop-up"
             successMessage={params.success}
             errorMessage={params.error}
           />
