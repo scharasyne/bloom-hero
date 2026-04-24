@@ -7,6 +7,7 @@ import { useVendorApplications } from "@/hooks/useVendorApplications";
 import ApplicationCard from "@/components/admin/ApplicationCard";
 import AdminNavBar from "@/components/admin/AdminNavBar";
 import AdminSidebarNav from "@/components/admin/AdminSidebarNav";
+import type { IssuedVendorCredentials } from "./actions";
 
 const BULK_REJECTION_REASON = "Rejected in bulk by admin";
 
@@ -55,6 +56,7 @@ export default function VendorApplicationsPage() {
   const { data: applications, isLoading, error, approve, reject } = useVendorApplications();
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [issuedCredentials, setIssuedCredentials] = useState<IssuedVendorCredentials[]>([]);
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
@@ -76,13 +78,16 @@ export default function VendorApplicationsPage() {
   // ── Individual card handlers ──────────────────────────
   const handleApprove = async (application: VendorApplicationRecord) => {
     try {
-      await approve(application);
+      const result = await approve(application);
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(application.id);
         return next;
       });
-      showToast("Vendor approved successfully! 🌸", "success");
+      if (result?.credentials) {
+        setIssuedCredentials((prev) => [result.credentials, ...prev]);
+      }
+      showToast("Vendor approved. Credentials are now available below.", "success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to approve the application.";
       showToast(message, "error");
@@ -126,8 +131,16 @@ export default function VendorApplicationsPage() {
     const selectedApplications = applications.filter((application) => selectedIds.has(application.id));
 
     try {
-      await Promise.all(selectedApplications.map((application) => approve(application)));
-      showToast(`${selectedApplications.length} vendor(s) approved! 🌸`, "success");
+      const approvals = await Promise.all(selectedApplications.map((application) => approve(application)));
+      const newCredentials = approvals
+        .map((approval) => approval?.credentials)
+        .filter((credential): credential is IssuedVendorCredentials => Boolean(credential));
+
+      if (newCredentials.length > 0) {
+        setIssuedCredentials((prev) => [...newCredentials, ...prev]);
+      }
+
+      showToast(`${selectedApplications.length} vendor(s) approved. Credentials are listed below.`, "success");
       setSelectedIds(new Set());
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to approve selected applications.";
@@ -208,6 +221,35 @@ export default function VendorApplicationsPage() {
               </span>
             )}
           </div>
+
+          {issuedCredentials.length > 0 && (
+            <section className="rounded-[16px] border border-[#d6e8dd] bg-[#f2faf5] p-[20px] flex flex-col gap-[14px]">
+              <div className="flex items-center justify-between gap-[12px] flex-wrap">
+                <div>
+                  <p className="text-[#235640] font-semibold text-[18px]">Issued Vendor Credentials</p>
+                  <p className="text-[#497361] text-[13px] mt-[2px]">Share these temporary credentials with approved vendors. They can change the password after logging in.</p>
+                </div>
+                <button
+                  onClick={() => setIssuedCredentials([])}
+                  className="bg-white border border-[#d6e8dd] text-[#235640] h-[36px] px-[12px] rounded-[10px] text-[13px] font-medium cursor-pointer hover:bg-[#e9f6ef] transition-colors"
+                >
+                  Clear List
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-[10px]">
+                {issuedCredentials.map((credential) => (
+                  <div
+                    key={credential.userId}
+                    className="rounded-[12px] border border-[#d6e8dd] bg-white p-[12px] flex flex-col gap-[6px]"
+                  >
+                    <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Email:</span> {credential.email}</p>
+                    <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Temporary Password:</span> {credential.password}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Cards list or Empty state */}
           {isLoading ? (

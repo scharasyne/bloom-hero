@@ -37,14 +37,30 @@ export default function CartPage() {
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
+  const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
   const isEmpty = cartItems.length === 0;
   const allSelected = !isEmpty && selectedIds.size === cartItems.length;
 
+  const formatSupabaseError = (error: any) => {
+    if (!error) return "Unknown database error.";
+
+    const parts = [
+      error.message,
+      error.details,
+      error.hint,
+      error.code ? `code: ${error.code}` : null,
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(" | ") : "Unknown database error.";
+  };
+
+  // Group flat cartItems array by vendorName
   const groupedItems = cartItems.reduce<Record<string, typeof cartItems>>((acc, item) => {
     const vendor = item.vendorName || "BloomHero Vendor";
     if (!acc[vendor]) acc[vendor] = [];
@@ -106,7 +122,7 @@ export default function CartPage() {
         const orderIds = orderList.map((o: any) => o.id);
 
         if (orderIds.length === 0) {
-          if (mounted) { setPendingOrderId(null); setCartItems([]); }
+          if (mounted) { setPendingOrderIds([]); setCartItems([]); }
           return;
         }
 
@@ -117,7 +133,7 @@ export default function CartPage() {
 
         if (itemsError) {
           console.error("Load cart - items error:", itemsError);
-          if (mounted) { setPendingOrderId(orderIds[0]); setCartItems([]); }
+          if (mounted) { setPendingOrderIds(orderIds); setCartItems([]); }
           return;
         }
 
@@ -126,6 +142,7 @@ export default function CartPage() {
           const stocks = product.stocks ?? 0;
           return {
             id: row.product_id,
+            orderId: row.order_id,
             productName: product.product_name ?? "",
             vendorName: product.vendor_name ?? "BloomHero Vendor",
             price: product.price ?? 0,
@@ -136,7 +153,7 @@ export default function CartPage() {
           };
         }) ?? [];
 
-        if (mounted) { setPendingOrderId(orderIds[0]); setCartItems(mappedItems); }
+        if (mounted) { setPendingOrderIds(orderIds); setCartItems(mappedItems); }
       } catch (error) {
         console.error("Failed to load cart:", error);
       }
@@ -162,25 +179,36 @@ export default function CartPage() {
     return () => { mounted = false; };
   }, [supabase]);
 
-  const getTotal = useCallback(() => {
-    return cartItems
-      .filter(item => item.status !== "out-of-stock")
-      .reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
-  }, [cartItems]);
+  const getTotal = useCallback((filterBySelected: boolean = false) => {
+    const itemsToSum = filterBySelected 
+      ? cartItems.filter(item => selectedIds.has(item.id))
+      : cartItems;
+    return itemsToSum.reduce((sum, item) => sum + (item.price * item.qty || 0), 0);
+  }, [cartItems, selectedIds]);
 
   const updateCartItem = async (productId: string, newQty: number) => {
-    if (!pendingOrderId || !customerId) return;
+    if (pendingOrderIds.length === 0 || !customerId) return;
     if (newQty === 0) { handleRemove(productId); return; }
     try {
       const item = cartItems.find(i => i.id === productId);
       if (!item) return;
       const subtotal = item.price * newQty;
       await supabase.from("order_items").upsert(
-        { order_id: pendingOrderId, product_id: productId, quantity: newQty, subtotal },
+        { order_id: item.orderId, product_id: productId, quantity: newQty, subtotal },
         { onConflict: "order_id,product_id" }
       );
       setCartItems(prev => prev.map(i => i.id === productId ? { ...i, qty: newQty, subtotal } : i));
-      await supabase.from("orders").update({ total_amount: getTotal() }).eq("id", pendingOrderId);
+      
+      // Update all affected orders' total amounts
+      const orderTotals = new Map<string, number>();
+      for (const cartItem of cartItems) {
+        const total = orderTotals.get(cartItem.orderId) || 0;
+        orderTotals.set(cartItem.orderId, total + (cartItem.id === productId ? subtotal : cartItem.price * cartItem.qty));
+      }
+      
+      for (const [orderId, total] of orderTotals) {
+        await supabase.from("orders").update({ total_amount: total }).eq("id", orderId);
+      }
     } catch (error) {
       console.error("Update failed:", error);
     }
@@ -197,28 +225,163 @@ export default function CartPage() {
   };
 
   const handleRemove = async (id: string) => {
-    if (!pendingOrderId) return;
+    if (pendingOrderIds.length === 0) return;
     try {
-      await supabase.from("order_items").delete().eq("order_id", pendingOrderId).eq("product_id", id);
+      const item = cartItems.find(i => i.id === id);
+      if (!item) return;
+      
+      await supabase.from("order_items").delete().eq("order_id", item.orderId).eq("product_id", id);
       setCartItems(prev => prev.filter(i => i.id !== id));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-      await supabase.from("orders").update({ total_amount: getTotal() }).eq("id", pendingOrderId);
+      
+      // Update the affected order's total
+      const orderTotal = cartItems
+        .filter(i => i.orderId === item.orderId && i.id !== id)
+        .reduce((sum, i) => sum + (i.price * i.qty), 0);
+      
+      if (orderTotal === 0) {
+        // Delete the order if no items remain
+        await supabase.from("orders").delete().eq("id", item.orderId);
+        setPendingOrderIds(prev => prev.filter(id => id !== item.orderId));
+      } else {
+        await supabase.from("orders").update({ total_amount: orderTotal }).eq("id", item.orderId);
+      }
     } catch (error) {
       console.error("Remove failed:", error);
     }
   };
 
-  const handleCheckout = async () => {
-    if (!pendingOrderId || cartItems.length === 0) return;
+  const handleCheckout = async (selectedPaymentMethod: "online" | "cod") => {
+    if (pendingOrderIds.length === 0 || !customerId || selectedIds.size === 0) return;
     try {
       setCheckoutLoading(true);
-      for (const item of cartItems) {
-        const { data } = await supabase.from("products").select("stocks, product_name").eq("id", item.id).single();
-        if (data?.stocks < item.qty) { alert(`Not enough stock for ${item.productName}`); return; }
+      const selectedItems = cartItems.filter(item => selectedIds.has(item.id));
+      
+      // Check stock for all selected items in a single query
+      const selectedItemIds = selectedItems.map(item => item.id);
+      const { data: stockData } = await supabase
+        .from("products")
+        .select("id, stocks, product_name")
+        .in("id", selectedItemIds);
+      const stockMap = new Map((stockData ?? []).map((p: any) => [p.id, p]));
+      for (const item of selectedItems) {
+        const product = stockMap.get(item.id);
+        if (product && product.stocks < item.qty) {
+          alert(`Not enough stock for ${item.productName}`);
+          return;
+        }
       }
-      await supabase.from("orders").update({ status: "completed", total_amount: getTotal() }).eq("id", pendingOrderId);
-      setCartItems([]);
-      window.location.href = "/customer/orders";
+      
+      // Group selected items by their vendor/orderid
+      const itemsByOrderId = new Map<string, typeof selectedItems>();
+      for (const item of selectedItems) {
+        if (!itemsByOrderId.has(item.orderId)) {
+          itemsByOrderId.set(item.orderId, []);
+        }
+        itemsByOrderId.get(item.orderId)!.push(item);
+      }
+      
+      // Move each vendor order into the correct next status after checkout.
+      const orderIdToNewPendingId = new Map<string, string>();
+      for (const [orderId, items] of itemsByOrderId) {
+        const vendorTotal = items.reduce((sum, item) => sum + (item.price * item.qty || 0), 0) + 40;
+        const nextStatus = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
+        const updatePayload: Record<string, unknown> = {
+          status: nextStatus,
+          payment_method: selectedPaymentMethod,
+          total_amount: vendorTotal,
+        };
+
+        if (selectedPaymentMethod === "cod") {
+          updatePayload.payment_confirmed_at = new Date().toISOString();
+        }
+
+        // If there are unselected items in this vendor's order, move them to a new
+        // pending order before checking out so they remain in the cart.
+        const unselectedItemsForVendor = cartItems.filter(
+          i => i.orderId === orderId && !selectedIds.has(i.id)
+        );
+
+        if (unselectedItemsForVendor.length > 0) {
+          const { data: orderData } = await supabase
+            .from("orders")
+            .select("vendor_id")
+            .eq("id", orderId)
+            .single();
+
+          if (orderData?.vendor_id) {
+            const unselectedTotal = unselectedItemsForVendor.reduce(
+              (sum, i) => sum + i.price * i.qty, 0
+            );
+            const { data: newOrder } = await supabase
+              .from("orders")
+              .insert({
+                customer_id: customerId,
+                vendor_id: orderData.vendor_id,
+                status: "pending",
+                total_amount: unselectedTotal,
+              })
+              .select("id")
+              .single();
+
+            if (newOrder) {
+              const unselectedProductIds = unselectedItemsForVendor.map(i => i.id);
+              await supabase
+                .from("order_items")
+                .update({ order_id: newOrder.id })
+                .eq("order_id", orderId)
+                .in("product_id", unselectedProductIds);
+              orderIdToNewPendingId.set(orderId, newOrder.id);
+            }
+          }
+        }
+        
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update(updatePayload)
+          .eq("id", orderId);
+        
+        if (updateError) {
+          const formatted = formatSupabaseError(updateError);
+          const migrationHint =
+            formatted.includes("receipt_proof_url") ||
+            formatted.includes("payment_method") ||
+            formatted.includes("to_pay") ||
+            formatted.includes("to_ship") ||
+            formatted.includes("42703") ||
+            formatted.includes("22P02")
+              ? " Run sql-changes/add_order_payment_flow.sql in Supabase first."
+              : "";
+
+          console.error("Failed to update checkout status:", formatted);
+          alert(`Failed to process checkout: ${formatted}.${migrationHint}`);
+          return;
+        }
+      }
+      
+      // Update cart UI: remove checked-out items; update orderId for items moved to a new pending order.
+      const newPendingIds = Array.from(orderIdToNewPendingId.values());
+      setCartItems(prev =>
+        prev
+          .filter(item => !selectedIds.has(item.id))
+          .map(item => {
+            const newId = orderIdToNewPendingId.get(item.orderId);
+            return newId ? { ...item, orderId: newId } : item;
+          })
+      );
+      setPendingOrderIds(prev => [
+        ...prev.filter(id => !itemsByOrderId.has(id)),
+        ...newPendingIds,
+      ]);
+      setSelectedIds(new Set());
+      
+      console.log("Checkout complete, redirecting to orders page");
+      
+      // Add a small delay to ensure database updates propagate
+      setTimeout(() => {
+        const nextTab = selectedPaymentMethod === "online" ? "to-pay" : "to-ship";
+        window.location.href = `/orders?tab=${nextTab}`;
+      }, 500);
     } catch (error) {
       console.error("Checkout failed:", error);
       alert("Checkout failed");
@@ -317,9 +480,16 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* Right: CartSummary handles empty state internally — no wrapper needed */}
-          <div className="w-[280px] shrink-0 sticky top-6">
-            <CartSummary cartItems={cartItems} onCheckout={handleCheckout} />
+          {/* ── Right: Order Summary ── */}
+          <div className="w-[280px] shrink-0 sticky top-[24px]">
+            <CartSummary 
+              cartItems={cartItems} 
+              selectedIds={selectedIds}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              onCheckout={handleCheckout} 
+              checkoutLoading={checkoutLoading}
+            />
           </div>
 
         </div>

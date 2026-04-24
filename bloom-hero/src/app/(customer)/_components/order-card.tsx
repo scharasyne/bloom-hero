@@ -1,4 +1,4 @@
-import type { OrderGroup } from "../orders/_lib/types";
+﻿import type { OrderGroup } from "../orders/_lib/types";
 import { STATUS_BADGE } from "../orders/_lib/constants";
 import type { TabKey } from "../orders/_lib/constants";
 import { formatPeso, friendlyDate } from "../orders/_lib/utils";
@@ -151,7 +151,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
       </div>
       {order.hasReview ? (
         <a
-          href={`/customer/review?orderId=${order.id}`}
+          href={`/review?orderId=${order.id}`}
           className="inline-flex items-center gap-1.5 rounded-full border border-[#e6e2dd] bg-white px-5 py-2 text-xs font-bold text-[#A39E96] hover:bg-[#faf8f5] transition-colors"
         >
           <IconStar filled className="text-amber-400" />
@@ -159,7 +159,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
         </a>
       ) : (
         <a
-          href={`/customer/review?orderId=${order.id}`}
+          href={`/review?orderId=${order.id}`}
           className="inline-flex items-center gap-1.5 rounded-full border border-[#D24B46]/30 bg-[#D24B46]/5 px-5 py-2 text-xs font-bold text-[#D24B46] hover:bg-[#D24B46]/10 transition-colors"
         >
           <IconStar className="text-[#D24B46]" />
