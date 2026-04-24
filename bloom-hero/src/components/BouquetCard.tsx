@@ -1,7 +1,9 @@
 import { Icon } from "@iconify/react";
+import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 
 interface BouquetCardProps {
   image?: string | null;
+  images?: string[];
   name: string;
   price: number;
   shop: string;
@@ -17,6 +19,7 @@ interface BouquetCardProps {
 
 export default function BouquetCard({
   image,
+  images,
   name,
   price,
   shop,
@@ -29,6 +32,16 @@ export default function BouquetCard({
   onBuyNow,
   buying,
 }: BouquetCardProps) {
+  const normalizedImages = (images ?? []).filter(
+    (url) => typeof url === "string" && url.trim().length > 0
+  );
+  const imageUrls =
+    normalizedImages.length > 0
+      ? normalizedImages
+      : image
+      ? [image]
+      : [];
+
   return (
     <div
       className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
@@ -41,12 +54,11 @@ export default function BouquetCard({
 
       {/* ── Product Image ── */}
       <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            alt={name}
-            className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-tl-[18px] rounded-tr-[18px] size-full"
-            src={image}
+        {imageUrls.length > 0 ? (
+          <ProductCardImageCarousel
+            imageUrls={imageUrls}
+            productName={name}
+            imageClassName="absolute inset-0 max-w-none object-cover rounded-tl-[18px] rounded-tr-[18px] size-full"
           />
         ) : (
           /* FIX 1: Proper fallback when no product image exists */

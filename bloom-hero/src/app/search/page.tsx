@@ -261,7 +261,7 @@ export default function SearchPage() {
             />
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6 flex justify-center">
             <SearchFilters
               price={price}
               onPriceChange={setPrice}
@@ -334,7 +334,6 @@ export default function SearchPage() {
 
         </div>
       </main>
-
 
       <Footer />
     </>
