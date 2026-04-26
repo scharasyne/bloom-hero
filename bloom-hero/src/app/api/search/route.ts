@@ -10,6 +10,11 @@ type ProductImageRow = {
   display_order: number;
 };
 
+type ProductCategoryRow = {
+  product_id: string;
+  category: { category_name: string } | null;
+};
+
 type FlowerSearchRow = {
   id: string;
   vendor_id: string;
@@ -18,6 +23,7 @@ type FlowerSearchRow = {
   price: number;
   description: string | null;
   product_images?: ProductImageRow[] | null;
+  categories?: string[];
   shop_name?: string | null;
   vendor_type?: string | null;
   average_rating?: number | null;
@@ -102,6 +108,35 @@ async function fetchFlowerResults(
 
   const flowers = (data ?? []) as FlowerSearchRow[];
   const vendorIds = [...new Set(flowers.map((flower) => flower.vendor_id).filter(Boolean))];
+
+  const productIds = [...new Set(flowers.map((flower) => flower.id).filter(Boolean))];
+  if (productIds.length > 0) {
+    const { data: categoryRows, error: categoryError } = await supabase
+      .from("product_categories")
+      .select("product_id, category:categories(category_name)")
+      .in("product_id", productIds);
+
+    if (categoryError) {
+      return { data: flowers, error: categoryError };
+    }
+
+    const categoriesByProductId = new Map<string, string[]>();
+    for (const row of (categoryRows ?? []) as ProductCategoryRow[]) {
+      const categoryName = row.category?.category_name?.trim();
+
+      if (!categoryName) {
+        continue;
+      }
+
+      const currentCategories = categoriesByProductId.get(row.product_id) ?? [];
+      currentCategories.push(categoryName);
+      categoriesByProductId.set(row.product_id, currentCategories);
+    }
+
+    for (const flower of flowers) {
+      flower.categories = categoriesByProductId.get(flower.id) ?? [];
+    }
+  }
 
   if (vendorIds.length === 0) {
     return { data: flowers, error: null };

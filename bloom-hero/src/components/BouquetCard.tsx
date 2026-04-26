@@ -8,7 +8,8 @@ interface BouquetCardProps {
   price: number;
   shop: string;
   distance: string;
-  category: string;
+  category?: string;
+  categories?: string[];
   rating?: number;        // optional — undefined = hide rating row
   sold?: number;          // optional — undefined = hide sold count
   onAddToCart?: () => void;
@@ -25,6 +26,7 @@ export default function BouquetCard({
   shop,
   distance,
   category,
+  categories,
   rating,
   sold,
   onAddToCart,
@@ -41,6 +43,9 @@ export default function BouquetCard({
       : image
       ? [image]
       : [];
+  const categoryPills = (categories && categories.length > 0 ? categories : category ? [category] : [])
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
 
   return (
     <div
@@ -89,16 +94,19 @@ export default function BouquetCard({
           </p>
         </div>
 
-        {/* ── Category Pill ── */}
-        <div className="bg-[#f3f0ea] content-stretch flex flex-col h-6.5 items-center justify-center px-2.5 py-1 relative rounded-[999px] shrink-0">
-          <div
-            aria-hidden="true"
-            className="absolute border border-[#e6e1d8] border-solid inset-0 pointer-events-none rounded-[999px]"
-          />
-          <p className="font-medium text-[#2f5d3a] text-[11px] lg:text-[13px] tracking-[-0.065px] leading-4">
-            {category}
-          </p>
-        </div>
+        {/* ── Category Pills ── */}
+        {categoryPills.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {categoryPills.map((pill) => (
+              <span
+                key={pill}
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+              >
+                {pill}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {/* ── Rating ── 
             FIX 2: Only render if rating is a real positive number.

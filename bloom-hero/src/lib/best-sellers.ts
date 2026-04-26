@@ -16,6 +16,7 @@ export type BestSellerFlowerRow = {
   description: string | null;
   created_at?: string;
   product_images?: ProductImageRow[] | null;
+  categories?: string[];
   shop_name?: string | null;
   vendor_type?: string | null;
   average_rating?: number | null;
@@ -39,6 +40,11 @@ type FlowerProductRow = {
   description: string | null;
   created_at?: string;
   product_images?: ProductImageRow[] | null;
+};
+
+type ProductCategoryRow = {
+  product_id: string;
+  category: { category_name: string } | null;
 };
 
 type VendorMetaRow = {
@@ -136,6 +142,28 @@ export async function getFlowerBestSellers(
   const vendorIds = [...new Set(products.map((product) => product.vendor_id).filter(Boolean))];
   const vendorMap = new Map<string, VendorMetaRow>();
 
+  const { data: categoryRows, error: categoryError } = await supabase
+    .from("product_categories")
+    .select("product_id, category:categories(category_name)")
+    .in("product_id", productIds);
+
+  if (categoryError) {
+    return { data: [] as BestSellerFlowerRow[], error: categoryError };
+  }
+
+  const categoriesByProductId = new Map<string, string[]>();
+  for (const row of (categoryRows ?? []) as ProductCategoryRow[]) {
+    const categoryName = row.category?.category_name?.trim();
+
+    if (!categoryName) {
+      continue;
+    }
+
+    const currentCategories = categoriesByProductId.get(row.product_id) ?? [];
+    currentCategories.push(categoryName);
+    categoriesByProductId.set(row.product_id, currentCategories);
+  }
+
   if (vendorIds.length > 0) {
     const { data: vendorRows } = await supabase
       .from("vendors")
@@ -154,6 +182,7 @@ export async function getFlowerBestSellers(
 
       return {
         ...product,
+        categories: categoriesByProductId.get(product.id) ?? [],
         shop_name: vendor?.shop_name ?? null,
         vendor_type: vendor?.vendor_type ?? null,
         average_rating: vendor?.average_rating ?? null,
