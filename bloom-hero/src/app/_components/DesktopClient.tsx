@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Footer from "@/components/footer";
 import BouquetCard from "@/components/BouquetCard";
 import SearchBar from "@/components/SearchBar";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { mockBouquets } from "@/lib/mockData";
 
 const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
@@ -13,6 +15,21 @@ const MAX_VISIBLE = 6;
 
 type Category = "All" | "Bouquets" | "Plants" | "Handcrafted";
 const CATEGORIES: Category[] = ["All", "Bouquets", "Plants", "Handcrafted"];
+
+function useVendorNavigation() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkUser();
+  }, []);
+
+  return user;
+}
 
 function Headline() {
   return (
@@ -77,6 +94,17 @@ function Filters() {
 }
 
 function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; onCategoryChange: (c: Category) => void }) {
+  const router = useRouter();
+  const user = useVendorNavigation();
+
+  const handleVendorClick = () => {
+    if (user) {
+      router.push("/vendor-application");
+    } else {
+      router.push("/sign-up");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
@@ -88,9 +116,12 @@ function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; 
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="font-medium text-[#7a7a7a] text-[15px] tracking-[0.3px]">
           <span>Are you a local florist? </span>
-          <a className="cursor-pointer font-bold text-[#2f5d3a]" href="/sign-up">
+          <button 
+            onClick={handleVendorClick}
+            className="cursor-pointer font-bold text-[#2f5d3a] bg-none border-none p-0 hover:underline"
+          >
             Join BloomHero as a Vendor
-          </a>
+          </button>
         </p>
       </div>
     </div>
