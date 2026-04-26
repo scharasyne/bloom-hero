@@ -2,15 +2,22 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useMemo, useState } from "react"
 
 import { addVendorProductAction, getVendorApplicationStatusAction } from "@/app/(vendor)/_components/actions"
+import { CategoryPillSelector } from "@/app/(vendor)/_components/CategoryPillSelector"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
 type vendorType = 'market' | 'pop-up';
+
+type CategoryOption = {
+  id: string
+  category_name: string
+}
 
 interface ImagePreview {
   file: File;
@@ -19,10 +26,14 @@ interface ImagePreview {
 
 export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const router = useRouter()
+  const supabase = useMemo(() => createSupabaseBrowserClient(), [])
 
   const [price, setPrice] = useState("0")
   const [stock, setStock] = useState("0")
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([])
+  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [vendorStatus, setVendorStatus] = useState<string | null>(null)
@@ -44,9 +55,35 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
         setStatusLoading(false)
       }
     }
-
     fetchVendorStatus()
+  }, [type])
 
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("id, category_name")
+          .order("category_name", { ascending: true })
+
+        if (error) {
+          throw new Error(error.message)
+        }
+
+        setCategories((data ?? []) as CategoryOption[])
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to load categories right now."
+        )
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+
+    void fetchCategories()
+  }, [supabase])
+
+  useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => {
         URL.revokeObjectURL(preview.previewUrl)
@@ -60,6 +97,11 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
 
     if (vendorStatus === "pending") {
       setErrorMessage("Your vendor application is still pending. You cannot add products yet.")
+      return
+    }
+
+    if (selectedCategoryIds.length < 1 || selectedCategoryIds.length > 3) {
+      setErrorMessage("Select between 1 and 3 categories.")
       return
     }
 
@@ -245,8 +287,23 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input id="category" name="category" placeholder="e.g., Birthday" required />
+            <Label>Categories</Label>
+            {categoriesLoading ? (
+              <p className="rounded-2xl border border-dashed border-[#ddd8d2] bg-[#faf9f7] px-4 py-3 text-sm text-[#8a847d]">
+                Loading categories...
+              </p>
+            ) : (
+              <CategoryPillSelector
+                categories={categories}
+                selectedIds={selectedCategoryIds}
+                onChange={setSelectedCategoryIds}
+                disabled={isSubmitting || vendorStatus === "pending"}
+                maxSelected={3}
+              />
+            )}
+            {selectedCategoryIds.map((categoryId) => (
+              <input key={categoryId} type="hidden" name="categoryIds" value={categoryId} />
+            ))}
           </div>
 
           <div className="space-y-2">
@@ -264,11 +321,13 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
           <div className="flex justify-center pt-2">
             <Button
               type="submit"
-              disabled={isSubmitting || vendorStatus === "pending"}
+              disabled={isSubmitting || vendorStatus === "pending" || categoriesLoading}
               className="min-w-40 bg-accent text-accent-foreground hover:bg-accent/90 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:hover:bg-slate-300"
             >
               {vendorStatus === "pending"
                 ? "Unavailable while pending"
+                : categoriesLoading
+                  ? "Loading categories..."
                 : isSubmitting
                   ? "Adding..."
                   : "Add Product"}

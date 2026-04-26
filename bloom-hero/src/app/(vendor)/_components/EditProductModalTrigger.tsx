@@ -8,6 +8,7 @@ import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { CategoryPillSelector } from "@/app/(vendor)/_components/CategoryPillSelector"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
 type ProductImageRow = {
@@ -24,6 +25,11 @@ type EditableProduct = {
   stocks: number
   product_image_url: string | null
   product_images?: { id: string; image_url: string; display_order: number }[] | null
+}
+
+type CategoryOption = {
+  id: string
+  category_name: string
 }
 
 type EditProductModalTriggerProps = {
@@ -85,6 +91,10 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
   const [price, setPrice] = useState(String(product.price ?? 0))
   const [stock, setStock] = useState(String(product.stocks ?? 0))
   const [images, setImages] = useState<ProductImageRow[]>(() => getInitialImages(product))
+  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
+  const [initialCategoryIds, setInitialCategoryIds] = useState<string[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -98,6 +108,7 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
     setPrice(String(product.price ?? 0))
     setStock(String(product.stocks ?? 0))
     setImages(getInitialImages(product))
+    setSelectedCategoryIds(initialCategoryIds)
     setErrorMessage(null)
   }
 
@@ -146,6 +157,50 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
       throw new Error(failed.error.message)
     }
   }
+
+  const loadCategories = async () => {
+    setCategoriesLoading(true)
+
+    try {
+      const [categoryResult, productCategoryResult] = await Promise.all([
+        supabase
+          .from("categories")
+          .select("id, category_name")
+          .order("category_name", { ascending: true }),
+        supabase.from("product_categories").select("category_id").eq("product_id", product.id),
+      ])
+
+      if (categoryResult.error) {
+        throw new Error(categoryResult.error.message)
+      }
+
+      if (productCategoryResult.error) {
+        throw new Error(productCategoryResult.error.message)
+      }
+
+      const nextCategoryIds = (productCategoryResult.data ?? [])
+        .map((row) => row.category_id)
+        .filter((categoryId): categoryId is string => Boolean(categoryId))
+
+      setCategories((categoryResult.data ?? []) as CategoryOption[])
+      setSelectedCategoryIds(nextCategoryIds)
+      setInitialCategoryIds(nextCategoryIds)
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to load categories right now."
+      )
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    void loadCategories()
+  }, [isOpen, product.id])
 
   const handleAddImages = async (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? [])
@@ -327,9 +382,15 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
   const handleSaveProduct = async () => {
     const parsedPrice = Number(price)
     const parsedStock = Number(stock)
+    const nextCategoryIds = Array.from(new Set(selectedCategoryIds))
 
     if (!productName.trim()) {
       setErrorMessage("Product name is required.")
+      return
+    }
+
+    if (nextCategoryIds.length < 1 || nextCategoryIds.length > 3) {
+      setErrorMessage("Select between 1 and 3 categories.")
       return
     }
 
@@ -354,6 +415,7 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
           description: description.trim() || null,
           price: parsedPrice,
           stocks: Math.floor(parsedStock),
+          category_id: nextCategoryIds[0],
         })
         .eq("id", product.id)
 
@@ -361,7 +423,31 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
         throw new Error(error.message)
       }
 
+      const { error: deleteCategoriesError } = await supabase
+        .from("product_categories")
+        .delete()
+        .eq("product_id", product.id)
+
+      if (deleteCategoriesError) {
+        throw new Error(deleteCategoriesError.message)
+      }
+
+      const { error: insertCategoriesError } = await supabase
+        .from("product_categories")
+        .insert(
+          nextCategoryIds.map((categoryId) => ({
+            product_id: product.id,
+            category_id: categoryId,
+          }))
+        )
+
+      if (insertCategoriesError) {
+        throw new Error(insertCategoriesError.message)
+      }
+
       setIsOpen(false)
+      setInitialCategoryIds(nextCategoryIds)
+      setSelectedCategoryIds(nextCategoryIds)
       router.refresh()
     } catch (error) {
       setErrorMessage(
@@ -396,6 +482,24 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
       const storagePaths = allImageUrls
         .map((url) => extractStoragePathFromPublicUrl(url))
         .filter((path): path is string => Boolean(path))
+
+      const { error: deleteCategoryLinksError } = await supabase
+        .from("product_categories")
+        .delete()
+        .eq("product_id", product.id)
+
+      if (deleteCategoryLinksError) {
+        throw new Error(deleteCategoryLinksError.message)
+      }
+
+      const { error: deleteImagesError } = await supabase
+        .from("product_images")
+        .delete()
+        .eq("product_id", product.id)
+
+      if (deleteImagesError) {
+        throw new Error(deleteImagesError.message)
+      }
 
       const { error: deleteProductError } = await supabase
         .from("products")
@@ -515,6 +619,30 @@ export default function EditProductModalTrigger({ product }: EditProductModalTri
                   disabled={isSaving || isDeletingProduct}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <label className="text-[13px] font-semibold uppercase tracking-wide text-[#6f6a64]">
+                    Categories
+                  </label>
+                </div>
+              </div>
+
+              {categoriesLoading ? (
+                <p className="rounded-2xl border border-dashed border-[#ddd8d2] bg-[#faf9f7] px-4 py-3 text-sm text-[#8a847d]">
+                  Loading categories...
+                </p>
+              ) : (
+                <CategoryPillSelector
+                  categories={categories}
+                  selectedIds={selectedCategoryIds}
+                  onChange={setSelectedCategoryIds}
+                  disabled={isSaving || isDeletingProduct}
+                  maxSelected={3}
+                />
+              )}
             </div>
 
             <div className="space-y-2">
