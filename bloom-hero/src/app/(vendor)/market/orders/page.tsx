@@ -11,24 +11,24 @@ export default async function VendorMarketOrdersPage({
   const params = await searchParams;
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+    <main className="flex">
+      <div className="lg:p-6">
         <VendorDashboardSidebarCard activeTab="orders" vendorType="market" />
+      </div>
 
-        <section className="space-y-4">
-          <div className="mb-2">
-            <h1 className="text-2xl font-semibold">Orders</h1>
-            <p className="text-sm text-muted-foreground">
-              Review payment receipts and update delivery status.
-            </p>
-          </div>
+      <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold">Orders</h1>
+          <p className="text-sm text-muted-foreground">
+            Review payment receipts and update delivery status.
+          </p>
+        </div>
 
-          <VendorOrdersTable
-            vendorType="market"
-            successMessage={params.success}
-            errorMessage={params.error}
-          />
-        </section>
+        <VendorOrdersTable
+          vendorType="market"
+          successMessage={params.success}
+          errorMessage={params.error}
+        />
       </div>
     </main>
   );
