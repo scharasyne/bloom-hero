@@ -38,7 +38,6 @@ export default function CartPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
-  const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
