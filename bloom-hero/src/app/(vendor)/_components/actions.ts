@@ -41,15 +41,26 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
 
   try {
     const productName = String(formData.get("productName") ?? "").trim();
-    const categoryName = String(formData.get("category") ?? "").trim();
+    const categoryIds = Array.from(
+      new Set(
+        formData
+          .getAll("categoryIds")
+          .map((value) => String(value).trim())
+          .filter(Boolean)
+      )
+    );
     const description = String(formData.get("description") ?? "").trim();
     const rawPrice = Number(formData.get("price") ?? "0");
     const rawStock = Number(formData.get("stock") ?? "0");
     const productImages = formData.getAll("productImages") as File[];
     let insertedProductId: string | null = null;
 
-    if (!productName || !categoryName) {
-      return { ok: false, message: "Product name and category are required." };
+    if (!productName) {
+      return { ok: false, message: "Product name is required." };
+    }
+
+    if (categoryIds.length < 1 || categoryIds.length > 3) {
+      return { ok: false, message: "Select between 1 and 3 categories." };
     }
 
     if (!Number.isFinite(rawPrice) || rawPrice < 0) {
@@ -91,14 +102,17 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
       };
     }
 
-    const { data: category, error: categoryError } = await supabase
+    const { data: categories, error: categoriesError } = await supabase
       .from("categories")
-      .upsert({ category_name: categoryName }, { onConflict: "category_name" })
       .select("id")
-      .single();
+      .in("id", categoryIds);
 
-    if (categoryError || !category) {
-      return { ok: false, message: categoryError?.message || "Failed to save category." };
+    if (categoriesError) {
+      return { ok: false, message: categoriesError.message };
+    }
+
+    if (!categories || categories.length !== categoryIds.length) {
+      return { ok: false, message: "One or more selected categories are invalid." };
     }
 
     const validImages = productImages.filter((img) => img instanceof File && img.size > 0);
@@ -137,7 +151,7 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
 
     const baseInsertPayload = {
       vendor_id: vendor.id,
-      category_id: category.id,
+      category_id: categoryIds[0],
       product_name: productName,
       description: description || null,
       price: rawPrice,
@@ -175,6 +189,17 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
 
     if (!insertedProductId) {
       return { ok: false, message: "Failed to create product." };
+    }
+
+    const { error: categoryLinksError } = await supabase.from("product_categories").insert(
+      categoryIds.map((categoryId) => ({
+        product_id: insertedProductId,
+        category_id: categoryId,
+      }))
+    );
+
+    if (categoryLinksError) {
+      return { ok: false, message: categoryLinksError.message };
     }
 
     const imagesToInsert = uploadedImageUrls.map((url, index) => ({

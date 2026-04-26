@@ -16,7 +16,7 @@ type ProductRow = {
   product_images?: { id: string; image_url: string; display_order: number }[] | null
   price: number
   stocks: number
-  categories: { category_name: string } | { category_name: string }[] | null
+  product_categories?: { category: { category_name: string } | null }[] | null
 }
 
 function formatPeso(value: number) {
@@ -56,7 +56,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   {
     const { data, error } = await supabase
       .from("products")
-      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name), product_images(id, image_url, display_order)")
+      .select("id, product_name, description, product_image_url, price, stocks, product_categories(category:categories(category_name)), product_images(id, image_url, display_order)")
       .eq("vendor_id", vendor.id)
       .order("created_at", { ascending: false })
 
@@ -70,7 +70,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   ) {
     const fallback = await supabase
       .from("products")
-      .select("id, product_name, description, product_image_url, price, stocks, categories(category_name)")
+      .select("id, product_name, description, product_image_url, price, stocks, product_categories(category:categories(category_name))")
       .eq("vendor_id", vendor.id)
       .order("created_at", { ascending: false })
 
@@ -120,9 +120,9 @@ export default async function VendorListProductPage({ type }: { type: vendorType
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => {
                 const isActive = product.stocks >= 1
-                const categoryName = Array.isArray(product.categories)
-                  ? product.categories[0]?.category_name
-                  : product.categories?.category_name
+                const categoryNames = (product.product_categories ?? [])
+                  .map((relationship) => relationship.category?.category_name)
+                  .filter((categoryName): categoryName is string => Boolean(categoryName))
 
                 return (
                   <article
@@ -165,7 +165,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
 
                     <div className="px-4 pb-4 pt-3">
                       <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-300">
-                        {categoryName || "Uncategorized"}
+                        {categoryNames.length > 0 ? categoryNames.join(", ") : "Uncategorized"}
                       </p>
                       <h2 className="line-clamp-1 text-base font-semibold text-[#1e1c1a]">
                         {product.product_name}

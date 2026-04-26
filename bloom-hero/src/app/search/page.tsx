@@ -27,7 +27,7 @@ type SearchFlowerRow = {
   description?: string | null;
   shop_name?: string | null;
   distance?: string | null;
-  category?: string | null;
+  categories?: string[];
   rating?: number | null;
   sold_count?: number | null;
   vendor_type?: string | null;
@@ -409,7 +409,7 @@ export default function SearchPage() {
                                 price={flower.price}
                                 shop={flower.shop_name || ""}
                                 distance={flower.distance || ""}
-                                category={flower.category || ""}
+                                categories={flower.categories || []}
                                 rating={
                                   typeof flower.rating === "number" && flower.rating > 0
                                     ? flower.rating
