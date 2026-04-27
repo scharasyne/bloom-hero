@@ -420,6 +420,7 @@ export default function SearchPage() {
                                 adding={addingId === flower.id}
                                 onBuyNow={() => handleBuyNow(flower)}
                                 buying={buyingId === flower.id}
+                                hoverRevealActions
                               />
                             </div>
                           );

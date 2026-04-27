@@ -16,6 +16,7 @@ interface BouquetCardProps {
   adding?: boolean;
   onBuyNow?: () => void;
   buying?: boolean;
+  hoverRevealActions?: boolean;
 }
 
 export default function BouquetCard({
@@ -33,6 +34,7 @@ export default function BouquetCard({
   adding,
   onBuyNow,
   buying,
+  hoverRevealActions = false,
 }: BouquetCardProps) {
   const normalizedImages = (images ?? []).filter(
     (url) => typeof url === "string" && url.trim().length > 0
@@ -49,12 +51,16 @@ export default function BouquetCard({
 
   return (
     <div
-      className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
+      className={`group bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70 transition-all duration-200 ${
+        hoverRevealActions ? "hover:-translate-y-0.5" : ""
+      }`}
       data-name="Bouquet Card"
     >
       <div
         aria-hidden="true"
-        className="absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[18px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)]"
+        className={`absolute border border-[#edeae6] border-solid inset-0 pointer-events-none rounded-[18px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] transition-all duration-200 ${
+          hoverRevealActions ? "group-hover:border-accent group-hover:shadow-[0px_12px_28px_0px_rgba(210,75,70,0.16)]" : ""
+        }`}
       />
 
       {/* ── Product Image ── */}
@@ -96,7 +102,11 @@ export default function BouquetCard({
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div
+            className={`flex flex-wrap gap-2 transition-all duration-200 ${
+              hoverRevealActions ? "max-h-0 overflow-hidden opacity-0 group-hover:max-h-24 group-hover:opacity-100" : ""
+            }`}
+          >
             {categoryPills.map((pill) => (
               <span
                 key={pill}
@@ -112,51 +122,57 @@ export default function BouquetCard({
             FIX 2: Only render if rating is a real positive number.
             Shows "No ratings yet" as a soft label when sold > 0 but no rating exists.
         */}
-        {rating && rating > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium">
-            <span className="text-[#f4b400]">★ </span>
-            <span className="text-[#7a7a7a]">
-              {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
-            </span>
-          </p>
-        ) : sold && sold > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
-            {sold} sold · No ratings yet
-          </p>
-        ) : null}
+        <div className="min-h-5 lg:min-h-6">
+          {rating && rating > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium">
+              <span className="text-[#f4b400]">★ </span>
+              <span className="text-[#7a7a7a]">
+                {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
+              </span>
+            </p>
+          ) : sold && sold > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
+              {sold} sold · No ratings yet
+            </p>
+          ) : (
+            <span aria-hidden="true" className="block h-5 lg:h-6" />
+          )}
+        </div>
 
         {/* ── Actions ──
             FIX 3: Add to Cart is the full-width primary action.
             Buy Now is a quieter text link below it — reduces button heaviness.
         */}
         {(onAddToCart || onBuyNow) && (
-  <div className="mt-2 flex flex-col gap-2 w-full">
-    {/* Buy Now — primary solid pill (most urgent action) */}
-    {onBuyNow && (
-      <button
-        type="button"
-        onClick={onBuyNow}
-        disabled={buying || adding}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:shopping-outline" width={14} height={14} />
-        {buying ? "Processing..." : "Buy Now"}
-      </button>
-    )}
-    {/* Add to Cart — secondary outlined pill (low-commitment action) */}
-    {onAddToCart && (
-      <button
-        type="button"
-        onClick={onAddToCart}
-        disabled={adding || buying}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:cart-outline" width={14} height={14} />
-        {adding ? "Adding..." : "Add to Cart"}
-      </button>
-    )}
-  </div>
-)}
+          <div
+            className={`mt-2 flex w-full flex-col gap-2 transition-all duration-200 ${
+              hoverRevealActions ? "max-h-0 overflow-hidden opacity-0 group-hover:max-h-40 group-hover:opacity-100" : ""
+            }`}
+          >
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={onBuyNow}
+                disabled={buying || adding}
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#b83d39] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm"
+              >
+                <Icon icon="mdi:shopping-outline" width={14} height={14} />
+                {buying ? "Processing..." : "Buy Now"}
+              </button>
+            )}
+            {onAddToCart && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={adding || buying}
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[#d24b46] bg-white px-3 py-2 text-xs font-semibold text-[#d24b46] transition-colors hover:bg-[#fff5f5] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm"
+              >
+                <Icon icon="mdi:cart-outline" width={14} height={14} />
+                {adding ? "Adding..." : "Add to Cart"}
+              </button>
+            )}
+          </div>
+        )}
 
       </div>
     </div>
