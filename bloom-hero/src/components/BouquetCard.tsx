@@ -49,7 +49,7 @@ export default function BouquetCard({
 
   return (
     <div
-      className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
+      className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70 h-fit lg:h-auto"
       data-name="Bouquet Card"
     >
       <div
@@ -58,7 +58,7 @@ export default function BouquetCard({
       />
 
       {/* ── Product Image ── */}
-      <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
+      <div className="h-40 lg:h-60 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
         {imageUrls.length > 0 ? (
           <ProductCardImageCarousel
             imageUrls={imageUrls}
@@ -77,11 +77,11 @@ export default function BouquetCard({
       <div className="content-stretch flex flex-col gap-1.5 items-start justify-center px-4 relative shrink-0 w-full">
 
         {/* ── Name & Price ── */}
-        <div className="content-stretch flex items-start justify-between leading-0 relative shrink-0 text-center w-full">
-          <div className="flex flex-col font-semibold justify-center relative shrink-0 text-[#1f1f1f] text-[13px] lg:text-[18px] tracking-[-0.09px]">
+        <div className="content-stretch flex items-start justify-between leading-0 relative shrink-0 text-center w-full gap-2">
+          <div className="flex flex-col font-semibold justify-center relative shrink-0 text-[#1f1f1f] text-[13px] lg:text-[18px] tracking-[-0.09px] line-clamp-2">
             <p className="leading-[1.45]">{name}</p>
           </div>
-          <div className="flex flex-col font-bold justify-center relative shrink-0 text-[#2f5d3a] text-[14px] lg:text-[20px] tracking-[-0.1px]">
+          <div className="flex flex-col font-bold justify-center relative shrink-0 text-[#2f5d3a] text-[14px] lg:text-[20px] tracking-[-0.1px] whitespace-nowrap">
             <p className="leading-5.5">₱ {price}</p>
           </div>
         </div>
@@ -96,11 +96,11 @@ export default function BouquetCard({
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-nowrap gap-2 overflow-x-auto w-full scrollbar-hide">
             {categoryPills.map((pill) => (
               <span
                 key={pill}
-                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px] shrink-0"
               >
                 {pill}
               </span>
