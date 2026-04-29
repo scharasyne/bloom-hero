@@ -100,7 +100,7 @@ async function fetchFlowerResults(
     return { data: [] as FlowerSearchRow[], error };
   }
 
-  const flowers = (data ?? []) as FlowerSearchRow[];
+  const flowers = (data ?? []) as unknown as FlowerSearchRow[];
   const vendorIds = [...new Set(flowers.map((flower) => flower.vendor_id).filter(Boolean))];
 
   if (vendorIds.length === 0) {
