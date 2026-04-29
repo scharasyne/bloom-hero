@@ -110,7 +110,7 @@ export async function getFlowerBestSellers(
     return { data: [] as BestSellerFlowerRow[], error: productsError };
   }
 
-  const products = (productRows ?? []) as FlowerProductRow[];
+  const products = (productRows ?? []) as unknown as FlowerProductRow[];
   if (products.length === 0) {
     return { data: [] as BestSellerFlowerRow[], error: null };
   }
