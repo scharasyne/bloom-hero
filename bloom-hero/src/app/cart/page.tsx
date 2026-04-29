@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import NavBar from "@/components/navbar";
+// import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import CartSummary from "@/components/CartSummary";
 import VendorCard from "@/components/VendorCard";
