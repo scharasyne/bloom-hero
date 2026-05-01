@@ -7,10 +7,10 @@ type CartSummaryProps = {
   onCheckout: (paymentMethod: "online" | "cod") => void;
   paymentMethod: "online" | "cod";
   onPaymentMethodChange: (method: "online" | "cod") => void;
-  selectedIds: Set<string>;
-  onCheckout: (paymentMethod: "online" | "cod") => void;
-  paymentMethod: "online" | "cod";
-  onPaymentMethodChange: (method: "online" | "cod") => void;
+  // selectedIds: Set<string>;
+  // onCheckout: (paymentMethod: "online" | "cod") => void;
+  // paymentMethod: "online" | "cod";
+  // onPaymentMethodChange: (method: "online" | "cod") => void;
   loading?: boolean;
   checkoutLoading?: boolean;
   total?: number;
@@ -41,7 +41,7 @@ export default function CartSummary({
         <h2 className="text-sm font-bold text-[#2D2926] uppercase tracking-wide">Order Summary</h2>
       </div>
 
-      <div className="px-[20px] py-[16px] flex flex-col gap-[12px]">
+      <div className="px-5 py-4 flex flex-col gap-3">
         <div className="flex justify-between text-[13px] text-[#888]">
           <span>Subtotal ({selectedItems.length} selected)</span>
           <span className="text-[#333]">₱{subtotal.toFixed(2)}</span>
@@ -57,7 +57,7 @@ export default function CartSummary({
             <button
               type="button"
               onClick={() => onPaymentMethodChange("online")}
-              className={`flex-1 rounded-[4px] border px-3 py-2 text-[12px] font-semibold transition-colors ${
+              className={`flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors ${
                 paymentMethod === "online"
                   ? "border-[#D96A63] bg-[#fff3f2] text-[#D96A63]"
                   : "border-[#e4e4e4] bg-white text-[#777] hover:bg-[#fafafa]"
@@ -68,7 +68,7 @@ export default function CartSummary({
             <button
               type="button"
               onClick={() => onPaymentMethodChange("cod")}
-              className={`flex-1 rounded-[4px] border px-3 py-2 text-[12px] font-semibold transition-colors ${
+              className={`flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors ${
                 paymentMethod === "cod"
                   ? "border-[#D96A63] bg-[#fff3f2] text-[#D96A63]"
                   : "border-[#e4e4e4] bg-white text-[#777] hover:bg-[#fafafa]"
@@ -96,7 +96,7 @@ export default function CartSummary({
         <button
           onClick={() => onCheckout(paymentMethod)}
           disabled={isEmpty || checkoutLoading}
-          className="w-full bg-[#D96A63] hover:bg-[#c45e58] disabled:bg-[#ddd] disabled:cursor-not-allowed transition-colors h-[44px] rounded-[4px] cursor-pointer"
+          className="w-full bg-[#D96A63] hover:bg-[#c45e58] disabled:bg-[#ddd] disabled:cursor-not-allowed transition-colors h-11 rounded-lg cursor-pointer"
         >
           <span className="font-semibold text-[14px] text-white tracking-[0.5px]">
             {checkoutLoading ? "Processing..." : `Check Out (${selectedItems.length})`}
