@@ -52,7 +52,7 @@ export async function getPopUpMapVendors(): Promise<PopUpMapVendor[]> {
     return [];
   }
 
-  return ((data ?? []) as PopUpLocationRow[])
+  return ((data ?? []) as unknown as PopUpLocationRow[])
     .map((row, index) => {
       const lat = parseCoordinate(row.latitude);
       const lng = parseCoordinate(row.longitude);
