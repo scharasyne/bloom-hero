@@ -421,7 +421,7 @@ export default function CartPage() {
         className="w-full bg-[#FBF7F4] min-h-screen px-6 py-8"
         style={{ fontFamily: "'Quicksand', sans-serif" }}
       >
-        <div className="max-w-[1100px] mx-auto flex gap-6 items-start">
+        <div className="max-w-275 mx-auto flex gap-6 items-start">
 
           {/* Left: Items list */}
           <div className="flex-1 flex flex-col gap-3">
@@ -480,7 +480,7 @@ export default function CartPage() {
           </div>
 
           {/* ── Right: Order Summary ── */}
-          <div className="w-[280px] shrink-0 sticky top-[24px]">
+          <div className="w-70 shrink-0 sticky top-6">
             <CartSummary 
               cartItems={cartItems} 
               selectedIds={selectedIds}

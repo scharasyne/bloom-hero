@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import NavBar from "@/components/navbar";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import CustomerSettingsForm from "@/app/customer/settings/CustomerSettingsForm";
+import CustomerSettingsForm from "@/app/(customer)/settings/CustomerSettingsForm";
 
 type CustomerRow = {
   shipping_address: string | null;
@@ -43,7 +43,7 @@ export default async function CustomerSettingsPage() {
 
   return (
     <main className="min-h-screen bg-[#fcf8f5] pb-12">
-      <NavBar type="customer" />
+      {/* <NavBar type="customer" /> */}
       <section className="mx-auto w-full max-w-3xl px-6 py-8">
         <h1 className="text-3xl font-bold text-[#2f6b4f]">Account Settings</h1>
         <p className="mt-2 text-sm text-[#4f4f4f]">

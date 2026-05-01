@@ -91,14 +91,14 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
             "this is irreversible" not just a secondary option.
           */}
           <a
-            href={`/customer/orders/${order.id}/cancel`}
+            href={`/(customer)/_components/orders/${order.id}/cancel`}
             className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border-2 border-red-300 px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-100 hover:border-red-400 transition-colors"
           >
             Cancel Order
           </a>
           {/* FIX 2: Pay Now → solid red, customer primary CTA */}
           <a
-            href={`/customer/orders/${order.id}/pay`}
+            href={`/(customer)/_components/orders/${order.id}/pay`}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
           >
             <IconCreditCard />
@@ -132,7 +132,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
         </div>
         {/* Order Received — positive confirmation action, red as customer primary */}
         <a
-          href={`/customer/orders/${order.id}/confirm-receipt`}
+          href={`/(customer)/_components/orders/${order.id}/confirm-receipt`}
           className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
         >
           <IconPackageCheck />
