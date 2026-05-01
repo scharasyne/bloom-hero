@@ -7,10 +7,6 @@ type CartSummaryProps = {
   onCheckout: (paymentMethod: "online" | "cod") => void;
   paymentMethod: "online" | "cod";
   onPaymentMethodChange: (method: "online" | "cod") => void;
-  // selectedIds: Set<string>;
-  // onCheckout: (paymentMethod: "online" | "cod") => void;
-  // paymentMethod: "online" | "cod";
-  // onPaymentMethodChange: (method: "online" | "cod") => void;
   loading?: boolean;
   checkoutLoading?: boolean;
   total?: number;

@@ -121,7 +121,7 @@ async function fetchFlowerResults(
     }
 
     const categoriesByProductId = new Map<string, string[]>();
-    for (const row of (categoryRows ?? []) as ProductCategoryRow[]) {
+    for (const row of (categoryRows ?? []) as unknown as ProductCategoryRow[]) {
       const categoryName = row.category?.category_name?.trim();
 
       if (!categoryName) {
