@@ -1,6 +1,6 @@
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
-import PopUpMap from "@/app/(vendor)/_components/PopUpMap";
+import PopUpMap from "@/components/PopUpMap";
 import { getPopUpMapVendors } from "./actions";
 
 export const metadata = {

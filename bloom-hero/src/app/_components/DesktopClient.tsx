@@ -6,7 +6,9 @@ import Link from "next/link";
 import Footer from "@/components/footer";
 import BouquetCard from "@/components/BouquetCard";
 import SearchBar from "@/components/SearchBar";
+import PopUpMap from "@/components/PopUpMap";
 import { mockBouquets } from "@/lib/mockData";
+import { PopUpMapVendor } from "@/typess";
 
 const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
 const MAX_VISIBLE = 6;
@@ -239,13 +241,18 @@ function ShopByCategory() {
   );
 }
 
-export default function DesktopClient() {
+type DesktopClientProps = {
+  vendors: PopUpMapVendor[];
+};
+
+export default function DesktopClient({ vendors }: DesktopClientProps) {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
 
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
       <Hero activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       <BestSellers activeCategory={activeCategory} />
+      <PopUpMap initialVendors={vendors} />
       <ShopByCategory />
       <Footer />
     </div>

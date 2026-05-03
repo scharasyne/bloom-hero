@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/getSession";
+import { getPopUpMapVendors } from "@/app/map/actions";
 import DesktopClient from "./_components/DesktopClient";
 
 export default async function Desktop() {
@@ -13,5 +14,7 @@ export default async function Desktop() {
     redirect("/market/dashboard");
   }
 
-  return <DesktopClient />;
+  const vendors = await getPopUpMapVendors();
+
+  return <DesktopClient vendors={vendors} />;
 }

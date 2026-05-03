@@ -15,10 +15,9 @@ const tabs: Record<"pop-up" | "market", Array<{ id: TabId; label: string; icon: 
   "pop-up": [
     { id: "dashboard", label: "Dashboard", icon: "mdi:home-outline" },
     { id: "products",  label: "Products",  icon: "mdi:package-variant" },
-    { id: "orders",    label: "Orders",    icon: "mdi:clipboard-list-outline" },
     // { id: "messages",  label: "Messages",  icon: "mdi:message-outline" },
     { id: "profile",   label: "Profile",   icon: "mdi:account-outline" },
-    { id: "schedule",  label: "Schedule",  icon: "mdi:calendar-outline" },
+    // { id: "schedule",  label: "Schedule",  icon: "mdi:calendar-outline" },
     { id: "settings",  label: "Settings",  icon: "mdi:cog-outline" },
   ],
   market: [
