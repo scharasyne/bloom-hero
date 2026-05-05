@@ -132,11 +132,6 @@ export default function BestSellersSection() {
         </div>
       )}
 
-      {/* <div className="flex items-center gap-2 text-sm text-[#7a7a7a]">
-        <Icon icon="mdi:database-outline" width={16} height={16} />
-        <span>Synced from completed orders in the products table</span>
-      </div> */}
-
       <div>
       <Link
         href="/search"

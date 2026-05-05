@@ -29,18 +29,6 @@ function DropdownPill({ label }: { label: string }) {
   );
 }
 
-// function Filters() {
-//   return (
-//     <div className="flex flex-wrap gap-1 items-center justify-center bg-[#f0ece6] rounded-2xl px-2 py-1.5">
-//       <DropdownPill label="Price: Any" />
-//       <div className="w-px h-4 bg-[#ddd8d0]" />
-//       <DropdownPill label="Sort by: Best Sellers" />
-//       <div className="w-px h-4 bg-[#ddd8d0]" />
-//       <DropdownPill label="More Filters" />
-//     </div>
-//   );
-// }
-
 function Hero() {
   return (
     <div className="flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
