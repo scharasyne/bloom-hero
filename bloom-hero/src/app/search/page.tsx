@@ -123,6 +123,16 @@ export default function SearchPage() {
   const ITEMS_PER_PAGE = 9;
 
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
+  const customerProfileEnsuredRef = React.useRef<string | null>(null);
+
+  const ensureCustomerProfile = React.useCallback(
+    async (userId: string) => {
+      if (customerProfileEnsuredRef.current === userId) return;
+      await supabase.from("customers").upsert({ user_id: userId }, { onConflict: "user_id" });
+      customerProfileEnsuredRef.current = userId;
+    },
+    [supabase]
+  );
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -143,7 +153,7 @@ export default function SearchPage() {
           return;
         }
 
-        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await ensureCustomerProfile(user.id);
 
         const { data: existingOrder, error: orderError } = await supabase
           .from("orders")
@@ -222,7 +232,7 @@ export default function SearchPage() {
         setAddingId(null);
       }
     },
-    [supabase]
+    [ensureCustomerProfile, supabase]
   );
 
   const handleBuyNow = React.useCallback(
@@ -240,7 +250,7 @@ export default function SearchPage() {
           return;
         }
 
-        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await ensureCustomerProfile(user.id);
 
         const priceValue = Number(product.price) || 0;
 
@@ -282,7 +292,7 @@ export default function SearchPage() {
         setBuyingId(null);
       }
     },
-    [supabase]
+    [ensureCustomerProfile, supabase]
   );
 
   React.useEffect(() => {

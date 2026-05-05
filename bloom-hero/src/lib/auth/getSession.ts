@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getVendorProfileByOwnerId } from "@/lib/services/vendors";
 
 export const getSession = cache(async () => {
   const supabase = await createSupabaseServerClient();
@@ -11,32 +12,65 @@ export const getSession = cache(async () => {
 
   if (!user) return { user: null, profile: null };
 
-  const { data: profile } = await supabase
+  const { data: row } = await supabase
     .from("users")
-    .select("role")
+    .select("role, name, email")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  let vendor_type = null;
-  let vendor_shop_name = null;
+  const role = row?.role as string | undefined;
 
-  if (profile?.role === "vendor") {
-    const { data: vendor } = await supabase
-      .from("vendors")
-      .select("vendor_type, shop_name")
-      .eq("owner_id", user.id)
-      .maybeSingle();
+  let vendor_type: "market" | "pop-up" | null = null;
+  let vendor_shop_name: string | null = null;
 
-    vendor_type = vendor?.vendor_type ?? null;
+  if (role === "vendor") {
+    const vendor = await getVendorProfileByOwnerId(user.id);
+    vendor_type = (vendor?.vendor_type as "market" | "pop-up" | null) ?? null;
     vendor_shop_name = vendor?.shop_name ?? null;
   }
 
   return {
     user,
     profile: {
-      ...profile,
+      role: row?.role as string | undefined,
+      name: row?.name ?? null,
+      email: row?.email ?? null,
       vendor_type,
       vendor_shop_name,
     },
   };
 });
+
+
+
+
+
+
+// import { cache } from "react";
+
+// import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+
+// export const getSession = cache(async () => {
+//   const supabase = await createSupabaseServerClient();
+
+//   const {
+//     data: { user },
+//     error,
+//   } = await supabase.auth.getUser();
+
+//   if (error || !user) {
+//     return { user: null, profile: null };
+//   }
+
+//   console.log(user.role);
+
+//   return {
+//     user,
+//     profile: {
+//       role: user.app_metadata?.role ?? "customer",
+//       vendor_type: user.app_metadata?.vendor_type ?? null,
+//       name: user.user_metadata?.name ?? null,
+//       vendor_shop_name: user.user_metadata?.vendor_shop_name ?? null,
+//     },
+//   };
+// });

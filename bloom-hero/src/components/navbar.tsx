@@ -18,6 +18,8 @@ type SessionData =
       user: User;
       profile: {
         role?: string;
+        name?: string | null;
+        email?: string | null;
         vendor_type?: string | null;
         vendor_shop_name?: string | null;
         username?: string | null; //newly added for nav bar enhancement, allows displaying username in nav bar if available
@@ -40,6 +42,8 @@ const navLinks = {
     { href: "/about-us",       label: "About" },
   ],
 };
+
+type NavKey = keyof typeof navLinks;
 
 // export default function NavBar({ type = "default" }: { type: navTypes | "default" }) {
 export default function NavBar({
@@ -66,11 +70,8 @@ export default function NavBar({
     "Customer"; //newly added for nav bar enhancement, falls back to email prefix or "Customer" if no name available
 
   const isVendor = role === "vendor";
-
-  let resolvedType: navTypes | "default" = "default";
+    let resolvedType: navTypes | "default" = "default";
   if (role === "customer") resolvedType = "customer";
-
-  // if (role === "vendor") resolvedType = vendor_type as navTypes;
 
   const items = navLinks[resolvedType]
   const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user && !isVendor;

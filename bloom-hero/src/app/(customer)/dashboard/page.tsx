@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getUserNameById } from "@/lib/services/users";
 
 export default async function CustomerDashboardPage() {
   const supabase = await createSupabaseServerClient();
@@ -12,17 +13,13 @@ export default async function CustomerDashboardPage() {
     redirect("/login");
   }
 
-  const { data: userProfile } = await supabase
-    .from("users")
-    .select("name")
-    .eq("id", session.user.id)
-    .single();
+  const userName = await getUserNameById(session.user.id);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-8">
       <h1 className="text-3xl font-bold text-[#2D2926]">BloomHero</h1>
       <p className="mt-2 text-[#6D6863]">
-        Welcome {userProfile?.name || session.user.email}!
+        Welcome {userName || session.user.email}!
       </p>
       <p className="mt-1 text-[#6D6863]">This is your customer dashboard.</p>
 

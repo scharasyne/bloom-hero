@@ -1,5 +1,6 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { NextRequest, NextResponse } from "next/server";
 
 function getEnvironmentVariables(){
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,9 +29,36 @@ export async function createSupabaseServerClient() {
                     cookieStore.set(name, value, options)
                     );
                 } catch(error) {
-                    console.log(error)
+                    console.error("Supabase cookie set failed:", error);
                 }
             }
         }
     })
+}
+
+/**
+ * OAuth PKCE callback: capture Set-Cookie options from Supabase, then apply them to the final redirect Response.
+ * (Reading `cookies()` in the same handler would not see the new session yet.)
+ */
+export function createSupabaseOAuthCallbackClient(request: NextRequest) {
+    const { supabaseUrl, supabaseAnonKey } = getEnvironmentVariables();
+    const outbound: { name: string; value: string; options: CookieOptions }[] = [];
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+            getAll() {
+                return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                    outbound.push({ name, value, options });
+                });
+            },
+        },
+    });
+    const applyAuthCookies = (response: NextResponse) => {
+        outbound.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+        });
+    };
+    return { supabase, applyAuthCookies };
 }

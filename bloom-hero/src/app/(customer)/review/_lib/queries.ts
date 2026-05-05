@@ -1,4 +1,7 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import {
+  getExistingReviewByCustomerAndVendor,
+  getOrderForReviewByCustomer,
+} from "@/lib/services/reviews";
 
 export type OrderForReview = {
   id: string;
@@ -25,32 +28,7 @@ export async function getOrderForReview(
   orderId: string,
   userId: string
 ): Promise<OrderForReview | null> {
-  const supabase = await createSupabaseServerClient();
-
-  const { data, error } = await supabase
-    .from("orders")
-    .select(
-      `
-      id,
-      status,
-      order_date,
-      customer_id,
-      vendor_id,
-      vendors!inner(id, shop_name),
-      order_items!inner(
-        quantity,
-        subtotal,
-        products(id, product_name, price, product_image_url)
-      )
-    `
-    )
-    .eq("id", orderId)
-    .eq("customer_id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`Failed to load order: ${error.message}`);
-  }
+  const data = await getOrderForReviewByCustomer(orderId, userId);
 
   if (!data) {
     return null;
@@ -80,18 +58,5 @@ export async function getOrderForReview(
 }
 
 export async function getExistingReview(customerId: string, vendorId: string) {
-  const supabase = await createSupabaseServerClient();
-
-  const { data, error } = await supabase
-    .from("reviews")
-    .select("id, rating, comment, created_at, updated_at")
-    .eq("customer_id", customerId)
-    .eq("vendor_id", vendorId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`Failed to load review: ${error.message}`);
-  }
-
-  return data ?? null;
+  return getExistingReviewByCustomerAndVendor(customerId, vendorId);
 }
