@@ -1,18 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import BestSellersSection from "@/components/BestSellersSection";
 import Footer from "@/components/footer";
-import BouquetCard from "@/components/BouquetCard";
 import SearchBar from "@/components/SearchBar";
-import { mockBouquets } from "@/lib/mockData";
-
-const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
-const MAX_VISIBLE = 6;
-
-type Category = "All" | "Bouquets" | "Plants" | "Handcrafted";
-const CATEGORIES: Category[] = ["All", "Bouquets", "Plants", "Handcrafted"];
 
 function Headline() {
   return (
@@ -28,33 +20,6 @@ function Headline() {
   );
 }
 
-function CategoryChips({
-  active,
-  onChange,
-}: {
-  active: Category;
-  onChange: (c: Category) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2 items-center justify-center">
-      {CATEGORIES.map((cat) => (
-        <button
-          key={cat}
-          type="button"
-          onClick={() => onChange(cat)}
-          className={`px-4 py-1.5 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ${
-            active === cat
-              ? "bg-[#2f5d3a] text-white"
-              : "bg-[#efeae4] text-[#1f1f1f] hover:bg-[#e2ddd6]"
-          }`}
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function DropdownPill({ label }: { label: string }) {
   return (
     <div className="flex gap-1.5 items-center px-2.5 py-1 cursor-pointer hover:bg-[#ede9e3] rounded-xl transition-colors">
@@ -64,26 +29,25 @@ function DropdownPill({ label }: { label: string }) {
   );
 }
 
-function Filters() {
-  return (
-    <div className="flex flex-wrap gap-1 items-center justify-center bg-[#f0ece6] rounded-2xl px-2 py-1.5">
-      <DropdownPill label="Price: Any" />
-      <div className="w-px h-4 bg-[#ddd8d0]" />
-      <DropdownPill label="Sort by: Best Sellers" />
-      <div className="w-px h-4 bg-[#ddd8d0]" />
-      <DropdownPill label="More Filters" />
-    </div>
-  );
-}
+// function Filters() {
+//   return (
+//     <div className="flex flex-wrap gap-1 items-center justify-center bg-[#f0ece6] rounded-2xl px-2 py-1.5">
+//       <DropdownPill label="Price: Any" />
+//       <div className="w-px h-4 bg-[#ddd8d0]" />
+//       <DropdownPill label="Sort by: Best Sellers" />
+//       <div className="w-px h-4 bg-[#ddd8d0]" />
+//       <DropdownPill label="More Filters" />
+//     </div>
+//   );
+// }
 
-function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; onCategoryChange: (c: Category) => void }) {
+function Hero() {
   return (
     <div className="flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
       <Headline />
       <SearchBar />
-      {/* <CategoryChips active={activeCategory} onChange={onCategoryChange} />
-      <Filters /> */}
+      {/* <Filters /> */}
       <div className="bg-[#edeae6] h-px w-40" />
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="font-medium text-[#7a7a7a] text-[15px] tracking-[0.3px]">
@@ -93,56 +57,6 @@ function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; 
           </a>
         </p>
       </div>
-    </div>
-  );
-}
-
-function BestSellers({ activeCategory }: { activeCategory: Category }) {
-  const filtered = activeCategory === "All"
-    ? ALL_BOUQUETS
-    : ALL_BOUQUETS.filter((b) => b.category === activeCategory);
-
-  const visible = filtered.slice(0, MAX_VISIBLE);
-
-  return (
-    <div className="flex flex-col gap-6 items-center justify-center py-8 md:py-16 relative shrink-0 w-full">
-      <div aria-hidden="true" className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none" />
-      <p className="font-medium text-[#8f8f8f] text-[12px] text-center tracking-[1.2px]">BEST SELLERS</p>
-      <p className="font-semibold text-[#1f1f1f] text-[24px] md:text-[32px] text-center tracking-[1.28px] leading-[1.2]">
-        Customer favorites, loved for any moment
-      </p>
-      <p className="font-normal text-[#7a7a7a] text-[16px] text-center max-w-lg">
-        Popular flowers from trusted local florists.
-      </p>
-
-      {visible.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
-          {visible.map((bouquet) => (
-            <BouquetCard
-              key={bouquet.id}
-              image={bouquet.image_url}
-              images={(bouquet as any).images}
-              name={bouquet.name}
-              price={bouquet.price}
-              shop={bouquet.shop_name}
-              distance={bouquet.distance}
-              category={bouquet.category}
-              rating={bouquet.rating}
-              sold={bouquet.sold_count}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="text-[#7a7a7a] text-[15px] py-8">No bouquets found in this category.</p>
-      )}
-
-      <Link
-        href="/search"
-        className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#2f5d3a] text-[#2f5d3a] font-semibold text-[14px] hover:bg-[#eef4f0] transition-colors"
-      >
-        See More
-        <Icon icon="mdi:arrow-right" width={16} height={16} />
-      </Link>
     </div>
   );
 }
@@ -240,12 +154,10 @@ function ShopByCategory() {
 }
 
 export default function DesktopClient() {
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
-
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
-      <Hero activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
-      <BestSellers activeCategory={activeCategory} />
+      <Hero />
+      <BestSellersSection />
       <ShopByCategory />
       <Footer />
     </div>
