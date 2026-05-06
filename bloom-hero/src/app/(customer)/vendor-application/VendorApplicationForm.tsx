@@ -1,11 +1,17 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { saveVendorApplicationDraft, submitVendorApplication } from "./actions";
+import {
+  getVendorApplicationDraftForCurrentUser,
+  saveVendorApplicationDraft,
+  submitVendorApplication,
+  uploadVendorApplicationDocument,
+} from "./actions";
 import { Upload, CheckCircle2, Info, Check } from "lucide-react";
 import { Icon } from "@iconify/react";
+import { digitsOnly } from "@/lib/utils/phone";
+import { normalizeEmail, isValidEmail } from "@/lib/utils/email";
 
 type Step = 1 | 2 | 3;
 type VendorType = "market" | "pop-up";
@@ -63,10 +69,6 @@ type VendorApplicationDraft = {
 function getErrorMessage(error: unknown, fallbackMessage: string) {
   if (error instanceof Error && error.message) return error.message;
   return fallbackMessage;
-}
-
-function digitsOnly(value: string) {
-  return value.replace(/\D/g, "");
 }
 
 function parsePhoneNumber(value: string) {
@@ -128,7 +130,6 @@ export default function VendorApplicationForm({
 }: VendorApplicationFormProps) {
   const initialPhoneParts = parsePhoneNumber(initialPhoneNumber);
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -161,16 +162,9 @@ export default function VendorApplicationForm({
     let isMounted = true;
     async function hydrateFromDraft() {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user || !isMounted) return;
-
-        const { data, error } = await supabase
-          .from("vendor_applications")
-          .select("shop_name, shop_address, email, phone_number, vendor_type, government_id_type, taxpayer_identification_number, vat_registration_status, primary_business_document_url, government_id_document_url, bir_certificate_url, submission_status")
-          .eq("owner_id", user.id)
-          .maybeSingle<VendorApplicationDraft>();
-
-        if (error || !data || data.submission_status !== "draft" || !isMounted) return;
+        const result = await getVendorApplicationDraftForCurrentUser();
+        const data = result.ok ? (result.draft as VendorApplicationDraft | null) : null;
+        if (!data || data.submission_status !== "draft" || !isMounted) return;
 
         setShopName(data.shop_name ?? "");
         setShopAddress(data.shop_address ?? "");
@@ -200,18 +194,20 @@ export default function VendorApplicationForm({
     }
     hydrateFromDraft();
     return () => { isMounted = false; };
-  }, [initialEmail, supabase]);
+  }, [initialEmail]);
 
   const onSelectFile = (setter: (file: File | null) => void) => (event: ChangeEvent<HTMLInputElement>) => {
     setter(event.target.files?.[0] ?? null);
   };
 
-  const handlePhoneNumberChange = (e: ChangeEvent<HTMLInputElement>) => setPhoneNumber(digitsOnly(e.target.value));
-
   function validateStepOne() {
     if (!shopName.trim()) return "Shop Name is required.";
     if (!shopAddress.trim()) return "Shop Address is required.";
     if (!email.trim()) return "Email is required.";
+    if (!isValidEmail(email)) return "Please enter a valid business email.";
+    if (normalizeEmail(email) === normalizeEmail(initialEmail)) {
+      return "Business email must be different from your account email.";
+    }
     if (!phoneNumber.trim()) return "Phone Number is required.";
     if (!/^\d{10}$/.test(phoneNumber.trim())) return "Phone Number must be exactly 10 digits.";
     return "";
@@ -229,13 +225,15 @@ export default function VendorApplicationForm({
     return "";
   }
 
-  async function uploadDocument(userId: string, file: File, documentType: string) {
-    const extension = file.name.split(".").pop() ?? "dat";
-    const filePath = `${userId}/vendor-application/${documentType}-${Date.now()}-${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from("vendor-documents").upload(filePath, file, { cacheControl: "3600", upsert: true, contentType: file.type });
-    if (uploadError) throw new Error(`Failed to upload ${documentType.replace("-", " ")} document. ${uploadError.message}`);
-    const { data: { publicUrl } } = supabase.storage.from("vendor-documents").getPublicUrl(filePath);
-    return publicUrl;
+  async function uploadDocument(file: File, documentType: string) {
+    const formData = new FormData();
+    formData.set("file", file);
+    formData.set("documentType", documentType);
+    const result = await uploadVendorApplicationDocument(formData);
+    if (!result.ok) {
+      throw new Error(result.error ?? `Failed to upload ${documentType.replace("-", " ")} document.`);
+    }
+    return result.publicUrl;
   }
 
   async function saveApplicationDraft() {
@@ -271,23 +269,20 @@ export default function VendorApplicationForm({
     if (stepTwoError) { setErrorMessage(stepTwoError); setCurrentStep(2); return; }
     setIsSubmitting(true);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error(userError?.message ?? "You need to log in again.");
-
       let primaryBusinessDocumentUrl = existingPrimaryBusinessDocumentUrl || null;
       let governmentIdDocumentUrl = existingGovernmentIdDocumentUrl || null;
       let birCertificateUrl = existingBirCertificateUrl || null;
 
       if (governmentIdDocumentFile) {
-        governmentIdDocumentUrl = await uploadDocument(user.id, governmentIdDocumentFile, "government-id");
+        governmentIdDocumentUrl = await uploadDocument(governmentIdDocumentFile, "government-id");
         setExistingGovernmentIdDocumentUrl(governmentIdDocumentUrl);
       }
       if (!isPopUpVendor && primaryBusinessDocumentFile) {
-        primaryBusinessDocumentUrl = await uploadDocument(user.id, primaryBusinessDocumentFile, "primary-business-document");
+        primaryBusinessDocumentUrl = await uploadDocument(primaryBusinessDocumentFile, "primary-business-document");
         setExistingPrimaryBusinessDocumentUrl(primaryBusinessDocumentUrl);
       }
       if (!isPopUpVendor && birCertificateFile) {
-        birCertificateUrl = await uploadDocument(user.id, birCertificateFile, "bir-certificate");
+        birCertificateUrl = await uploadDocument(birCertificateFile, "bir-certificate");
         setExistingBirCertificateUrl(birCertificateUrl);
       }
 

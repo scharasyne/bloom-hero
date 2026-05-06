@@ -1,75 +1,94 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { getSession } from "@/lib/auth/getSession";
 import { logAdminLogin } from "@/app/admin/actions/activity-log";
+import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  if (code) {
-    const supabase = await createSupabaseServerClient();
-    await supabase.auth.exchangeCodeForSession(code);
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login`);
+  }
 
-    const session = await getSession();
-    const user = session.user;
+  const { supabase, applyAuthCookies } = createSupabaseOAuthCallbackClient(request);
 
-    if (!user)
-      return NextResponse.redirect(`${origin}/login`); // ← was /sign-up, changed to /login
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  if (exchangeError) {
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(exchangeError.message)}`
+    );
+  }
 
-    let userRole = session.profile?.role;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!userRole) {
-      await supabase.from("users").upsert(
-        {
-          id: user.id,
-          email: user.email ?? "",
-          role: "customer",
-        },
-        { onConflict: "id" }
+  if (!user) {
+    const redirect = NextResponse.redirect(`${origin}/login`);
+    applyAuthCookies(redirect);
+    return redirect;
+  }
+
+  const { data: row } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  let role = row?.role as string | undefined;
+  if (!role) {
+    const { error: upsertUserError } = await supabase.from("users").upsert(
+      {
+        id: user.id,
+        email: user.email ?? "",
+        role: "customer",
+      },
+      { onConflict: "id" }
+    );
+    if (upsertUserError) {
+      const redirect = NextResponse.redirect(
+        `${origin}/login?error=${encodeURIComponent(upsertUserError.message)}`
       );
-
-      await supabase
-        .from("customers")
-        .upsert({ user_id: user.id }, { onConflict: "user_id" });
-
-      userRole = "customer";
+      applyAuthCookies(redirect);
+      return redirect;
     }
-
-    if (userRole === "customer") {
-      await supabase
-        .from("customers")
-        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+    const { error: customerError } = await supabase
+      .from("customers")
+      .upsert({ user_id: user.id }, { onConflict: "user_id" });
+    if (customerError) {
+      const redirect = NextResponse.redirect(
+        `${origin}/login?error=${encodeURIComponent(customerError.message)}`
+      );
+      applyAuthCookies(redirect);
+      return redirect;
     }
+    role = "customer";
+  }
 
-    const { data: vendorData } = await supabase
+  let path = "/";
+  if (role === "admin") {
+    path = "/admin/vendor-applications";
+  } else if (role === "vendor") {
+    const { data: vendor } = await supabase
       .from("vendors")
       .select("vendor_type")
       .eq("owner_id", user.id)
-      .single();
-    const vendorType = vendorData?.vendor_type;
-
-    if (userRole === "admin") {
-      await logAdminLogin(user.id).catch((error) => {
-        console.error("Failed to write admin login activity log:", error);
-      });
-
-      return NextResponse.redirect(`${origin}/admin/vendor-applications`);
+      .maybeSingle();
+    const vendorType = vendor?.vendor_type as string | undefined;
+    if (!vendorType) {
+      const msg = encodeURIComponent(
+        "Your account is not registered as a vendor. Please contact support or sign up as a vendor."
+      );
+      const redirect = NextResponse.redirect(`${origin}/login?error=${msg}`);
+      applyAuthCookies(redirect);
+      return redirect;
     }
-
-    if (userRole === "vendor") {
-      const vendorType = session.profile?.vendor_type;
-
-      if (vendorType === "market")
-        return NextResponse.redirect(`${origin}/market/dashboard`);
-      else if (vendorType === "pop-up")
-        return NextResponse.redirect(`${origin}/pop-up/dashboard`);
-    } else if (userRole === "customer") {
-      return NextResponse.redirect(`${origin}`);
-    }
-
-    return NextResponse.redirect(`${origin}/dashboard`);
+    path = vendorType === "market" ? "/market/dashboard" : "/pop-up/dashboard";
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  const redirect = NextResponse.redirect(`${origin}${path}`);
+  applyAuthCookies(redirect);
+  return redirect;
 }

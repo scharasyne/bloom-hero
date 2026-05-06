@@ -74,6 +74,7 @@ function IconPackageCheck({ className = "" }: { className?: string }) {
 /*  Tab-aware footer actions                                           */
 /* ------------------------------------------------------------------ */
 function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab: TabKey }) {
+  const hasReceipt = Boolean(order.receiptProofUrl);
 
   if (activeTab === "to-pay") {
     return (
@@ -85,7 +86,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
             <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Amount Due</span>
             <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
           </div>
-          {order.receiptProofUrl ? (
+          {hasReceipt ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
               Receipt uploaded
             </span>
@@ -95,12 +96,21 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
             solid red bg instead of just a red outline, so it reads as
             "this is irreversible" not just a secondary option.
           */}
-          <a
-            href={`/orders/${order.id}/cancel`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border-2 border-red-300 px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-100 hover:border-red-400 transition-colors"
-          >
-            Cancel Order
-          </a>
+          {hasReceipt ? (
+            <span
+              aria-disabled="true"
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#e6e2dd] bg-[#f6f3ef] px-5 py-2 text-xs font-bold text-[#b4ada5] cursor-not-allowed"
+            >
+              Cancel Order
+            </span>
+          ) : (
+            <a
+              href={`/orders/${order.id}/cancel`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border-2 border-red-300 px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-100 hover:border-red-400 transition-colors"
+            >
+              Cancel Order
+            </a>
+          )}
           {/* FIX 2: Pay Now → solid red, customer primary CTA */}
           <a
             href={`/orders/${order.id}/pay`}
@@ -193,7 +203,10 @@ export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: 
     Qty per line item is already shown on each row.
   */
   const productCount = order.items.filter(row => row.products !== null).length;
-  const badge = STATUS_BADGE[activeTab];
+  const badge =
+    activeTab === "to-pay" && order.receiptProofUrl
+      ? { ...STATUS_BADGE[activeTab], label: "Pending Confirmation" }
+      : STATUS_BADGE[activeTab];
 
   return (
     <section className="rounded-2xl bg-white border border-[#e6e2dd] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">

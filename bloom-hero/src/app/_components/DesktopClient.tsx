@@ -66,7 +66,7 @@ function Filters() {
   );
 }
 
-function Hero({ activeCategory, onCategoryChange }: { activeCategory: Category; onCategoryChange: (c: Category) => void }) {
+function Hero() {
   const router = useRouter();
   const user = useVendorNavigation();
 

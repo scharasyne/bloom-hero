@@ -6,6 +6,9 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { logActivity } from "@/app/admin/actions/activity-log";
 import { DetailLine } from "@/typess";
+import { normalizeEmail } from "@/lib/utils/email";
+import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
+import { VendorApplicationRecord } from "@/typess";
 
 type ActionResult<T = undefined> = {
   ok: boolean;
@@ -301,6 +304,23 @@ export async function approveVendorApplication(
       password: generatedPassword,
     },
   };
+}
+
+export async function getSubmittedVendorApplications(): Promise<ActionResult<VendorApplicationRecord[]>> {
+  const adminCheck = await ensureAdmin();
+  if (adminCheck.error) {
+    return { ok: false, error: adminCheck.error };
+  }
+
+  try {
+    const data = await listSubmittedVendorApplications();
+    return { ok: true, data: data as VendorApplicationRecord[] };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Failed to load vendor applications.",
+    };
+  }
 }
 
 export async function rejectVendorApplication(

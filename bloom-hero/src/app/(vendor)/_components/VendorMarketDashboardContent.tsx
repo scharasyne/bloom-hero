@@ -2,13 +2,14 @@
 
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import {
-  mockMarketKPIs,
-  mockMarketRecentOrders,
-  mockMarketLowStock,
-  mockMarketUpcomingOrders,
-  mockMarketRevenueTrend,
-  type MarketRecentOrder,
+import { useEffect, useMemo, useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import type {
+  MarketKPIItem,
+  MarketLowStockProduct,
+  MarketRecentOrder,
+  MarketTrendPoint,
+  MarketUpcomingOrder,
 } from "@/lib/mockData";
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
@@ -91,18 +92,342 @@ function Divider() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function VendorMarketDashboardContent() {
-  const trendValues = mockMarketRevenueTrend.map((d) => d.value);
-  const trendFirst  = mockMarketRevenueTrend[0].label;
-  const trendLast   = mockMarketRevenueTrend[mockMarketRevenueTrend.length - 1].label;
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const [kpis, setKpis] = useState<MarketKPIItem[]>([]);
+  const [recentOrders, setRecentOrders] = useState<MarketRecentOrder[]>([]);
+  const [lowStock, setLowStock] = useState<MarketLowStockProduct[]>([]);
+  const [upcomingOrders, setUpcomingOrders] = useState<MarketUpcomingOrder[]>([]);
+  const [revenueTrend, setRevenueTrend] = useState<MarketTrendPoint[]>([]);
+  const [revenueSummary, setRevenueSummary] = useState<{
+    total: number;
+    changePct: number | null;
+    positive: boolean;
+  }>({ total: 0, changePct: null, positive: true });
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const startOfDay = (value: Date) =>
+      new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    const addDays = (value: Date, days: number) => {
+      const next = new Date(value);
+      next.setDate(next.getDate() + days);
+      return next;
+    };
+    const toDateKey = (value: Date) =>
+      `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(
+        value.getDate()
+      ).padStart(2, "0")}`;
+    const formatDayLabel = (value: Date) =>
+      value.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+    const formatCurrency = (value: number) =>
+      `₱${value.toLocaleString("en-PH", { maximumFractionDigits: 0 })}`;
+
+    const loadDashboard = async () => {
+      setLoadError(null);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        if (active) setLoadError("Please sign in to view vendor insights.");
+        return;
+      }
+
+      const { data: vendor, error: vendorError } = await supabase
+        .from("vendors")
+        .select("id")
+        .eq("owner_id", user.id)
+        .eq("vendor_type", "market")
+        .maybeSingle();
+
+      if (vendorError || !vendor) {
+        if (active) setLoadError("Vendor profile not found for this dashboard.");
+        return;
+      }
+
+      const today = startOfDay(new Date());
+      const currentStart = addDays(today, -6);
+      const currentEnd = addDays(today, 1);
+      const previousStart = addDays(currentStart, -7);
+      const fulfilmentStatuses = ["to_pay", "to_ship", "to_receive"];
+
+      const { count: pendingCount } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("vendor_id", vendor.id)
+        .in("status", fulfilmentStatuses);
+
+      const { data: orderRows, error: ordersError } = await supabase
+        .from("orders")
+        .select("id, order_date, total_amount, status, customer_id")
+        .eq("vendor_id", vendor.id)
+        .gte("order_date", previousStart.toISOString())
+        .lt("order_date", currentEnd.toISOString())
+        .neq("status", "cancelled");
+
+      if (ordersError) {
+        if (active) setLoadError("Failed to load order metrics.");
+        return;
+      }
+
+      const orders = orderRows ?? [];
+      const currentOrders = orders.filter((row) => {
+        const when = new Date(row.order_date);
+        return when >= currentStart && when < currentEnd;
+      });
+      const previousOrders = orders.filter((row) => {
+        const when = new Date(row.order_date);
+        return when >= previousStart && when < currentStart;
+      });
+
+      const sumOrders = (rows: typeof orders) =>
+        rows.reduce((total, row) => total + Number(row.total_amount || 0), 0);
+
+      const currentRevenue = sumOrders(currentOrders);
+      const previousRevenue = sumOrders(previousOrders);
+      const revenueChangePct =
+        previousRevenue > 0
+          ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
+          : null;
+
+      const currentOrderCount = currentOrders.length;
+      const previousOrderCount = previousOrders.length;
+      const ordersChangePct =
+        previousOrderCount > 0
+          ? ((currentOrderCount - previousOrderCount) / previousOrderCount) * 100
+          : null;
+
+      const pendingFulfilment = pendingCount ?? 0;
+
+      const trendPoints: MarketTrendPoint[] = Array.from({ length: 7 }).map((_, index) => {
+        const day = addDays(currentStart, index);
+        const dayStart = startOfDay(day);
+        const dayEnd = addDays(dayStart, 1);
+        const total = orders
+          .filter((row) => {
+            const when = new Date(row.order_date);
+            return when >= dayStart && when < dayEnd;
+          })
+          .reduce((sum, row) => sum + Number(row.total_amount || 0), 0);
+        return { label: formatDayLabel(day), value: total };
+      });
+
+      const { data: lowStockRows } = await supabase
+        .from("products")
+        .select("id, product_name, stocks")
+        .eq("vendor_id", vendor.id)
+        .lte("stocks", 3)
+        .order("stocks", { ascending: true });
+
+      const lowStockProducts: MarketLowStockProduct[] = (lowStockRows ?? []).map((row) => ({
+        id: row.id,
+        name: row.product_name,
+        stock: row.stocks,
+      }));
+
+      const { data: recentItemRows } = (await supabase
+        .from("order_items")
+        .select(
+          "order_id, quantity, subtotal, products(product_name), orders!inner(id, customer_id, order_date, status, total_amount)"
+        )
+        .eq("orders.vendor_id", vendor.id)
+        .order("order_date", { ascending: false, foreignTable: "orders" })
+        .limit(20)) as {
+        data:
+          | {
+              order_id: string;
+              quantity: number;
+              subtotal: number;
+              products: { product_name: string } | null;
+              orders:
+                | {
+                    id: string;
+                    customer_id: string;
+                    order_date: string;
+                    status: string;
+                    total_amount: number;
+                  }
+                | null;
+            }[]
+          | null;
+      };
+
+      const recentRows = recentItemRows ?? [];
+      const groupedRecent = new Map<
+        string,
+        {
+          order: NonNullable<(typeof recentRows)[number]["orders"]>;
+          itemNames: string[];
+        }
+      >();
+
+      for (const row of recentRows) {
+        if (!row.orders) continue;
+        if (!groupedRecent.has(row.order_id)) {
+          groupedRecent.set(row.order_id, { order: row.orders, itemNames: [] });
+        }
+        if (row.products?.product_name) {
+          groupedRecent.get(row.order_id)!.itemNames.push(row.products.product_name);
+        }
+      }
+
+      const recentOrdersData = Array.from(groupedRecent.values())
+        .sort((a, b) =>
+          new Date(b.order.order_date).getTime() - new Date(a.order.order_date).getTime()
+        )
+        .slice(0, 5);
+
+      const customerIds = Array.from(
+        new Set(recentOrdersData.map((entry) => entry.order.customer_id))
+      );
+
+      const { data: customerRows } = customerIds.length
+        ? await supabase
+            .from("users")
+            .select("id, name, email")
+            .in("id", customerIds)
+        : { data: [] };
+
+      const customerNameMap = new Map(
+        (customerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
+      );
+
+      const statusMap = (status: string): MarketRecentOrder["status"] => {
+        if (status === "completed") return "Completed";
+        if (status === "cancelled") return "Cancelled";
+        return "Pending";
+      };
+
+      const recentOrdersList: MarketRecentOrder[] = recentOrdersData.map((entry) => {
+        const firstItem = entry.itemNames[0] ?? "Order";
+        const extraCount = Math.max(entry.itemNames.length - 1, 0);
+        const itemLabel = extraCount > 0 ? `${firstItem} +${extraCount} more` : firstItem;
+        return {
+          id: entry.order.id,
+          customerName: customerNameMap.get(entry.order.customer_id) ?? "Customer",
+          item: itemLabel,
+          status: statusMap(entry.order.status),
+          amount: formatCurrency(Number(entry.order.total_amount || 0)),
+          date: new Date(entry.order.order_date).toLocaleString("en-PH", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+        };
+      });
+
+      const upcomingStart = today;
+      const upcomingEnd = addDays(today, 5);
+      const { data: upcomingRows } = await supabase
+        .from("orders")
+        .select("order_date, status")
+        .eq("vendor_id", vendor.id)
+        .gte("order_date", upcomingStart.toISOString())
+        .lt("order_date", upcomingEnd.toISOString())
+        .neq("status", "cancelled");
+
+      const upcomingMap = new Map<string, number>();
+      for (const row of upcomingRows ?? []) {
+        const key = toDateKey(new Date(row.order_date));
+        upcomingMap.set(key, (upcomingMap.get(key) ?? 0) + 1);
+      }
+
+      const upcomingList: MarketUpcomingOrder[] = Array.from({ length: 5 }).map((_, index) => {
+        const day = addDays(today, index);
+        const key = toDateKey(day);
+        return {
+          date: String(day.getDate()).padStart(2, "0"),
+          day: day.toLocaleDateString("en-PH", { weekday: "short" }),
+          count: upcomingMap.get(key) ?? 0,
+          isToday: index === 0,
+        };
+      });
+
+      const nextKpis: MarketKPIItem[] = [
+        {
+          label: "Revenue (7 days)",
+          value: formatCurrency(currentRevenue),
+          change:
+            revenueChangePct === null
+              ? "—"
+              : `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}%`,
+          positive: revenueChangePct === null ? true : revenueChangePct >= 0,
+          icon: "mdi:cash-multiple",
+          href: "/market/orders",
+        },
+        {
+          label: "Orders (7 days)",
+          value: currentOrderCount.toString(),
+          change:
+            ordersChangePct === null
+              ? "—"
+              : `${ordersChangePct >= 0 ? "+" : ""}${ordersChangePct.toFixed(1)}%`,
+          positive: ordersChangePct === null ? true : ordersChangePct >= 0,
+          icon: "mdi:shopping-outline",
+          href: "/market/orders",
+        },
+        {
+          label: "Pending Fulfilment",
+          value: pendingFulfilment.toString(),
+          change: "",
+          positive: false,
+          icon: "mdi:clock-alert-outline",
+          href: "/market/orders",
+        },
+        {
+          label: "Low-Stock Products",
+          value: lowStockProducts.length.toString(),
+          change: "",
+          positive: false,
+          icon: "mdi:package-variant-closed",
+          href: "/market/products",
+        },
+      ];
+
+      if (!active) return;
+
+      setRevenueSummary({
+        total: currentRevenue,
+        changePct: revenueChangePct,
+        positive: revenueChangePct === null ? true : revenueChangePct >= 0,
+      });
+      setRevenueTrend(trendPoints);
+      setKpis(nextKpis);
+      setLowStock(lowStockProducts);
+      setRecentOrders(recentOrdersList);
+      setUpcomingOrders(upcomingList);
+    };
+
+    loadDashboard();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
+
+  const trendValues = revenueTrend.map((d) => d.value);
+  const trendFirst = revenueTrend[0]?.label ?? "";
+  const trendLast = revenueTrend[revenueTrend.length - 1]?.label ?? "";
 
   return (
     <div
       className="w-full space-y-6"
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
+      {loadError ? (
+        <div className="rounded-2xl border border-amber-200 bg-white px-5 py-4 text-sm text-amber-700">
+          {loadError}
+        </div>
+      ) : null}
       {/* ── KPI Row ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {mockMarketKPIs.map((kpi) => (
+        {kpis.map((kpi) => (
           <Link
             key={kpi.label}
             href={kpi.href}
@@ -114,8 +439,12 @@ export function VendorMarketDashboardContent() {
             <div className="mb-4 flex items-start justify-between">
               <Icon icon={kpi.icon} width={18} height={18} className="text-[#2f5d3a]/60" />
               {kpi.change ? (
-                <span className={`text-[11px] font-semibold tabular-nums ${kpi.positive ? "text-emerald-600" : "text-rose-500"}`}>
-                  {kpi.positive ? "↑" : "↓"} {kpi.change}
+                <span
+                  className={`text-[11px] font-semibold tabular-nums ${
+                    kpi.change === "—" ? "text-slate-400" : kpi.positive ? "text-emerald-600" : "text-rose-500"
+                  }`}
+                >
+                  {kpi.change === "—" ? "—" : `${kpi.positive ? "↑" : "↓"} ${kpi.change}`}
                 </span>
               ) : null}
             </div>
@@ -133,15 +462,32 @@ export function VendorMarketDashboardContent() {
           <div className="mb-5 flex items-start justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Revenue</p>
-              <p className="mt-1 text-2xl font-bold tracking-tight text-[#1e1c1a]">₱8,420</p>
-              <p className="mt-0.5 text-[11px] text-slate-400">Last 12 days</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-[#1e1c1a]">
+                ₱{revenueSummary.total.toLocaleString("en-PH", { maximumFractionDigits: 0 })}
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-400">Last 7 days</p>
             </div>
-            <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700">
-              <Icon icon="mdi:trending-up" width={13} />
-              +12.3% vs prior period
-            </div>
+            {revenueSummary.changePct !== null ? (
+              <div
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold ${
+                  revenueSummary.positive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-rose-50 text-rose-600"
+                }`}
+              >
+                <Icon icon={revenueSummary.positive ? "mdi:trending-up" : "mdi:trending-down"} width={13} />
+                {`${revenueSummary.changePct >= 0 ? "+" : ""}${revenueSummary.changePct.toFixed(
+                  1
+                )}% vs prior period`}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-500">
+                <Icon icon="mdi:minus" width={13} />
+                No prior data
+              </div>
+            )}
           </div>
-          <SparkLine data={trendValues} />
+          <SparkLine data={trendValues.length ? trendValues : [0, 0, 0, 0, 0, 0, 0]} />
           <div className="mt-2 flex justify-between text-[10px] font-medium text-slate-300">
             <span>{trendFirst}</span>
             <span>{trendLast}</span>
@@ -152,7 +498,7 @@ export function VendorMarketDashboardContent() {
         <div className="rounded-2xl border border-[#ebe7e3] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
           <SectionHeader title="Upcoming" href="/market/orders" linkLabel="All orders" />
           <div className="space-y-1">
-            {mockMarketUpcomingOrders.map((o, i) => (
+            {upcomingOrders.map((o, i) => (
               <div key={o.date}>
                 <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${o.isToday ? "bg-[#f4f9f5]" : "hover:bg-[#faf9f7]"}`}>
                   <div className={`flex min-w-[40px] flex-col items-center rounded-lg py-1.5 px-2 text-center ${o.isToday ? "bg-[#2f5d3a] text-white" : "bg-[#f7f5f2] text-[#1e1c1a]"}`}>
@@ -166,7 +512,7 @@ export function VendorMarketDashboardContent() {
                     <span className="ml-auto text-[10px] font-semibold text-[#2f5d3a]">Today</span>
                   )}
                 </div>
-                {i < mockMarketUpcomingOrders.length - 1 && (
+                {i < upcomingOrders.length - 1 && (
                   <div className="mx-3 h-px bg-[#f5f2ef]" />
                 )}
               </div>
@@ -184,7 +530,7 @@ export function VendorMarketDashboardContent() {
             <SectionHeader title="Recent Orders" href="/market/orders" />
           </div>
           <div>
-            {mockMarketRecentOrders.map((order, i) => (
+            {recentOrders.map((order, i) => (
               <div key={order.id}>
                 <div className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-[#faf9f7]">
                   <div className="flex min-w-0 items-center gap-3">
@@ -202,7 +548,7 @@ export function VendorMarketDashboardContent() {
                     <span className="w-16 text-right text-sm font-bold tabular-nums text-[#1e1c1a]">{order.amount}</span>
                   </div>
                 </div>
-                {i < mockMarketRecentOrders.length - 1 && <Divider />}
+                {i < recentOrders.length - 1 && <Divider />}
               </div>
             ))}
           </div>
@@ -219,13 +565,13 @@ export function VendorMarketDashboardContent() {
             <SectionHeader title="Low Stock" href="/market/products" linkLabel="Manage" />
           </div>
 
-          {mockMarketLowStock.length === 0 ? (
+          {lowStock.length === 0 ? (
             <div className="px-5 pb-5">
               <p className="text-sm text-slate-400">All products are well-stocked.</p>
             </div>
           ) : (
             <div>
-              {mockMarketLowStock.map((p, i) => (
+              {lowStock.map((p, i) => (
                 <div key={p.id}>
                   <div className="flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-[#fdf9f6]">
                     <div className="flex min-w-0 items-center gap-2.5">
@@ -242,7 +588,7 @@ export function VendorMarketDashboardContent() {
                       {p.stock} left
                     </span>
                   </div>
-                  {i < mockMarketLowStock.length - 1 && <Divider />}
+                  {i < lowStock.length - 1 && <Divider />}
                 </div>
               ))}
               <div className="border-t border-[#f0ece8] px-5 py-3">
