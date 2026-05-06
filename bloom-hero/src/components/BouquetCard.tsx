@@ -56,6 +56,12 @@ export default function BouquetCard({
     router.push(href);
   };
 
+  // return (
+    
+  const locationLabel = `${shop} · ${distance}`;
+  const hasRating = rating !== undefined && rating !== null;
+  const hasSold   = sold   !== undefined && sold   !== null;
+
   return (
     <div
       className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
@@ -176,7 +182,6 @@ export default function BouquetCard({
     
   </div>
 )}
-
       </div>
     </div>
   );
