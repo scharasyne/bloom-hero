@@ -1,5 +1,5 @@
 import {
-  getExistingReviewByCustomerAndVendor,
+  getExistingReviewByCustomerAndOrder,
   getOrderForReviewByCustomer,
 } from "@/lib/services/reviews";
 
@@ -57,6 +57,6 @@ export async function getOrderForReview(
   };
 }
 
-export async function getExistingReview(customerId: string, vendorId: string) {
-  return getExistingReviewByCustomerAndVendor(customerId, vendorId);
+export async function getExistingReview(customerId: string, orderId: string, productId: string) {
+  return getExistingReviewByCustomerAndOrder(customerId, orderId, productId);
 }
