@@ -51,6 +51,8 @@ export function groupOrders(rows: OrderItemRow[]): OrderGroup[] {
         status: row.orders.status,
         orderDate: row.orders.order_date,
         total: Number(row.orders.total_amount) || 0,
+        receiptProofUrl: row.orders.receipt_proof_url,
+        receiptSubmittedAt: row.orders.receipt_submitted_at,
         items: [],
         hasReview: false,
       });

@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
 
+
 const navItems = [
-  { label: "Dashboard",           href: "/admin-dashboard",                  icon: "mdi:home" },
+  { label: "Dashboard",           href: "/admin/dashboard",                  icon: "mdi:home" },
   { label: "Vendor Applications", href: "/admin/vendor-applications",         icon: "mdi:clipboard-text" },
-  { label: "Vendors",             href: "/admin/vendor-management-dashboard", icon: "mdi:account-multiple" },
-  { label: "Reviews",             href: "/admin/review-moderation-panel",     icon: "mdi:star" },
+  { label: "Vendors",             href: "/admin/vendors", icon: "mdi:account-multiple" },
+  { label: "Reviews",             href: "/admin/review-moderation",     icon: "mdi:star" },
   { label: "Activity Logs",       href: "/admin/activity-logs",               icon: "mdi:clock" },
 ];
 

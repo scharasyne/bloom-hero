@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 
 interface BouquetCardProps {
@@ -12,6 +13,7 @@ interface BouquetCardProps {
   categories?: string[];
   rating?: number;        // optional — undefined = hide rating row
   sold?: number;          // optional — undefined = hide sold count
+  href?: string;
   onAddToCart?: () => void;
   adding?: boolean;
   onBuyNow?: () => void;
@@ -29,11 +31,13 @@ export default function BouquetCard({
   categories,
   rating,
   sold,
+  href,
   onAddToCart,
   adding,
   onBuyNow,
   buying,
 }: BouquetCardProps) {
+  const router = useRouter();
   const normalizedImages = (images ?? []).filter(
     (url) => typeof url === "string" && url.trim().length > 0
   );
@@ -47,6 +51,17 @@ export default function BouquetCard({
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 
+  const handleImageClick = () => {
+    if (!href) return;
+    router.push(href);
+  };
+
+  // return (
+    
+  const locationLabel = `${shop} · ${distance}`;
+  const hasRating = rating !== undefined && rating !== null;
+  const hasSold   = sold   !== undefined && sold   !== null;
+
   return (
     <div
       className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
@@ -58,15 +73,26 @@ export default function BouquetCard({
       />
 
       {/* ── Product Image ── */}
-      <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
+      <div
+        className={`h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden ${href ? "cursor-pointer" : ""}`}
+        onClick={handleImageClick}
+        role={href ? "link" : undefined}
+        tabIndex={href ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (!href) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            router.push(href);
+          }
+        }}
+      >
         {imageUrls.length > 0 ? (
           <ProductCardImageCarousel
             imageUrls={imageUrls}
             productName={name}
-            imageClassName="absolute inset-0 max-w-none object-cover rounded-tl-[18px] rounded-tr-[18px] size-full"
+            imageClassName="absolute inset-0 size-full rounded-t-[22px] object-cover"
           />
         ) : (
-          /* FIX 1: Proper fallback when no product image exists */
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#c5bfb7]">
             <Icon icon="mdi:flower-outline" width={36} height={36} />
             <p className="text-[11px] font-medium tracking-wide">No photo yet</p>
@@ -74,33 +100,28 @@ export default function BouquetCard({
         )}
       </div>
 
-      <div className="content-stretch flex flex-col gap-1.5 items-start justify-center px-4 relative shrink-0 w-full">
-
-        {/* ── Name & Price ── */}
-        <div className="content-stretch flex items-start justify-between leading-0 relative shrink-0 text-center w-full">
-          <div className="flex flex-col font-semibold justify-center relative shrink-0 text-[#1f1f1f] text-[13px] lg:text-[18px] tracking-[-0.09px]">
-            <p className="leading-[1.45]">{name}</p>
-          </div>
-          <div className="flex flex-col font-bold justify-center relative shrink-0 text-[#2f5d3a] text-[14px] lg:text-[20px] tracking-[-0.1px]">
-            <p className="leading-5.5">₱ {price}</p>
+      <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 flex-1 text-[15px] font-semibold leading-[1.35] text-[#1f1f1f] lg:text-[17px]">
+            {name}
+          </h3>
+          <div className="shrink-0 text-right text-[16px] font-bold leading-none text-[#D24B46] lg:text-[18px]">
+            ₱{price.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        {/* ── Shop & Distance ── */}
-        <div className="content-stretch flex gap-1.5 items-center justify-center relative shrink-0">
-          <Icon icon="mdi:map-marker-outline" width={15} height={15} color="#7a7a7a" />
-          <p className="text-[#7a7a7a] text-[11px] lg:text-[13px] font-medium leading-5.5">
-            {shop} · {distance}
-          </p>
+        <div className="flex items-center gap-1.5 text-[#7a7a7a]">
+          <Icon icon="mdi:storefront-outline" width={15} height={15} />
+          <p className="text-[11px] font-medium leading-5 lg:text-[13px]">{locationLabel}</p>
         </div>
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {categoryPills.map((pill) => (
               <span
                 key={pill}
-                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px] shrink-0"
               >
                 {pill}
               </span>
@@ -108,56 +129,52 @@ export default function BouquetCard({
           </div>
         ) : null}
 
-        {/* ── Rating ── 
-            FIX 2: Only render if rating is a real positive number.
-            Shows "No ratings yet" as a soft label when sold > 0 but no rating exists.
-        */}
-        {rating && rating > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium">
-            <span className="text-[#f4b400]">★ </span>
-            <span className="text-[#7a7a7a]">
-              {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
-            </span>
-          </p>
-        ) : sold && sold > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
-            {sold} sold · No ratings yet
-          </p>
-        ) : null}
+        {(hasRating || hasSold) && (
+          <div className="flex items-center gap-2 text-[11px] lg:text-[13px]">
+            {hasRating ? (
+              <span className="inline-flex items-center gap-1 font-semibold text-[#f4b400]">
+                <span>★</span>
+                <span>{rating?.toFixed(1)}</span>
+              </span>
+            ) : null}
+            {hasSold ? (
+              <span className="font-medium text-[#7a7a7a]">
+                {hasRating ? "· " : ""}
+                {sold} sold
+              </span>
+            ) : null}
+            {!hasRating && !hasSold ? (
+              <span className="font-medium text-[#b0a89e]">No ratings yet</span>
+            ) : null}
+          </div>
+        )}
 
-        {/* ── Actions ──
-            FIX 3: Add to Cart is the full-width primary action.
-            Buy Now is a quieter text link below it — reduces button heaviness.
-        */}
-        {(onAddToCart || onBuyNow) && (
-  <div className="mt-2 flex flex-col gap-2 w-full">
-    {/* Buy Now — primary solid pill (most urgent action) */}
-    {onBuyNow && (
-      <button
-        type="button"
-        onClick={onBuyNow}
-        disabled={buying || adding}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:shopping-outline" width={14} height={14} />
-        {buying ? "Processing..." : "Buy Now"}
-      </button>
-    )}
-    {/* Add to Cart — secondary outlined pill (low-commitment action) */}
-    {onAddToCart && (
-      <button
-        type="button"
-        onClick={onAddToCart}
-        disabled={adding || buying}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:cart-outline" width={14} height={14} />
-        {adding ? "Adding..." : "Add to Cart"}
-      </button>
-    )}
-  </div>
-)}
-
+        {(onBuyNow || onAddToCart) && (
+          <div className="mt-1 flex flex-col gap-2">
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={onBuyNow}
+                disabled={buying || adding}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#d24b46] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#b83d39] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Icon icon="mdi:shopping-outline" width={15} height={15} />
+                {buying ? "Processing..." : "Buy Now"}
+              </button>
+            )}
+            {onAddToCart && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={adding || buying}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d24b46] bg-white px-4 py-3 text-sm font-semibold text-[#d24b46] transition-colors hover:bg-[#fff5f5] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Icon icon="mdi:cart-outline" width={15} height={15} />
+                {adding ? "Adding..." : "Add to Cart"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
