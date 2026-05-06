@@ -92,7 +92,16 @@ function Divider() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function VendorMarketDashboardContent() {
+  return <VendorDashboardContent vendorType="market" />;
+}
+
+type VendorDashboardContentProps = {
+  vendorType: "market" | "pop-up";
+};
+
+export function VendorDashboardContent({ vendorType }: VendorDashboardContentProps) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const routePrefix = vendorType === "market" ? "/market" : "/pop-up";
   const [kpis, setKpis] = useState<MarketKPIItem[]>([]);
   const [recentOrders, setRecentOrders] = useState<MarketRecentOrder[]>([]);
   const [lowStock, setLowStock] = useState<MarketLowStockProduct[]>([]);
@@ -141,7 +150,7 @@ export function VendorMarketDashboardContent() {
         .from("vendors")
         .select("id")
         .eq("owner_id", user.id)
-        .eq("vendor_type", "market")
+        .eq("vendor_type", vendorType)
         .maybeSingle();
 
       if (vendorError || !vendor) {
@@ -359,7 +368,7 @@ export function VendorMarketDashboardContent() {
               : `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}%`,
           positive: revenueChangePct === null ? true : revenueChangePct >= 0,
           icon: "mdi:cash-multiple",
-          href: "/market/orders",
+          href: `${routePrefix}/orders`,
         },
         {
           label: "Orders (7 days)",
@@ -370,7 +379,7 @@ export function VendorMarketDashboardContent() {
               : `${ordersChangePct >= 0 ? "+" : ""}${ordersChangePct.toFixed(1)}%`,
           positive: ordersChangePct === null ? true : ordersChangePct >= 0,
           icon: "mdi:shopping-outline",
-          href: "/market/orders",
+          href: `${routePrefix}/orders`,
         },
         {
           label: "Pending Fulfilment",
@@ -378,7 +387,7 @@ export function VendorMarketDashboardContent() {
           change: "",
           positive: false,
           icon: "mdi:clock-alert-outline",
-          href: "/market/orders",
+          href: `${routePrefix}/orders`,
         },
         {
           label: "Low-Stock Products",
@@ -386,7 +395,7 @@ export function VendorMarketDashboardContent() {
           change: "",
           positive: false,
           icon: "mdi:package-variant-closed",
-          href: "/market/products",
+          href: `${routePrefix}/products`,
         },
       ];
 
@@ -409,7 +418,7 @@ export function VendorMarketDashboardContent() {
     return () => {
       active = false;
     };
-  }, [supabase]);
+  }, [supabase, vendorType, routePrefix]);
 
   const trendValues = revenueTrend.map((d) => d.value);
   const trendFirst = revenueTrend[0]?.label ?? "";
@@ -496,7 +505,7 @@ export function VendorMarketDashboardContent() {
 
         {/* Upcoming Orders */}
         <div className="rounded-2xl border border-[#ebe7e3] bg-white p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-          <SectionHeader title="Upcoming" href="/market/orders" linkLabel="All orders" />
+          <SectionHeader title="Upcoming" href={`${routePrefix}/orders`} linkLabel="All orders" />
           <div className="space-y-1">
             {upcomingOrders.map((o, i) => (
               <div key={o.date}>
@@ -527,7 +536,7 @@ export function VendorMarketDashboardContent() {
         {/* Recent Orders */}
         <div className="rounded-2xl border border-[#ebe7e3] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)] lg:col-span-2">
           <div className="px-5 pt-5">
-            <SectionHeader title="Recent Orders" href="/market/orders" />
+            <SectionHeader title="Recent Orders" href={`${routePrefix}/orders`} />
           </div>
           <div>
             {recentOrders.map((order, i) => (
@@ -553,7 +562,7 @@ export function VendorMarketDashboardContent() {
             ))}
           </div>
           <div className="border-t border-[#f0ece8] px-5 py-3">
-            <Link href="/market/orders" className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#2f5d3a] opacity-70 transition-opacity hover:opacity-100">
+            <Link href={`${routePrefix}/orders`} className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#2f5d3a] opacity-70 transition-opacity hover:opacity-100">
               View all orders <Icon icon="mdi:arrow-right" width={12} />
             </Link>
           </div>
@@ -562,7 +571,7 @@ export function VendorMarketDashboardContent() {
         {/* Low Stock */}
         <div className="rounded-2xl border border-[#ebe7e3] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
           <div className="px-5 pt-5">
-            <SectionHeader title="Low Stock" href="/market/products" linkLabel="Manage" />
+            <SectionHeader title="Low Stock" href={`${routePrefix}/products`} linkLabel="Manage" />
           </div>
 
           {lowStock.length === 0 ? (
@@ -593,7 +602,7 @@ export function VendorMarketDashboardContent() {
               ))}
               <div className="border-t border-[#f0ece8] px-5 py-3">
                 <Link
-                  href="/market/products"
+                  href={`${routePrefix}/products`}
                   className="flex items-center justify-center gap-1.5 rounded-xl bg-[#f0f7f1] py-2.5 text-xs font-semibold text-[#2f5d3a] transition-colors hover:bg-[#e4f0e6]"
                 >
                   <Icon icon="mdi:plus" width={13} />
