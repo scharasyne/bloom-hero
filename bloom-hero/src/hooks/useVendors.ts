@@ -74,7 +74,7 @@ export function useVendors() {
         return;
       }
 
-      setData(((rows ?? []) as VendorRow[]).map(mapVendor));
+      setData(((rows ?? []) as unknown as VendorRow[]).map(mapVendor));
     } catch (loadError) {
       setData([]);
       setError(loadError instanceof Error ? loadError.message : "Failed to load vendors.");
