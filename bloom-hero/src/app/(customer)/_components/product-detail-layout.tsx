@@ -108,18 +108,32 @@ function Gallery({ product }: { product: ProductDetailRow | null }) {
   );
 }
 
-function Headline({ product, reviewCount }: { product: ProductDetailRow | null; reviewCount: number }) {
+function Headline({ product, reviewCount, reviews }: { product: ProductDetailRow | null; reviewCount: number; reviews?: ProductReviewRow[] }) {
+  const revs = reviews ?? [];
+  const averageRating = revs.length > 0
+    ? revs.reduce((sum, review) => sum + review.rating, 0) / revs.length
+    : (product?.average_rating ?? 0);
+  const safeRating = Math.max(0, Math.min(5, Math.round(averageRating)));
+
   return (
     <div className="flex flex-col gap-[12px]">
       <h1 className="text-[36px] font-semibold leading-tight text-[#1f1f1f]">
         {product?.product_name ?? "Product"}
       </h1>
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <span className="text-[18px] font-semibold text-[#F4B400]">★</span>
-          <span className="text-[18px] font-semibold text-[#1f1f1f]">{product?.average_rating ?? "—"}</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-0.5">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <span key={index} className={index < safeRating ? "text-[#f4b740]" : "text-[#d9d4cd]"}>
+                ★
+              </span>
+            ))}
+          </div>
+          <span className="text-[16px] font-semibold text-[#1f1f1f]">
+            {averageRating ? Number(averageRating).toFixed(1) : "—"}
+          </span>
         </div>
-        <span className="text-[16px] text-[#6b6b6b]">({reviewCount} reviews)</span>
+        <span className="text-[16px] text-[#6b6b6b]">({reviewCount} {reviewCount === 1 ? "review" : "reviews"})</span>
       </div>
       <div className="flex items-center gap-1 text-[16px] text-[#6b6b6b]">
         <Icon icon="mdi:map-marker-outline" className="size-[20px] shrink-0" />
@@ -230,10 +244,10 @@ function Cta({ onAddToCart, onBuyNow, addingLoading, buyingLoading }: { onAddToC
   );
 }
 
-function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean }) {
+function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading, reviews }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean; reviews?: ProductReviewRow[] }) {
   return (
     <div className="flex max-w-[560px] flex-col gap-[32px]">
-      <Headline product={product} reviewCount={reviewCount} />
+      <Headline product={product} reviewCount={reviewCount} reviews={reviews} />
       <Tags />
       <PriceStock product={product} />
       <p className="text-[16px] leading-7 text-[#3a3733]">
@@ -245,12 +259,12 @@ function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, o
   );
 }
 
-function ProductDetails({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean }) {
+function ProductDetails({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading, reviews }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean; reviews?: ProductReviewRow[] }) {
   return (
     <section className="w-full max-w-[1200px] px-[64px] pt-[64px] pb-[32px]">
       <div className="flex items-start gap-[48px]">
         <Gallery product={product} />
-        <Text product={product} reviewCount={reviewCount} quantity={quantity} onQuantityChange={onQuantityChange} onAddToCart={onAddToCart} onBuyNow={onBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} />
+        <Text product={product} reviewCount={reviewCount} quantity={quantity} onQuantityChange={onQuantityChange} onAddToCart={onAddToCart} onBuyNow={onBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} reviews={reviews} />
       </div>
     </section>
   );
@@ -414,7 +428,7 @@ export function ProductDetailLayout({ product, reviews = [] }: { product?: Produ
 
   return (
     <div className="flex w-full flex-col items-center bg-[#fbf7f4]">
-      <ProductDetails product={product ?? null} reviewCount={reviews.length} quantity={quantity} onQuantityChange={setQuantity} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} />
+      <ProductDetails product={product ?? null} reviewCount={reviews.length} quantity={quantity} onQuantityChange={setQuantity} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} reviews={reviews} />
       <ReviewsSection reviews={reviews} />
     </div>
   );

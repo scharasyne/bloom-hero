@@ -87,7 +87,6 @@ export default function BouquetCard({
             imageClassName="absolute inset-0 max-w-none object-cover rounded-tl-[18px] rounded-tr-[18px] size-full"
           />
         ) : (
-          /* FIX 1: Proper fallback when no product image exists */
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#c5bfb7]">
             <Icon icon="mdi:flower-outline" width={36} height={36} />
             <p className="text-[11px] font-medium tracking-wide">No photo yet</p>
@@ -128,28 +127,22 @@ export default function BouquetCard({
             ))}
           </div>
         ) : null}
-
-        {/* ── Rating ── 
-            FIX 2: Only render if rating is a real positive number.
-            Shows "No ratings yet" as a soft label when sold > 0 but no rating exists.
-        */}
-        {rating && rating > 0 ? (
+        {typeof rating === "number" || (sold && sold > 0) ? (
           <p className="text-[11px] lg:text-[13px] font-medium">
-            <span className="text-[#f4b400]">★ </span>
-            <span className="text-[#7a7a7a]">
-              {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
+            <span className="flex gap-0.5 items-center">
+              <span className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <span key={index} className={index < Math.round(rating || 0) ? "text-[#f4b740]" : "text-[#d9d4cd]"}>
+                    ★
+                  </span>
+                ))}
+              </span>
+              <span className="text-[#7a7a7a] ml-1">
+                {(rating || 0).toFixed(1)}{sold !== undefined ? ` (${sold} sold)` : ""}
+              </span>
             </span>
           </p>
-        ) : sold && sold > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
-            {sold} sold · No ratings yet
-          </p>
         ) : null}
-
-        {/* ── Actions ──
-            FIX 3: Add to Cart is the full-width primary action.
-            Buy Now is a quieter text link below it — reduces button heaviness.
-        */}
         {(onAddToCart || onBuyNow) && (
   <div className="mt-2 flex flex-col gap-2 w-full">
     {onAddToCart && (

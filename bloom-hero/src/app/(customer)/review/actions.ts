@@ -89,7 +89,7 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
     return { status: "not-found" };
   }
 
-  const vendorId = data.vendors?.[0]?.id || "";
+  const vendorId = data.vendor_id || data.vendors?.[0]?.id || "";
 
   let existingReview: ReviewPageData["existingReview"] = null;
   if (vendorId) {

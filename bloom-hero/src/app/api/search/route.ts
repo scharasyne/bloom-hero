@@ -144,23 +144,39 @@ async function fetchFlowerResults(
 
   const { data: vendors, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, shop_name, vendor_type, average_rating")
+    .select("id, shop_name, vendor_type")
     .in("id", vendorIds);
+
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("vendor_id, rating")
+    .in("vendor_id", vendorIds);
+
+  const ratingsByVendorId = new Map<string, number[]>();
+  if (!reviewError && reviewRows) {
+    for (const row of (reviewRows ?? []) as { vendor_id: string; rating: number }[]) {
+      const current = ratingsByVendorId.get(row.vendor_id) ?? [];
+      current.push(row.rating);
+      ratingsByVendorId.set(row.vendor_id, current);
+    }
+  }
 
   if (!vendorError && vendors) {
     const vendorMap = new Map(
-      (vendors as VendorSearchRow[]).map((vendor) => [vendor.id, vendor])
+      (vendors as Omit<VendorSearchRow, 'average_rating'>[]).map((vendor) => [vendor.id, vendor])
     );
 
     return {
       data: flowers.map((flower) => {
         const vendor = vendorMap.get(flower.vendor_id);
+        const vendorRatings = ratingsByVendorId.get(flower.vendor_id) ?? [];
+        const averageRating = vendorRatings.length > 0 ? vendorRatings.reduce((a, b) => a + b, 0) / vendorRatings.length : null;
 
         return {
           ...flower,
           shop_name: vendor?.shop_name ?? null,
           vendor_type: vendor?.vendor_type ?? null,
-          average_rating: vendor?.average_rating ?? null,
+          average_rating: averageRating,
         };
       }),
       error: null,

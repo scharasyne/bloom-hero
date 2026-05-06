@@ -376,9 +376,9 @@ export default function SearchPage() {
                               distance={flower.distance || ""}
                               categories={flower.categories || []}
                               rating={
-                                typeof flower.rating === "number" && flower.rating > 0
-                                  ? flower.rating
-                                  : flower.average_rating ?? undefined
+                                typeof flower.average_rating === "number" && flower.average_rating > 0
+                                  ? flower.average_rating
+                                  : undefined
                               }
                               sold={flower.sold_count ?? undefined}
                               onAddToCart={() => handleAddToCart(flower)}
