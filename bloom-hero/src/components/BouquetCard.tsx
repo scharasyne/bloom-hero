@@ -108,22 +108,25 @@ export default function BouquetCard({
           </div>
         ) : null}
 
-        {/* ── Rating ── 
-            FIX 2: Only render if rating is a real positive number.
-            Shows "No ratings yet" as a soft label when sold > 0 but no rating exists.
-        */}
-        {rating && rating > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium">
-            <span className="text-[#f4b400]">★ </span>
-            <span className="text-[#7a7a7a]">
-              {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
+        {/* ── Rating ── */}
+        <div className="min-h-[18px] lg:min-h-[20px]">
+          {rating && rating > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium">
+              <span className="text-[#f4b400]">★ </span>
+              <span className="text-[#7a7a7a]">
+                {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
+              </span>
+            </p>
+          ) : sold && sold > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
+              {sold} sold · No ratings yet
+            </p>
+          ) : (
+            <span aria-hidden="true" className="text-[11px] lg:text-[13px] text-transparent">
+              No ratings yet
             </span>
-          </p>
-        ) : sold && sold > 0 ? (
-          <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
-            {sold} sold · No ratings yet
-          </p>
-        ) : null}
+          )}
+        </div>
 
         {/* ── Actions ──
             FIX 3: Add to Cart is the full-width primary action.
