@@ -1,14 +1,28 @@
+import Link from "next/link";
+
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import VendorOrdersTable from "@/app/(vendor)/_components/VendorOrdersTable";
 
 type VendorOrdersPageProps = {
-  searchParams: Promise<{ success?: string; error?: string }>;
+  searchParams: Promise<{ success?: string; error?: string; status?: string }>;
 };
 
 export default async function VendorMarketOrdersPage({
   searchParams,
 }: VendorOrdersPageProps) {
   const params = await searchParams;
+  const activeStatus =
+    params.status === "to_pay" ||
+    params.status === "to_ship" ||
+    params.status === "to_receive"
+      ? params.status
+      : "all";
+  const statusButtons = [
+    { key: "all", label: "All" },
+    { key: "to_pay", label: "To Pay" },
+    { key: "to_ship", label: "To Ship" },
+    { key: "to_receive", label: "To Receive" },
+  ];
 
   return (
     <main className="flex">
@@ -24,10 +38,33 @@ export default async function VendorMarketOrdersPage({
           </p>
         </div>
 
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {statusButtons.map((button) => {
+            const isActive = activeStatus === button.key;
+            const href =
+              button.key === "all" ? "?" : `?status=${button.key}`;
+
+            return (
+              <Link
+                key={button.key}
+                href={href}
+                className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
+                  isActive
+                    ? "border-[#2f5d3a] bg-[#2f5d3a] text-white"
+                    : "border-[#dad5cc] bg-white text-[#5f5a55] hover:border-[#2f5d3a] hover:text-[#2f5d3a]"
+                }`}
+              >
+                {button.label}
+              </Link>
+            );
+          })}
+        </div>
+
         <VendorOrdersTable
           vendorType="market"
           successMessage={params.success}
           errorMessage={params.error}
+          statusFilter={activeStatus}
         />
       </div>
     </main>
