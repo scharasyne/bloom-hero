@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { getSession } from "@/lib/auth/getSession";
+import { logAdminLogin } from "@/app/admin/actions/activity-log";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -49,6 +50,10 @@ export async function GET(request: NextRequest) {
     const vendorType = vendorData?.vendor_type;
 
     if (userRole === "admin") {
+      await logAdminLogin(user.id).catch((error) => {
+        console.error("Failed to write admin login activity log:", error);
+      });
+
       return NextResponse.redirect(`${origin}/admin/vendor-applications`);
     }
 

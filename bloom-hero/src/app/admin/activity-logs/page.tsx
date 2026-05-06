@@ -5,7 +5,6 @@ import { Icon } from "@iconify/react";
 import { ActivityLogType } from "@/typess";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import ActivityLogCard from "@/components/admin/ActivityLogCard";
-import { mockActivityLogs } from "@/lib/mockData";
 
 // ── Skeleton card ─────────────────────────────────────────
 function SkeletonCard() {
@@ -32,15 +31,18 @@ const FILTER_CHIPS: { label: string; value: ActivityLogType | "all" }[] = [
   { label: "Approvals",    value: "approved"  },
   { label: "Rejections",   value: "rejected"  },
   { label: "Suspensions",  value: "suspended" },
+  { label: "Unsuspensions", value: "unsuspended" },
   { label: "Logins",       value: "login"     },
+  { label: "Logouts",      value: "logout"    },
 ];
 
 const chipActive: Record<string, string> = {
-  all:       "bg-white border border-[#e6e2dd] text-[#2c2a28]",
-  approved:  "bg-[#eaf3ef] border border-[#e6e2dd] text-[#2e7d5b]",
-  rejected:  "bg-[#fde4e1] border border-[#e6e2dd] text-[#c43c30]",
-  suspended: "bg-[#f7e8d8] border border-[#e6e2dd] text-[#b86a2a]",
-  login:     "bg-[#e3f2fd] border border-[#e6e2dd] text-[#1565c0]",
+  all:         "bg-white border border-[#e6e2dd] text-[#2c2a28]",
+  approved:    "bg-[#eaf3ef] border border-[#e6e2dd] text-[#2e7d5b]",
+  rejected:    "bg-[#fde4e1] border border-[#e6e2dd] text-[#c43c30]",
+  suspended:   "bg-[#f7e8d8] border border-[#e6e2dd] text-[#b86a2a]",
+  unsuspended: "bg-[#eaf3ef] border border-[#e6e2dd] text-[#2e7d5b]",
+  login:       "bg-[#e3f2fd] border border-[#e6e2dd] text-[#1565c0]",
 };
 
 // ✅ Only change: outer layout shell removed — layout.tsx now owns bg, height, padding, sidebar offset
@@ -48,6 +50,18 @@ export default function ActivityLogsPage() {
   const [activeFilter, setActiveFilter] = useState<ActivityLogType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { data: allLogs, isLoading } = useActivityLogs();
+
+  const logCounts = useMemo(() => {
+    return {
+      all: allLogs.length,
+      approved: allLogs.filter((log) => log.actionType === "approved").length,
+      rejected: allLogs.filter((log) => log.actionType === "rejected").length,
+      suspended: allLogs.filter((log) => log.actionType === "suspended").length,
+      unsuspended: allLogs.filter((log) => log.actionType === "unsuspended").length,
+      login: allLogs.filter((log) => log.actionType === "login").length,
+      logout: allLogs.filter((log) => log.actionType === "logout").length,
+    };
+  }, [allLogs]);
 
   const logs = activeFilter === "all" ? allLogs : allLogs.filter((l) => l.actionType === activeFilter);
 
@@ -125,7 +139,7 @@ export default function ActivityLogsPage() {
             ${activeFilter === "all" ? "bg-[#e6e2dd]" : "bg-white hover:bg-[#f0eeeb]"}`}
         >
           <Icon icon="mdi:view-grid" width={16} height={16} className="text-[#2c2a28]" />
-          <span className="text-[#2c2a28]">All: {mockActivityLogs.length}</span>
+          <span className="text-[#2c2a28]">All: {logCounts.all}</span>
         </button>
 
         {/* Approvals */}
@@ -134,7 +148,7 @@ export default function ActivityLogsPage() {
           className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
             ${activeFilter === "approved" ? "bg-[#c8e6d8]" : "bg-[#eaf3ef] hover:bg-[#d6ecdf]"}`}
         >
-          <span className="text-[#2e7d5b]">Approvals: {mockActivityLogs.filter(l => l.actionType === "approved").length}</span>
+          <span className="text-[#2e7d5b]">Approvals: {logCounts.approved}</span>
         </button>
 
         {/* Rejections */}
@@ -143,7 +157,7 @@ export default function ActivityLogsPage() {
           className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
             ${activeFilter === "rejected" ? "bg-[#f9c8c4]" : "bg-[#fde4e1] hover:bg-[#fbd4d0]"}`}
         >
-          <span className="text-[#c43c30]">Rejections: {mockActivityLogs.filter(l => l.actionType === "rejected").length}</span>
+          <span className="text-[#c43c30]">Rejections: {logCounts.rejected}</span>
         </button>
 
         {/* Suspensions */}
@@ -152,7 +166,16 @@ export default function ActivityLogsPage() {
           className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
             ${activeFilter === "suspended" ? "bg-[#f0d0b0]" : "bg-[#f7e8d8] hover:bg-[#f2dcc4]"}`}
         >
-          <span className="text-[#b86a2a]">Suspensions: {mockActivityLogs.filter(l => l.actionType === "suspended").length}</span>
+          <span className="text-[#b86a2a]">Suspensions: {logCounts.suspended}</span>
+        </button>
+
+        {/* Unsuspensions */}
+        <button
+          onClick={() => setActiveFilter("unsuspended")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "unsuspended" ? "bg-[#c8e6d8]" : "bg-[#eaf3ef] hover:bg-[#d6ecdf]"}`}
+        >
+          <span className="text-[#2e7d5b]">Unsuspensions: {logCounts.unsuspended}</span>
         </button>
 
         {/* Logins */}
@@ -161,7 +184,16 @@ export default function ActivityLogsPage() {
           className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
             ${activeFilter === "login" ? "bg-[#bad8f5]" : "bg-[#e3f2fd] hover:bg-[#cce5fa]"}`}
         >
-          <span className="text-[#1565c0]">Logins: {mockActivityLogs.filter(l => l.actionType === "login").length}</span>
+          <span className="text-[#1565c0]">Logins: {logCounts.login}</span>
+        </button>
+
+        {/* Logouts */}
+        <button
+          onClick={() => setActiveFilter("logout")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "logout" ? "bg-[#d4d1cc]" : "bg-[#f2f0ed] hover:bg-[#e8e5e1]"}`}
+        >
+          <span className="text-[#7a746e]">Logouts: {logCounts.logout}</span>
         </button>
 
       </div>
