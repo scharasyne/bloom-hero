@@ -89,7 +89,7 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
     return { status: "not-found" };
   }
 
-  const vendorId = data.vendors?.id || "";
+  const vendorId = data.vendors?.[0]?.id || "";
 
   let existingReview: ReviewPageData["existingReview"] = null;
   if (vendorId) {
@@ -117,7 +117,7 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
         customerId: data.customer_id,
         vendor: {
           id: vendorId,
-          shopName: data.vendors?.shop_name || "Vendor",
+          shopName: data.vendors?.[0]?.shop_name || "Vendor",
         },
         items: (data.order_items || []).map((item: any) => ({
           quantity: item.quantity,
