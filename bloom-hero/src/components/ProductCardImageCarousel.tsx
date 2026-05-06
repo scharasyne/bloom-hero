@@ -75,7 +75,10 @@ export default function ProductCardImageCarousel({
           <button
             type="button"
             className={`${controlClassName} left-2`}
-            onClick={goPrev}
+            onClick={(e) => {
+              e.stopPropagation()
+              goPrev()
+            }}
             aria-label="Previous image"
           >
             <span aria-hidden="true">&#8249;</span>
@@ -84,7 +87,10 @@ export default function ProductCardImageCarousel({
           <button
             type="button"
             className={`${controlClassName} right-2`}
-            onClick={goNext}
+            onClick={(e) => {
+              e.stopPropagation()
+              goNext()
+            }}
             aria-label="Next image"
           >
             <span aria-hidden="true">&#8250;</span>
@@ -95,7 +101,10 @@ export default function ProductCardImageCarousel({
               <button
                 key={index}
                 type="button"
-                onClick={() => setCurrentIndex(index)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentIndex(index)
+                }}
                 aria-label={`Go to image ${index + 1}`}
                 className={[
                     "h-2 w-2 rounded-full border border-white/70 transition-all",

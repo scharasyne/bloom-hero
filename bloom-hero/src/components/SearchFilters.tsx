@@ -3,7 +3,7 @@
 import React from "react";
 import { Icon } from "@iconify/react";
 
-const PRICE_OPTIONS = ["Under P500", "Over P500", "Under P700", "Under P1000"];
+const PRICE_OPTIONS = ["Under P500", "Over P500", "Under P700", "Default"];
 const SORT_OPTIONS = ["Best Sellers", "Price: Low to High", "Price: High to Low"];
 
 const SORT_LABELS: Record<string, string> = {
@@ -87,7 +87,7 @@ export default function SearchFilters({
 }: Props) {
   return (
     <div className="flex flex-wrap gap-2 items-center justify-center">
-      <FilterPill label={price} active={price !== "Under P1000"}>
+      <FilterPill label={price} active={price !== "Default"}>
         {PRICE_OPTIONS.map((opt) => (
           <DropdownItem key={opt} label={opt} selected={price === opt} onClick={() => onPriceChange(opt)} />
         ))}
