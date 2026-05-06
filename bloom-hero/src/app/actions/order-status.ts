@@ -9,6 +9,20 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
 
+export type CustomerPayPageResult =
+  | { status: "unauthenticated" }
+  | { status: "not-found" }
+  | {
+      status: "ready";
+      order: {
+        id: string;
+        status: string;
+        paymentMethod: string | null;
+        receiptProofUrl: string | null;
+        receiptSubmittedAt: string | null;
+      };
+    };
+
 async function getSessionUserId() {
   const supabase = await createSupabaseServerClient();
   const {
@@ -20,6 +34,43 @@ async function getSessionUserId() {
   }
 
   return { supabase, userId: session.user.id };
+}
+
+export async function loadCustomerPayPage(orderId: string): Promise<CustomerPayPageResult> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return { status: "unauthenticated" };
+  }
+
+  const { data: order, error } = await supabase
+    .from("orders")
+    .select("id, customer_id, status, payment_method, receipt_proof_url, receipt_submitted_at")
+    .eq("id", orderId)
+    .eq("customer_id", session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load payment page: ${error.message}`);
+  }
+
+  if (!order) {
+    return { status: "not-found" };
+  }
+
+  return {
+    status: "ready",
+    order: {
+      id: order.id,
+      status: order.status,
+      paymentMethod: order.payment_method,
+      receiptProofUrl: order.receipt_proof_url,
+      receiptSubmittedAt: order.receipt_submitted_at,
+    },
+  };
 }
 
 export async function uploadOrderReceiptProof(formData: FormData) {
