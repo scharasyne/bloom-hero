@@ -40,6 +40,14 @@ export default function Login() {
       return;
     }
 
+    const userMetadata = (user.user_metadata as Record<string, unknown> | undefined) ?? {};
+
+    if (userMetadata.must_change_password) {
+      router.replace("/forgot-password");
+      router.refresh();
+      return;
+    }
+
     const { data: roleData, error: roleError } = await supabase
       .from("users")
       .select("role")
