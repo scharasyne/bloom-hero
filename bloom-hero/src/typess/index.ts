@@ -59,7 +59,7 @@ export interface VendorApplication {
 }
 
 // ACTIVITY LOGS
-export type ActivityLogType = "approved" | "rejected" | "suspended" | "login";
+export type ActivityLogType = "approved" | "rejected" | "suspended" | "unsuspended" | "login" | "logout";
 
 export type DetailLine = {
   type: "order-verified" | "flag" | "reason" | "info";

@@ -4,6 +4,11 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { logActivity } from "@/app/admin/actions/activity-log";
+import { DetailLine } from "@/typess";
+import { normalizeEmail } from "@/lib/utils/email";
+import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
+import { VendorApplicationRecord } from "@/typess";
 
 type ActionResult<T = undefined> = {
   ok: boolean;
@@ -24,6 +29,18 @@ type LinkedVendorCredentials = {
   issued_at: string;
 };
 
+type AdminCheckResult =
+  | {
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      adminId: string;
+      error: null;
+    }
+  | {
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      adminId: null;
+      error: string;
+    };
+
 function normalizeEmail(value: string | null | undefined) {
   return (value ?? "").trim().toLowerCase();
 }
@@ -34,7 +51,7 @@ function createRandomPassword(length = 16) {
   return Array.from(bytes, (byte) => charset[byte % charset.length]).join("");
 }
 
-async function ensureAdmin() {
+async function ensureAdmin(): Promise<AdminCheckResult> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -62,11 +79,11 @@ export async function approveVendorApplication(
   applicationId: string
 ): Promise<ActionResult<IssuedVendorCredentials>> {
   const adminCheck = await ensureAdmin();
-  if (adminCheck.error) {
-    return { ok: false, error: adminCheck.error };
+  if (!adminCheck.adminId) {
+    return { ok: false, error: adminCheck.error ?? "You must be logged in as an admin." };
   }
 
-  const { supabase } = adminCheck;
+  const { supabase, adminId } = adminCheck;
 
   const { data: application, error: applicationError } = await supabase
     .from("vendor_applications")
@@ -129,7 +146,18 @@ export async function approveVendorApplication(
     };
   }
 
-  const supabaseAdmin = createSupabaseAdminClient();
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = createSupabaseAdminClient();
+  } catch (error) {
+    console.error("Failed to initialize Supabase admin client for vendor approval:", error);
+    return {
+      ok: false,
+      error:
+        "Vendor approval requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to be set in your environment.",
+    };
+  }
+
   const generatedPassword = createRandomPassword();
 
   const { data: createdUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
@@ -150,6 +178,7 @@ export async function approveVendorApplication(
   const vendorUserId = createdUser.user.id;
   const vendorType = application.vendor_type ?? "market";
   const issuedAt = new Date().toISOString();
+  const vendorLabel = application.shop_name?.trim() || "Vendor Application";
 
   try {
     const { error: upsertUserError } = await supabase
@@ -235,6 +264,28 @@ export async function approveVendorApplication(
     if (applicationUpdateError) {
       throw new Error(applicationUpdateError.message);
     }
+
+    await logActivity({
+      adminUserId: adminId,
+      actionType: "approved",
+      actionTitle: "Approved Vendor Application",
+      targetId: application.id,
+      targetName: vendorLabel,
+      details: [
+        { type: "info", text: `Business email: ${businessEmail}` },
+        { type: "info", text: `Vendor type: ${vendorType}` },
+        { type: "info", text: `Vendor user created: ${vendorUserId}` },
+      ] satisfies DetailLine[],
+      tags: ["vendor-management", "approved"],
+      quickLinks: [{ label: "View vendor applications", href: "/admin/vendor-applications" }],
+      metadata: {
+        application_id: application.id,
+        vendor_user_id: vendorUserId,
+        vendor_type: vendorType,
+      },
+    }).catch((error) => {
+      console.error("Failed to write approval activity log:", error);
+    });
   } catch (error) {
     await supabaseAdmin.auth.admin.deleteUser(vendorUserId);
     return {
@@ -255,24 +306,41 @@ export async function approveVendorApplication(
   };
 }
 
-export async function rejectVendorApplication(
-  applicationId: string,
-  reason: string
-): Promise<ActionResult> {
+export async function getSubmittedVendorApplications(): Promise<ActionResult<VendorApplicationRecord[]>> {
   const adminCheck = await ensureAdmin();
   if (adminCheck.error) {
     return { ok: false, error: adminCheck.error };
   }
 
-  const { supabase } = adminCheck;
+  try {
+    const data = await listSubmittedVendorApplications();
+    return { ok: true, data: data as VendorApplicationRecord[] };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Failed to load vendor applications.",
+    };
+  }
+}
+
+export async function rejectVendorApplication(
+  applicationId: string,
+  reason: string
+): Promise<ActionResult> {
+  const adminCheck = await ensureAdmin();
+  if (!adminCheck.adminId) {
+    return { ok: false, error: adminCheck.error ?? "You must be logged in as an admin." };
+  }
+
+  const { supabase, adminId } = adminCheck;
 
   const rejectionReason = reason.trim() || "Rejected by admin";
 
   const { data: application, error: applicationError } = await supabase
     .from("vendor_applications")
-    .select("id, submission_status")
+    .select("id, shop_name, submission_status")
     .eq("id", applicationId)
-    .maybeSingle<{ id: string; submission_status: string | null }>();
+    .maybeSingle<{ id: string; shop_name: string | null; submission_status: string | null }>();
 
   if (applicationError || !application) {
     return { ok: false, error: applicationError?.message ?? "Vendor application not found." };
@@ -296,6 +364,23 @@ export async function rejectVendorApplication(
   if (updateError) {
     return { ok: false, error: updateError.message };
   }
+
+  await logActivity({
+    adminUserId: adminId,
+    actionType: "rejected",
+    actionTitle: "Rejected Vendor Application",
+    targetId: application.id,
+    targetName: application.shop_name?.trim() || "Vendor Application",
+    details: [{ type: "reason", text: rejectionReason }],
+    tags: ["vendor-management", "rejected"],
+    quickLinks: [{ label: "View vendor applications", href: "/admin/vendor-applications" }],
+    metadata: {
+      application_id: application.id,
+      rejection_reason: rejectionReason,
+    },
+  }).catch((error) => {
+    console.error("Failed to write rejection activity log:", error);
+  });
 
   revalidatePath("/admin/vendor-applications");
 

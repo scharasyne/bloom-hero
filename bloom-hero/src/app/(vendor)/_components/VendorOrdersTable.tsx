@@ -8,6 +8,7 @@ type VendorOrdersTableProps = {
   vendorType: "market" | "pop-up";
   successMessage?: string;
   errorMessage?: string;
+  statusFilter?: "to_pay" | "to_ship" | "to_receive" | "all";
 };
 
 type VendorOrderItemRow = {
@@ -33,6 +34,7 @@ export default async function VendorOrdersTable({
   vendorType,
   successMessage,
   errorMessage,
+  statusFilter = "all",
 }: VendorOrdersTableProps) {
   const supabase = await createSupabaseServerClient();
 
@@ -63,13 +65,18 @@ export default async function VendorOrdersTable({
     );
   }
 
+  const allowedStatuses = new Set(["to_pay", "to_ship", "to_receive"]);
+  const statusList = allowedStatuses.has(statusFilter)
+    ? [statusFilter]
+    : ["to_pay", "to_ship", "to_receive"];
+
   const { data: rows } = await supabase
     .from("order_items")
     .select(
       "order_id, quantity, subtotal, products(product_name, product_image_url), orders!inner(id, customer_id, order_date, status, payment_method, total_amount, receipt_proof_url)"
     )
     .eq("orders.vendor_id", vendor.id)
-    .in("orders.status", ["to_pay", "to_ship", "to_receive"]) as {
+    .in("orders.status", statusList) as {
     data: VendorOrderItemRow[] | null;
   };
 
@@ -114,16 +121,17 @@ export default async function VendorOrdersTable({
   // Generate short-lived signed URLs for receipt proofs so the bucket stays private.
   const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
   const receiptSignedUrlMap = new Map<string, string>();
-  for (const order of orders) {
-    if (order.receiptProofUrl) {
+  await Promise.all(
+    orders.map(async (order) => {
+      if (!order.receiptProofUrl) return;
       const { data } = await supabase.storage
         .from(PAYMENT_PROOF_BUCKET)
         .createSignedUrl(order.receiptProofUrl, 60 * 60); // 1-hour expiry
       if (data?.signedUrl) {
         receiptSignedUrlMap.set(order.id, data.signedUrl);
       }
-    }
-  }
+    })
+  );
 
   const customerIds = Array.from(new Set(orders.map((o) => o.customerId)));
   let customerNameMap = new Map<string, string>();

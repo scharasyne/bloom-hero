@@ -1,13 +1,36 @@
 import Link from "next/link";
+import { logAdminLogout } from "@/app/admin/actions/activity-log";
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { redirect } from "next/navigation";
+
+async function handleSignOut() {
+  "use server";
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    await logAdminLogout(user.id).catch((error) => {
+      console.error("Failed to write admin logout activity log:", error);
+    });
+  }
+
+  await supabase.auth.signOut();
+  redirect("/admin-log-in");
+}
 
 function SignOutButton() {
   return (
-    <Link
-      href="/admin-log-in"
-      className="flex items-center justify-center px-[20px] py-[12px] rounded-[999px] border border-[#d9d4ce] text-[#5f5a55] font-medium text-[16px] tracking-[0.56px] whitespace-nowrap cursor-pointer hover:bg-[#edeae6] transition-colors"
-    >
-      Sign Out
-    </Link>
+    <form action={handleSignOut}>
+      <button
+        type="submit"
+        className="flex items-center justify-center px-[20px] py-[12px] rounded-[999px] border border-[#d9d4ce] text-[#5f5a55] font-medium text-[16px] tracking-[0.56px] whitespace-nowrap cursor-pointer hover:bg-[#edeae6] transition-colors"
+      >
+        Sign Out
+      </button>
+    </form>
   );
 }
 

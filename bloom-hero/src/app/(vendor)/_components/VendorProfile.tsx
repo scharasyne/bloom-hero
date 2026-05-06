@@ -15,29 +15,13 @@ type ProductRow = {
   price: number
 }
 
-const mockReviews = [
-  {
-    id: "1",
-    name: "Sara Duterte",
-    comment: "Absolutely gorgeous arrangements! My go-to florist for any occasion.",
-    rating: 5,
-    daysAgo: 3,
-  },
-  {
-    id: "2",
-    name: "Bongbong Marcos",
-    comment: "Fresh blooms and very thoughtful wrapping. Will definitely order again.",
-    rating: 5,
-    daysAgo: 3,
-  },
-  {
-    id: "3",
-    name: "Leni Robredo",
-    comment: "Beautiful bouquet quality and fast turnaround. Highly recommended shop.",
-    rating: 5,
-    daysAgo: 5,
-  },
-]
+type ReviewRow = {
+  id: string
+  customer_id: string
+  rating: number
+  comment: string | null
+  review_date: string | null
+}
 
 function formatPeso(value: number) {
   return new Intl.NumberFormat("en-PH", {
@@ -139,6 +123,28 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
 
   const products: ProductRow[] = (productsData ?? []) as ProductRow[]
   const shopInitial = getShopInitial(vendor.shop_name)
+
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("id, customer_id, rating, comment, review_date")
+    .eq("vendor_id", vendor.id)
+    .order("review_date", { ascending: false })
+    .limit(3)
+
+  if (reviewError) {
+    throw new Error(reviewError.message)
+  }
+
+  const reviews = (reviewRows ?? []) as ReviewRow[]
+  const reviewerIds = Array.from(new Set(reviews.map((review) => review.customer_id)))
+
+  const { data: reviewerRows } = reviewerIds.length
+    ? await supabase.from("users").select("id, name, email").in("id", reviewerIds)
+    : { data: [] }
+
+  const reviewerMap = new Map(
+    (reviewerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
+  )
 
   return (
     // <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
@@ -315,49 +321,70 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
               </p>
             </div>
             <span className="hidden text-xs text-[#8b847c] sm:inline">
-              Showing {mockReviews.length} recent reviews
+              Showing {reviews.length} recent reviews
             </span>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {mockReviews.map((review) => (
-              <article
-                key={review.id}
-                className="flex h-full flex-col rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5 shadow-[0_6px_20px_rgba(15,23,42,0.05)]"
-              >
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-xs font-semibold text-[#2f5d3a]">
-                    {review.name[0]}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#2a2724]">
-                      {review.name}
-                    </h3>
-                    <p className="text-[11px] text-[#9a9289]">
-                      {review.daysAgo} days ago
-                    </p>
-                  </div>
-                </div>
+          {reviews.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-[#d8d0c7] bg-[#fbf8f4] px-5 py-7 text-sm text-[#7a746e]">
+              <p className="font-medium text-[#4a453f]">No reviews yet.</p>
+              <p className="mt-1">Customer feedback will appear here once reviews are submitted.</p>
+            </div>
+          ) : (
+            <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
+              {reviews.map((review) => {
+                const reviewerName = reviewerMap.get(review.customer_id) ?? "Customer"
+                const reviewerInitial = reviewerName.trim().charAt(0).toUpperCase() || "C"
+                const reviewDate = review.review_date
+                  ? new Date(review.review_date)
+                  : null
 
-                <p className="flex-1 text-sm leading-relaxed text-[#4c4742]">
-                  {review.comment}
-                </p>
-
-                <div className="mt-4 flex items-center justify-between text-xs">
-                  <span className="text-[#f5ad2e]">
-                    {"★".repeat(review.rating)}
-                    {"☆".repeat(5 - review.rating)}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-[#8b847c] underline-offset-2 hover:underline"
+                return (
+                  <article
+                    key={review.id}
+                    className="flex h-full flex-col rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5 shadow-[0_6px_20px_rgba(15,23,42,0.05)]"
                   >
-                    View details
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-xs font-semibold text-[#2f5d3a]">
+                        {reviewerInitial}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#2a2724]">
+                          {reviewerName}
+                        </h3>
+                        <p className="text-[11px] text-[#9a9289]">
+                          {reviewDate
+                            ? reviewDate.toLocaleDateString("en-PH", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Recently"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="flex-1 text-sm leading-relaxed text-[#4c4742]">
+                      {review.comment?.trim() || "Customer left a rating."}
+                    </p>
+
+                    <div className="mt-4 flex items-center justify-between text-xs">
+                      <span className="text-[#f5ad2e]">
+                        {"★".repeat(review.rating)}
+                        {"☆".repeat(5 - review.rating)}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-[#8b847c] underline-offset-2 hover:underline"
+                      >
+                        View details
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         {/* About */}

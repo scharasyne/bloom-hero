@@ -1,3 +1,21 @@
+//module doing too much. business logic is combined with everything. 
+/*
+useEffect(() => {
+  fetch(`/api/search?...`)
+}, [q, price, sort, scope])
+
+👉 Problem:
+
+No caching
+No reuse
+No separation of concerns
+
+You should extract this into a custom hook:
+
+useSearchResults({ q, scope, price, sort })
+
+Cleaner + reusable + testable.
+*/
 "use client";
 
 import React from "react";
@@ -165,6 +183,16 @@ export default function SearchPage() {
   const ITEMS_PER_PAGE = 9;
 
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
+  const customerProfileEnsuredRef = React.useRef<string | null>(null);
+
+  const ensureCustomerProfile = React.useCallback(
+    async (userId: string) => {
+      if (customerProfileEnsuredRef.current === userId) return;
+      await supabase.from("customers").upsert({ user_id: userId }, { onConflict: "user_id" });
+      customerProfileEnsuredRef.current = userId;
+    },
+    [supabase]
+  );
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -185,7 +213,7 @@ export default function SearchPage() {
           return;
         }
 
-        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await ensureCustomerProfile(user.id);
 
         const { data: existingOrder, error: orderError } = await supabase
           .from("orders")
@@ -264,13 +292,24 @@ export default function SearchPage() {
         setAddingId(null);
       }
     },
-    [supabase]
+    [ensureCustomerProfile, supabase]
   );
 
   const handleBuyNow = React.useCallback(
     async (product: SearchFlowerRow) => {
       try {
         setBuyingId(product.id);
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          window.location.href = "/login";
+          return;
+        }
+
         const result = await addToCartAction(product.id, product.vendor_id, product.price, 1);
 
         if (!result.success) {
@@ -279,7 +318,41 @@ export default function SearchPage() {
           return;
         }
 
-        window.location.href = "/cart";
+        await ensureCustomerProfile(user.id);
+
+        const priceValue = Number(product.price) || 0;
+
+        const { data: newOrder, error: insertOrderError } = await supabase
+          .from("orders")
+          .insert({
+            customer_id: user.id,
+            vendor_id: product.vendor_id,
+            total_amount: priceValue,
+            status: "completed",
+          })
+          .select("id")
+          .single();
+
+        if (insertOrderError || !newOrder) {
+          console.error("buy now - create order error:", insertOrderError);
+          alert("Unable to place order right now.");
+          return;
+        }
+
+        const { error: itemError } = await supabase.from("order_items").insert({
+          order_id: newOrder.id,
+          product_id: product.id,
+          quantity: 1,
+          subtotal: priceValue,
+        });
+
+        if (itemError) {
+          console.error("buy now - create order item error:", itemError);
+          alert("Unable to place order right now.");
+          return;
+        }
+
+        window.location.href = "/customer/orders";
       } catch (err) {
         console.error("Buy now failed:", err);
         alert("Failed to add to cart. Please try again.");
@@ -287,7 +360,7 @@ export default function SearchPage() {
         setBuyingId(null);
       }
     },
-    []
+    [ensureCustomerProfile, supabase]
   );
 
   React.useEffect(() => {

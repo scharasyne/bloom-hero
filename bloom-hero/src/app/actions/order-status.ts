@@ -9,6 +9,15 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
 
+type VendorScopedOrder = {
+  id: string;
+  vendor_id: string;
+  status: string;
+  payment_method?: "online" | "cod" | null;
+  receipt_proof_url?: string | null;
+  vendors: { owner_id: string; vendor_type: string } | null;
+};
+
 export type CustomerPayPageResult =
   | { status: "unauthenticated" }
   | { status: "not-found" }
@@ -36,41 +45,28 @@ async function getSessionUserId() {
   return { supabase, userId: session.user.id };
 }
 
-export async function loadCustomerPayPage(orderId: string): Promise<CustomerPayPageResult> {
+async function getVendorScopedOrder(
+  orderId: string,
+  ownerId: string,
+  selectClause: string
+) {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user?.id) {
-    return { status: "unauthenticated" };
-  }
-
-  const { data: order, error } = await supabase
+  const select =
+    selectClause === "id, vendor_id, status, payment_method, receipt_proof_url"
+      ? ("id, vendor_id, status, payment_method, receipt_proof_url, vendors!inner(owner_id, vendor_type)" as const)
+      : ("id, vendor_id, status, vendors!inner(owner_id, vendor_type)" as const);
+  const { data, error } = await supabase
     .from("orders")
-    .select("id, customer_id, status, payment_method, receipt_proof_url, receipt_submitted_at")
+    .select(select)
     .eq("id", orderId)
-    .eq("customer_id", session.user.id)
-    .maybeSingle();
+    .eq("vendors.owner_id", ownerId)
+    .single();
 
-  if (error) {
-    throw new Error(`Failed to load payment page: ${error.message}`);
+  if (error || !data) {
+    throw new Error("Order not found.");
   }
 
-  if (!order) {
-    return { status: "not-found" };
-  }
-
-  return {
-    status: "ready",
-    order: {
-      id: order.id,
-      status: order.status,
-      paymentMethod: order.payment_method,
-      receiptProofUrl: order.receipt_proof_url,
-      receiptSubmittedAt: order.receipt_submitted_at,
-    },
-  };
+  return { supabase, order: data as unknown as VendorScopedOrder };
 }
 
 export async function uploadOrderReceiptProof(formData: FormData) {
@@ -248,6 +244,44 @@ export async function cancelCustomerOrder(formData: FormData) {
   }
 }
 
+export async function loadCustomerPayPage(orderId: string): Promise<CustomerPayPageResult> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return { status: "unauthenticated" };
+  }
+
+  const { data: order, error } = await supabase
+    .from("orders")
+    .select("id, customer_id, status, payment_method, receipt_proof_url, receipt_submitted_at")
+    .eq("id", orderId)
+    .eq("customer_id", session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load payment page: ${error.message}`);
+  }
+
+  if (!order) {
+    return { status: "not-found" };
+  }
+
+  return {
+    status: "ready",
+    order: {
+      id: order.id,
+      status: order.status,
+      paymentMethod: order.payment_method,
+      receiptProofUrl: order.receipt_proof_url,
+      receiptSubmittedAt: order.receipt_submitted_at,
+    },
+  };
+}
+
+
 export async function vendorConfirmPayment(formData: FormData) {
   const orderId = String(formData.get("orderId") || "");
   let vendorRoute = "/vendor/market/orders";
@@ -257,32 +291,17 @@ export async function vendorConfirmPayment(formData: FormData) {
   }
 
   try {
-    const { supabase, userId } = await getSessionUserId();
+    const { userId } = await getSessionUserId();
+    const { supabase, order } = await getVendorScopedOrder(
+      orderId,
+      userId,
+      "id, vendor_id, status, payment_method, receipt_proof_url"
+    );
 
-    const { data: vendor, error: vendorError } = await supabase
-      .from("vendors")
-      .select("id, vendor_type")
-      .eq("owner_id", userId)
-      .single();
-
-    if (vendorError || !vendor) {
-      throw new Error("Vendor account not found.");
-    }
-    vendorRoute = `/vendor/${vendor.vendor_type}/orders`;
-
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("id, vendor_id, status, payment_method, receipt_proof_url")
-      .eq("id", orderId)
-      .single();
-
-    if (orderError || !order) {
-      throw new Error("Order not found.");
-    }
-
-    if (order.vendor_id !== vendor.id) {
+    if (!order.vendors) {
       throw new Error("You are not allowed to confirm this payment.");
     }
+    vendorRoute = `/vendor/${order.vendors.vendor_type}/orders`;
 
     if (order.status !== "to_pay" || order.payment_method !== "online") {
       throw new Error("Only online orders in To Pay can be confirmed.");
@@ -327,32 +346,17 @@ export async function vendorMarkAsShipped(formData: FormData) {
   }
 
   try {
-    const { supabase, userId } = await getSessionUserId();
+    const { userId } = await getSessionUserId();
+    const { supabase, order } = await getVendorScopedOrder(
+      orderId,
+      userId,
+      "id, vendor_id, status"
+    );
 
-    const { data: vendor, error: vendorError } = await supabase
-      .from("vendors")
-      .select("id, vendor_type")
-      .eq("owner_id", userId)
-      .single();
-
-    if (vendorError || !vendor) {
-      throw new Error("Vendor account not found.");
-    }
-    vendorRoute = `/vendor/${vendor.vendor_type}/orders`;
-
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("id, vendor_id, status")
-      .eq("id", orderId)
-      .single();
-
-    if (orderError || !order) {
-      throw new Error("Order not found.");
-    }
-
-    if (order.vendor_id !== vendor.id) {
+    if (!order.vendors) {
       throw new Error("You are not allowed to update this order.");
     }
+    vendorRoute = `/vendor/${order.vendors.vendor_type}/orders`;
 
     if (order.status !== "to_ship") {
       throw new Error("Only To Ship orders can be marked shipped.");
