@@ -75,21 +75,21 @@ export default async function CustomerOrdersPage({
 
   const ordersArray = groupOrders(rows ?? []);
 
-  let reviewedVendors = new Set<string>();
+  let reviewedOrders = new Set<string>();
   if (activeTab === "completed") {
-    const vendorIds = [...new Set(ordersArray.map(o => o.vendorId).filter(Boolean))] as string[];
-    if (vendorIds.length > 0) {
+    const orderIds = ordersArray.map(o => o.id).filter(Boolean) as string[];
+    if (orderIds.length > 0) {
       const { data: reviews } = await supabase
-        .from("reviews").select("vendor_id")
+        .from("reviews").select("order_id")
         .eq("customer_id", user.id)
-        .in("vendor_id", vendorIds);
-      reviewedVendors = new Set((reviews ?? []).map((r: any) => r.vendor_id));
+        .in("order_id", orderIds);
+      reviewedOrders = new Set((reviews ?? []).map((r: any) => r.order_id));
     }
   }
 
   const emptyState = EMPTY_STATE[activeTab];
   const orders = ordersArray
-    .map(o => ({ ...o, hasReview: o.vendorId ? reviewedVendors.has(o.vendorId) : false }))
+    .map(o => ({ ...o, hasReview: o.id ? reviewedOrders.has(o.id) : false }))
     .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
   return (
