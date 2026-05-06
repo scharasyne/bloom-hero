@@ -38,6 +38,7 @@ export default function CartPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [pendingOrderIds, setPendingOrderIds] = useState<string[]>([]);
+  const [pendingOrderVendorMap, setPendingOrderVendorMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -110,7 +111,7 @@ export default function CartPage() {
       try {
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
-          .select("id, order_date")
+          .select("id, vendor_id, order_date")
           .eq("customer_id", custId)
           .eq("status", "pending")
           .order("order_date", { ascending: false });
@@ -119,9 +120,15 @@ export default function CartPage() {
 
         const orderList = orders ?? [];
         const orderIds = orderList.map((o: any) => o.id);
+        const vendorByOrder: Record<string, string> = {};
+        for (const order of orderList as Array<{ id: string; vendor_id: string }>) {
+          if (order.id && order.vendor_id) {
+            vendorByOrder[order.id] = order.vendor_id;
+          }
+        }
 
         if (orderIds.length === 0) {
-          if (mounted) { setPendingOrderIds([]); setCartItems([]); }
+          if (mounted) { setPendingOrderIds([]); setPendingOrderVendorMap({}); setCartItems([]); }
           return;
         }
 
@@ -132,7 +139,7 @@ export default function CartPage() {
 
         if (itemsError) {
           console.error("Load cart - items error:", itemsError);
-          if (mounted) { setPendingOrderIds(orderIds); setCartItems([]); }
+          if (mounted) { setPendingOrderIds(orderIds); setPendingOrderVendorMap(vendorByOrder); setCartItems([]); }
           return;
         }
 
@@ -152,7 +159,7 @@ export default function CartPage() {
           };
         }) ?? [];
 
-        if (mounted) { setPendingOrderIds(orderIds); setCartItems(mappedItems); }
+        if (mounted) { setPendingOrderIds(orderIds); setPendingOrderVendorMap(vendorByOrder); setCartItems(mappedItems); }
       } catch (error) {
         console.error("Failed to load cart:", error);
       }
@@ -198,16 +205,19 @@ export default function CartPage() {
       );
       setCartItems(prev => prev.map(i => i.id === productId ? { ...i, qty: newQty, subtotal } : i));
       
-      // Update all affected orders' total amounts
-      const orderTotals = new Map<string, number>();
-      for (const cartItem of cartItems) {
-        const total = orderTotals.get(cartItem.orderId) || 0;
-        orderTotals.set(cartItem.orderId, total + (cartItem.id === productId ? subtotal : cartItem.price * cartItem.qty));
-      }
-      
-      for (const [orderId, total] of orderTotals) {
-        await supabase.from("orders").update({ total_amount: total }).eq("id", orderId);
-      }
+      const updatedOrderTotal = cartItems
+        .filter((cartItem) => cartItem.orderId === item.orderId)
+        .reduce(
+          (sum, cartItem) =>
+            sum +
+            (cartItem.id === productId ? subtotal : cartItem.price * cartItem.qty),
+          0
+        );
+
+      await supabase
+        .from("orders")
+        .update({ total_amount: updatedOrderTotal })
+        .eq("id", item.orderId);
     } catch (error) {
       console.error("Update failed:", error);
     }
@@ -302,13 +312,8 @@ export default function CartPage() {
         );
 
         if (unselectedItemsForVendor.length > 0) {
-          const { data: orderData } = await supabase
-            .from("orders")
-            .select("vendor_id")
-            .eq("id", orderId)
-            .single();
-
-          if (orderData?.vendor_id) {
+          const vendorId = pendingOrderVendorMap[orderId];
+          if (vendorId) {
             const unselectedTotal = unselectedItemsForVendor.reduce(
               (sum, i) => sum + i.price * i.qty, 0
             );
@@ -316,7 +321,7 @@ export default function CartPage() {
               .from("orders")
               .insert({
                 customer_id: customerId,
-                vendor_id: orderData.vendor_id,
+                vendor_id: vendorId,
                 status: "pending",
                 total_amount: unselectedTotal,
               })
@@ -372,6 +377,21 @@ export default function CartPage() {
         ...prev.filter(id => !itemsByOrderId.has(id)),
         ...newPendingIds,
       ]);
+      setPendingOrderVendorMap(prev => {
+        const next: Record<string, string> = {};
+        for (const [orderId, vendorId] of Object.entries(prev)) {
+          if (!itemsByOrderId.has(orderId)) {
+            next[orderId] = vendorId;
+          }
+        }
+        for (const [oldOrderId, newOrderId] of orderIdToNewPendingId.entries()) {
+          const vendorId = prev[oldOrderId];
+          if (vendorId) {
+            next[newOrderId] = vendorId;
+          }
+        }
+        return next;
+      });
       setSelectedIds(new Set());
       
       console.log("Checkout complete, redirecting to orders page");

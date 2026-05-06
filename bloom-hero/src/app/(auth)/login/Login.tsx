@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { signInWithPasswordAction } from "@/app/(auth)/login/actions";
 
 export default function Login() {
   const router = useRouter();
@@ -14,104 +15,23 @@ export default function Login() {
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (err) setStatus(decodeURIComponent(err));
+  }, []);
+
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("");
     setIsSubmitting(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setStatus(error.message);
+    const destination = await signInWithPasswordAction(email, password);
+    if (!destination.ok) {
+      setStatus(destination.message);
       setIsSubmitting(false);
       return;
     }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setStatus("Unable to load your account. Please try again.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { data: roleData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (roleError) {
-      setStatus(roleError.message);
-      setIsSubmitting(false);
-      return;
-    }
-
-    let role = roleData?.role as string | undefined;
-
-    if (!role) {
-      const { error: upsertUserError } = await supabase
-        .from("users")
-        .upsert(
-          {
-            id: user.id,
-            email: user.email ?? "",
-            role: "customer",
-          },
-          { onConflict: "id" }
-        );
-
-      if (upsertUserError) {
-        setStatus(upsertUserError.message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const { error: upsertCustomerError } = await supabase
-        .from("customers")
-        .upsert({ user_id: user.id }, { onConflict: "user_id" });
-
-      if (upsertCustomerError) {
-        setStatus(upsertCustomerError.message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      role = "customer";
-    }
-
-    if (role === "admin") {
-      router.push("/admin/vendor-applications");
-    } else if (role === "vendor") {
-      const { data: vendorData, error: vendorError } = await supabase
-        .from("vendors")
-        .select("vendor_type")
-        .eq("owner_id", user.id)
-        .single();
-
-      // Only allow login if vendor record exists
-      if (vendorError || !vendorData) {
-        setStatus("Your account is not registered as a vendor. Please contact support or sign up as a vendor.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (vendorData.vendor_type === "market") {
-        router.push("/market/dashboard");
-      } else {
-        router.push("/pop-up/dashboard");
-      }
-    } else if (role === "customer") {
-      // router.push("/customer/dashboard"); // For testing purposes, redirect to home page instead of customer dashboard
-      router.push("/");
-    } else {
-      router.push("/");
-    }
+    router.push(destination.path);
 
     router.refresh();
     setIsSubmitting(false);

@@ -10,7 +10,10 @@ export default async function Desktop() {
   }
 
   if (session?.profile?.role === "vendor") {
-    redirect("/market/dashboard");
+    if(session?.profile?.vendor_type === "market")
+        redirect("/market/dashboard");
+    else if (session?.profile?.vendor_type === "pop-up")
+        redirect("/pop-up/dashboard");
   }
 
   return <DesktopClient />;

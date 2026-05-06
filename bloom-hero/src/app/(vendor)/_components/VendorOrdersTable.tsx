@@ -114,16 +114,17 @@ export default async function VendorOrdersTable({
   // Generate short-lived signed URLs for receipt proofs so the bucket stays private.
   const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
   const receiptSignedUrlMap = new Map<string, string>();
-  for (const order of orders) {
-    if (order.receiptProofUrl) {
+  await Promise.all(
+    orders.map(async (order) => {
+      if (!order.receiptProofUrl) return;
       const { data } = await supabase.storage
         .from(PAYMENT_PROOF_BUCKET)
         .createSignedUrl(order.receiptProofUrl, 60 * 60); // 1-hour expiry
       if (data?.signedUrl) {
         receiptSignedUrlMap.set(order.id, data.signedUrl);
       }
-    }
-  }
+    })
+  );
 
   const customerIds = Array.from(new Set(orders.map((o) => o.customerId)));
   let customerNameMap = new Map<string, string>();

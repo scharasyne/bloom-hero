@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import {
   approveVendorApplication,
+  getSubmittedVendorApplications,
   type IssuedVendorCredentials,
   rejectVendorApplication,
 } from "@/app/admin/vendor-applications/actions";
 import { VendorApplicationRecord } from "@/typess";
-
-const supabase = createSupabaseBrowserClient();
 
 export function useVendorApplications() {
   const [data, setData] = useState<VendorApplicationRecord[]>([]);
@@ -19,22 +17,13 @@ export function useVendorApplications() {
     setError(null);
 
     try {
-      const { data: applications, error: fetchError } = await supabase
-        .from("vendor_applications")
-        .select(
-          "id, owner_id, shop_name, shop_address, email, phone_number, vendor_type, business_submission_timing, primary_business_document_type, primary_business_document_url, government_id_type, government_id_document_url, taxpayer_identification_number, vat_registration_status, bir_certificate_url, submission_status, submitted_at, created_at, updated_at"
-        )
-        .eq("submission_status", "submitted")
-        .order("submitted_at", { ascending: false })
-        .order("created_at", { ascending: false });
-
-      if (fetchError) {
+      const result = await getSubmittedVendorApplications();
+      if (!result.ok) {
         setData([]);
-        setError(fetchError.message);
+        setError(result.error ?? "Failed to load vendor applications.");
         return;
       }
-
-      setData((applications ?? []) as VendorApplicationRecord[]);
+      setData((result.data ?? []) as VendorApplicationRecord[]);
     } catch (loadError) {
       setData([]);
       setError(loadError instanceof Error ? loadError.message : "Failed to load vendor applications.");

@@ -4,6 +4,9 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { normalizeEmail } from "@/lib/utils/email";
+import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
+import { VendorApplicationRecord } from "@/typess";
 
 type ActionResult<T = undefined> = {
   ok: boolean;
@@ -23,10 +26,6 @@ type LinkedVendorCredentials = {
   password: string;
   issued_at: string;
 };
-
-function normalizeEmail(value: string | null | undefined) {
-  return (value ?? "").trim().toLowerCase();
-}
 
 function createRandomPassword(length = 16) {
   const charset = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
@@ -253,6 +252,23 @@ export async function approveVendorApplication(
       password: generatedPassword,
     },
   };
+}
+
+export async function getSubmittedVendorApplications(): Promise<ActionResult<VendorApplicationRecord[]>> {
+  const adminCheck = await ensureAdmin();
+  if (adminCheck.error) {
+    return { ok: false, error: adminCheck.error };
+  }
+
+  try {
+    const data = await listSubmittedVendorApplications();
+    return { ok: true, data: data as VendorApplicationRecord[] };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Failed to load vendor applications.",
+    };
+  }
 }
 
 export async function rejectVendorApplication(

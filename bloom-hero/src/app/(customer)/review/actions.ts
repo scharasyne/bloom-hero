@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getOrderReviewEligibility, saveReviewByCustomer } from "@/lib/services/reviews";
 
 type SubmitReviewInput = {
   orderId: string;
@@ -148,14 +149,10 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
     return { ok: false, error: "Rating must be between 1 and 5." };
   }
 
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .select("id, status, vendor_id")
-    .eq("id", input.orderId)
-    .eq("customer_id", session.user.id)
-    .maybeSingle();
-
-  if (orderError) {
+  let order;
+  try {
+    order = await getOrderReviewEligibility(input.orderId, session.user.id);
+  } catch {
     return { ok: false, error: "Unable to validate this order right now." };
   }
 
@@ -171,33 +168,19 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
     return { ok: false, error: "Vendor mismatch for this order." };
   }
 
-  const payload = {
-    rating: input.rating,
-    comment: input.comment.trim() || null,
-  };
-
-  let writeError: { message: string } | null = null;
-
-  if (input.reviewId) {
-    const { error } = await supabase
-      .from("reviews")
-      .update(payload)
-      .eq("id", input.reviewId)
-      .eq("customer_id", session.user.id)
-      .eq("vendor_id", input.vendorId);
-    writeError = error;
-  } else {
-    const { error } = await supabase.from("reviews").insert({
-      customer_id: session.user.id,
-      vendor_id: input.vendorId,
+  try {
+    await saveReviewByCustomer({
+      reviewId: input.reviewId,
+      customerId: session.user.id,
+      vendorId: input.vendorId,
       rating: input.rating,
-      comment: input.comment.trim() || null,
+      comment: input.comment,
     });
-    writeError = error;
-  }
-
-  if (writeError) {
-    return { ok: false, error: writeError.message || "Failed to save review." };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message || "Failed to save review." : "Failed to save review.",
+    };
   }
 
   revalidatePath("/orders");

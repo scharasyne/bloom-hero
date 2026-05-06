@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
+import { signInWithPasswordAction } from "@/app/(auth)/login/actions"
 
 export function LoginForm({
   className,
@@ -37,60 +38,25 @@ export function LoginForm({
     setStatus("")
     setIsSubmitting(true)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      setStatus(error.message)
+    const destination = await signInWithPasswordAction(email, password)
+    if (!destination.ok) {
+      setStatus(destination.message)
       setIsSubmitting(false)
       return
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      router.push("/customer/dashboard")
-      router.refresh()
-      return
-    }
-
-    const { data, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle()
-
-    if (roleError) {
-      console.error("Error fetching role:", roleError.message)
-      router.push("/customer/dashboard")
-      router.refresh()
-      return
-    }
-
-    if (!data) {
-      console.error("No user record found in users table for id:", user.id)
-      router.push("/customer/dashboard")
-      router.refresh()
-      return
-    }
-
-    if (data.role === "vendor") {
-      router.push("/vendor/dashboard")
-    } else if (data.role === "admin") {
-      router.push("/admin/dashboard")
-    } else {
-      router.push("/customer/dashboard")
-    }
+    router.push(destination.path)
 
     router.refresh()
+    setIsSubmitting(false)
   }
 
   async function handleGoogleLogin() {
     setStatus("")
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     })
 
     if (error) {

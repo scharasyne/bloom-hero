@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getFlowerBestSellers, getVendorBestSellers, sortFlowersByPrice } from "@/lib/best-sellers";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-type SearchScope = "all" | "flowers" | "vendors";
+import { normalizeSearchScope } from "@/lib/utils/search";
 
 type ProductImageRow = {
   image_url: string;
@@ -51,14 +50,6 @@ const CATEGORY_VALUES = new Set([
   "get-well",
   "florists-picks",
 ]);
-
-function normalizeScope(value: string | null): SearchScope {
-  if (value === "flowers" || value === "vendors" || value === "all") {
-    return value;
-  }
-
-  return "all";
-}
 
 function normalizeCategory(value: string | null) {
   if (!value) return null;
@@ -276,7 +267,7 @@ async function fetchVendorResults(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("q") ?? "").trim();
-  const scope = normalizeScope(searchParams.get("scope"));
+  const scope = normalizeSearchScope(searchParams.get("scope"));
   const price = searchParams.get("price") ?? "Any";
   const sort = searchParams.get("sort") ?? "Best Sellers";
   const category = normalizeCategory(searchParams.get("category"));
