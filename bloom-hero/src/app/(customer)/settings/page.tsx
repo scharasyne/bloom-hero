@@ -1,22 +1,8 @@
 import { redirect } from "next/navigation";
-import NavBar from "@/components/navbar";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import CustomerSettingsForm from "@/app/(customer)/settings/CustomerSettingsForm";
-
-type CustomerRow = {
-  shipping_address: string | null;
-  profile_photo_url: string | null;
-  notification_preferences: {
-    order_updates?: boolean;
-    promotions?: boolean;
-  } | null;
-};
-
-type UserRow = {
-  name: string | null;
-  email: string;
-  contact_number: string | null;
-};
+import { getCustomerSettingsByUserId } from "@/lib/services/customers";
+import { getUserBasicProfileById } from "@/lib/services/users";
 
 export default async function CustomerSettingsPage() {
   const supabase = await createSupabaseServerClient();
@@ -28,17 +14,9 @@ export default async function CustomerSettingsPage() {
     redirect("/login");
   }
 
-  const [{ data: userProfile }, { data: customerProfile }] = await Promise.all([
-    supabase
-      .from("users")
-      .select("name, email, contact_number")
-      .eq("id", session.user.id)
-      .single<UserRow>(),
-    supabase
-      .from("customers")
-      .select("shipping_address, profile_photo_url, notification_preferences")
-      .eq("user_id", session.user.id)
-      .maybeSingle<CustomerRow>(),
+  const [userProfile, customerProfile] = await Promise.all([
+    getUserBasicProfileById(session.user.id),
+    getCustomerSettingsByUserId(session.user.id),
   ]);
 
   return (

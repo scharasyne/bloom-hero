@@ -2,16 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getFlowerBestSellers, getVendorBestSellers } from "@/lib/best-sellers";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-type SearchScope = "all" | "flowers" | "vendors";
-
-function normalizeScope(value: string | null): SearchScope {
-  if (value === "flowers" || value === "vendors" || value === "all") {
-    return value;
-  }
-
-  return "all";
-}
+import { normalizeSearchScope } from "@/lib/utils/search";
 
 function normalizeLimit(value: string | null) {
   const parsed = Number(value);
@@ -22,7 +13,7 @@ function normalizeLimit(value: string | null) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const scope = normalizeScope(searchParams.get("scope"));
+  const scope = normalizeSearchScope(searchParams.get("scope"));
   const query = (searchParams.get("q") ?? "").trim();
   const price = searchParams.get("price") ?? "Any";
   const limit = normalizeLimit(searchParams.get("limit"));

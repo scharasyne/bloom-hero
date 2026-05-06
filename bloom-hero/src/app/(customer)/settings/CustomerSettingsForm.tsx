@@ -1,7 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { useState } from "react";
+import {
+  saveCustomerSettings,
+  updateCustomerEmail,
+  updateCustomerPassword,
+  uploadCustomerPhoto,
+} from "@/app/(customer)/settings/actions";
 
 type NotificationPreferences = {
   order_updates: boolean;
@@ -25,8 +30,6 @@ export default function CustomerSettingsForm({
   initialProfilePhotoUrl,
   initialNotificationPreferences,
 }: CustomerSettingsFormProps) {
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
   const [contactNumber, setContactNumber] = useState(initialContactNumber);
@@ -48,51 +51,22 @@ export default function CustomerSettingsForm({
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-  async function getCurrentUserId() {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      throw new Error("Please log in again to continue.");
-    }
-
-    return user.id;
-  }
-
   async function handleSaveProfile(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setProfileStatus("");
     setIsSavingProfile(true);
 
     try {
-      const userId = await getCurrentUserId();
+      const result = await saveCustomerSettings({
+        name,
+        contactNumber,
+        shippingAddress,
+        profilePhotoUrl,
+        notificationPreferences: notificationPrefs,
+      });
 
-      const { error: userError } = await supabase
-        .from("users")
-        .update({
-          name,
-          contact_number: contactNumber,
-        })
-        .eq("id", userId);
-
-      if (userError) {
-        throw userError;
-      }
-
-      const { error: customerError } = await supabase.from("customers").upsert(
-        {
-          user_id: userId,
-          shipping_address: shippingAddress,
-          profile_photo_url: profilePhotoUrl || null,
-          notification_preferences: notificationPrefs,
-        },
-        { onConflict: "user_id" }
-      );
-
-      if (customerError) {
-        throw customerError;
+      if (!result.ok) {
+        throw new Error(result.message);
       }
 
       setProfileStatus("Profile details saved.");
@@ -109,20 +83,12 @@ export default function CustomerSettingsForm({
     setIsUpdatingEmail(true);
 
     try {
-      const { error } = await supabase.auth.updateUser(
-        { email },
-        {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        }
-      );
-
-      if (error) {
-        throw error;
+      const result = await updateCustomerEmail(email);
+      if (!result.ok) {
+        throw new Error(result.message);
       }
 
-      setAuthStatus(
-        "Email update initiated. Please check your inbox and confirm the new email address."
-      );
+      setAuthStatus(result.message);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to update email.";
       setAuthStatus(message);
@@ -147,13 +113,12 @@ export default function CustomerSettingsForm({
     setIsUpdatingPassword(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-
-      if (error) {
-        throw error;
+      const result = await updateCustomerPassword(newPassword);
+      if (!result.ok) {
+        throw new Error(result.message);
       }
 
-      setAuthStatus("Password updated successfully.");
+      setAuthStatus(result.message);
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
@@ -178,27 +143,15 @@ export default function CustomerSettingsForm({
     setIsUploadingPhoto(true);
 
     try {
-      const userId = await getCurrentUserId();
-      const extension = file.name.split(".").pop() || "jpg";
-      const filePath = `${userId}/avatar-${Date.now()}.${extension}`;
+      const formData = new FormData();
+      formData.set("photo", file);
+      const result = await uploadCustomerPhoto(formData);
 
-      const { error: uploadError } = await supabase.storage
-        .from("profile-photos")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) {
-        throw uploadError;
+      if (!result.ok) {
+        throw new Error(result.message);
       }
 
-      const { data } = supabase.storage
-        .from("profile-photos")
-        .getPublicUrl(filePath);
-
-      if (!data?.publicUrl) {
-        throw new Error("Photo upload succeeded but no public URL was returned.");
-      }
-
-      setProfilePhotoUrl(data.publicUrl);
+      setProfilePhotoUrl(result.publicUrl);
       setPhotoStatus("Photo uploaded. Save profile to persist this change.");
     } catch (error) {
       const message =
