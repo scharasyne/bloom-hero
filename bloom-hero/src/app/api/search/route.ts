@@ -37,12 +37,33 @@ type VendorSearchRow = {
   average_rating: number | null;
 };
 
+const CATEGORY_VALUES = new Set([
+  "graduation",
+  "in-loving-memory",
+  "new-beginnings",
+  "love-notes",
+  "handcrafted",
+  "anniversary",
+  "gentle-comfort",
+  "birthday",
+  "just-because",
+  "missing-you",
+  "get-well",
+  "florists-picks",
+]);
+
 function normalizeScope(value: string | null): SearchScope {
   if (value === "flowers" || value === "vendors" || value === "all") {
     return value;
   }
 
   return "all";
+}
+
+function normalizeCategory(value: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  return CATEGORY_VALUES.has(normalized) ? normalized : null;
 }
 
 function isMissingProductImagesRelation(errorMessage: string) {
@@ -53,8 +74,30 @@ async function fetchFlowerResults(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   query: string,
   price: string,
-  sort: string
+  sort: string,
+  category: string | null
 ) {
+  let categoryProductIds: string[] | null = null;
+
+  if (category) {
+    const { data: categoryRows, error: categoryError } = await supabase
+      .from("product_categories")
+      .select("product_id, categories!inner(category_name)")
+      .eq("categories.category_name", category);
+
+    if (categoryError) {
+      return { data: [] as FlowerSearchRow[], error: categoryError };
+    }
+
+    categoryProductIds = Array.from(
+      new Set((categoryRows ?? []).map((row) => row.product_id).filter(Boolean))
+    );
+
+    if (categoryProductIds.length === 0) {
+      return { data: [] as FlowerSearchRow[], error: null };
+    }
+  }
+
   if (sort === "Best Sellers") {
     const rankedResult = await getFlowerBestSellers(supabase, { query, price, limit: 200 });
 
@@ -62,7 +105,11 @@ async function fetchFlowerResults(
       return { data: [] as FlowerSearchRow[], error: rankedResult.error };
     }
 
-    return { data: sortFlowersByPrice(rankedResult.data, sort), error: null };
+    const filteredRows = category
+      ? rankedResult.data.filter((row) => (row.categories ?? []).includes(category))
+      : rankedResult.data;
+
+    return { data: sortFlowersByPrice(filteredRows, sort), error: null };
   }
 
   const buildQuery = (includeProductImages: boolean) => {
@@ -81,6 +128,10 @@ async function fetchFlowerResults(
       if (price === "<500") builder = builder.lt("price", 500);
       else if (price === "500-700") builder = builder.gte("price", 500).lte("price", 700);
       else if (price === ">700") builder = builder.gt("price", 700);
+    }
+
+    if (categoryProductIds) {
+      builder = builder.in("id", categoryProductIds);
     }
 
     if (sort === "Price: Low to High") {
@@ -212,18 +263,22 @@ export async function GET(request: NextRequest) {
   const scope = normalizeScope(searchParams.get("scope"));
   const price = searchParams.get("price") ?? "Any";
   const sort = searchParams.get("sort") ?? "Best Sellers";
+  const category = normalizeCategory(searchParams.get("category"));
 
-  if (!query) {
+  const hasQuery = query.length > 0;
+  const hasCategory = Boolean(category);
+
+  if (!hasQuery && !hasCategory) {
     return NextResponse.json({ flowers: [], vendors: [] });
   }
 
   const supabase = await createSupabaseServerClient();
-  const wantsFlowers = scope === "all" || scope === "flowers";
-  const wantsVendors = scope === "all" || scope === "vendors";
+  const wantsFlowers = (scope === "all" || scope === "flowers") && (hasQuery || hasCategory);
+  const wantsVendors = (scope === "all" || scope === "vendors") && hasQuery;
 
   const [flowerResult, vendorResult] = await Promise.all([
     wantsFlowers
-      ? fetchFlowerResults(supabase, query, price, sort)
+      ? fetchFlowerResults(supabase, query, price, sort, category)
       : Promise.resolve({ data: [] as FlowerSearchRow[], error: null }),
     wantsVendors
       ? fetchVendorResults(supabase, query, sort)

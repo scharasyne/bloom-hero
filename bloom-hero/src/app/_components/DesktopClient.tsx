@@ -182,41 +182,33 @@ const categoryGroups = [
   {
     title: "CELEBRATIONS & MILESTONES",
     items: [
-      { icon: "mdi:cake-variant-outline", label: "Birthday Blooms", href: "/search?category=birthday" },
-      { icon: "mdi:school-outline", label: "Graduation Cheers", href: "/search?category=graduation" },
-      { icon: "mdi:star-shooting-outline", label: "New Beginnings", href: "/search?category=new-beginnings" },
+      { icon: "mdi:cake-variant-outline", label: "Birthday Blooms", href: "/search?scope=flowers&category=birthday" },
+      { icon: "mdi:school-outline", label: "Graduation Cheers", href: "/search?scope=flowers&category=graduation" },
+      { icon: "mdi:star-shooting-outline", label: "New Beginnings", href: "/search?scope=flowers&category=new-beginnings" },
     ],
   },
   {
     title: "LOVE & RELATIONSHIPS",
     items: [
-      { icon: "mdi:heart-outline", label: "Love Notes in Bloom", href: "/search?category=love" },
-      { icon: "mdi:ring", label: "Anniversary Classics", href: "/search?category=anniversary" },
-      { icon: "mdi:emoticon-sad-outline", label: `Say "I Miss You"`, href: "/search?category=miss-you" },
+      { icon: "mdi:heart-outline", label: "Love Notes in Bloom", href: "/search?scope=flowers&category=love-notes" },
+      { icon: "mdi:ring", label: "Anniversary Classics", href: "/search?scope=flowers&category=anniversary" },
+      { icon: "mdi:emoticon-sad-outline", label: "Missing You", href: "/search?scope=flowers&category=missing-you" },
     ],
   },
   {
     title: "CARE & SUPPORT",
     items: [
-      { icon: "mdi:medical-bag", label: "Get Well Soon", href: "/search?category=get-well" },
-      { icon: "mdi:hand-heart-outline", label: "Thinking of You", href: "/search?category=thinking-of-you" },
-      { icon: "mdi:hand-okay", label: "Gentle Comfort", href: "/search?category=comfort" },
+      { icon: "mdi:medical-bag", label: "Get Well Soon", href: "/search?scope=flowers&category=get-well" },
+      { icon: "mdi:hand-okay", label: "Gentle Comfort", href: "/search?scope=flowers&category=gentle-comfort" },
+      { icon: "mdi:flower-outline", label: "In Loving Memory", href: "/search?scope=flowers&category=in-loving-memory" },
     ],
   },
   {
     title: "EVERYDAY & SPECIALTY",
     items: [
-      { icon: "mdi:leaf", label: "Plants That Last", href: "/search?category=plants" },
-      { icon: "mdi:scissors-cutting", label: "Handcrafted", href: "/search?category=handcrafted" },
-      { icon: "mdi:storefront-outline", label: "Florist's Picks", href: "/search?category=florist-picks" },
-    ],
-  },
-  {
-    title: "CUSTOM & FLEXIBLE",
-    items: [
-      { icon: "mdi:pencil-ruler-outline", label: "Build Your Own Bouquet", href: "/custom-bouquet" },
-      { icon: "mdi:gift-outline", label: "Made Just for You", href: "/custom-bouquet" },
-      { icon: "mdi:flower-outline", label: "Just Because", href: "/search?category=just-because" },
+      { icon: "mdi:scissors-cutting", label: "Handcrafted", href: "/search?scope=flowers&category=handcrafted" },
+      { icon: "mdi:gift-outline", label: "Just Because", href: "/search?scope=flowers&category=just-because" },
+      { icon: "mdi:storefront-outline", label: "Florists' Picks", href: "/search?scope=flowers&category=florists-picks" },
     ],
   },
 ];
@@ -234,9 +226,9 @@ function CategoryItem({ icon, label, href }: { icon: string; label: string; href
 
 function CategoryGroup({ title, items }: { title: string; items: { icon: string; label: string; href: string }[] }) {
   return (
-    <div className="flex flex-col gap-4 items-center">
-      <p className="font-medium text-[#7a7a7a] text-[14px] text-center tracking-[0.28px]">{title}</p>
-      <div className="flex flex-col gap-3 items-start">
+    <div className="flex flex-col gap-4 w-full">
+      <p className="font-medium text-[#7a7a7a] text-[14px] text-center tracking-[0.28px] whitespace-nowrap">{title}</p>
+      <div className="flex flex-col gap-3 items-center">
         {items.map((item) => (
           <CategoryItem key={item.label} icon={item.icon} label={item.label} href={item.href} />
         ))}
@@ -252,7 +244,7 @@ function ShopByCategory() {
         aria-hidden="true"
         className="absolute border-[#edeae6] border-b border-solid inset-[0_0_-0.5px_0] pointer-events-none"
       />
-      <div className="flex flex-col gap-5 md:gap-8 items-center justify-center p-6 md:p-16 w-full">
+      <div className="flex flex-col gap-5 md:gap-8 items-center justify-center p-6 md:p-16 w-full max-w-6xl mx-auto">
         <p className="font-medium text-[#7a7a7a] text-[14px] text-center tracking-[0.96px]">
           SHOP BY CATEGORY
         </p>
@@ -260,7 +252,7 @@ function ShopByCategory() {
           Pick a vibe. We&apos;ll handle the flowers.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-8 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 w-full max-w-6xl mx-auto">
           {categoryGroups.map((group) => (
             <CategoryGroup key={group.title} title={group.title} items={group.items} />
           ))}

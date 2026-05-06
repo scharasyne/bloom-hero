@@ -85,11 +85,11 @@ export default function BouquetCard({
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {categoryPills.map((pill) => (
               <span
                 key={pill}
-                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px] shrink-0"
               >
                 {pill}
               </span>
@@ -97,6 +97,60 @@ export default function BouquetCard({
           </div>
         ) : null}
 
+<<<<<<< filter-category
+        {/* ── Rating ── */}
+        <div className="min-h-[18px] lg:min-h-[20px]">
+          {rating && rating > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium">
+              <span className="text-[#f4b400]">★ </span>
+              <span className="text-[#7a7a7a]">
+                {rating}{sold !== undefined ? ` (${sold} sold)` : ""}
+              </span>
+            </p>
+          ) : sold && sold > 0 ? (
+            <p className="text-[11px] lg:text-[13px] font-medium text-[#b0a89e]">
+              {sold} sold · No ratings yet
+            </p>
+          ) : (
+            <span aria-hidden="true" className="text-[11px] lg:text-[13px] text-transparent">
+              No ratings yet
+            </span>
+          )}
+        </div>
+
+        {/* ── Actions ──
+            FIX 3: Add to Cart is the full-width primary action.
+            Buy Now is a quieter text link below it — reduces button heaviness.
+        */}
+        {(onAddToCart || onBuyNow) && (
+  <div className="mt-2 flex flex-col gap-2 w-full">
+    {/* Buy Now — primary solid pill (most urgent action) */}
+    {onBuyNow && (
+      <button
+        type="button"
+        onClick={onBuyNow}
+        disabled={buying || adding}
+        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+      >
+        <Icon icon="mdi:shopping-outline" width={14} height={14} />
+        {buying ? "Processing..." : "Buy Now"}
+      </button>
+    )}
+    {/* Add to Cart — secondary outlined pill (low-commitment action) */}
+    {onAddToCart && (
+      <button
+        type="button"
+        onClick={onAddToCart}
+        disabled={adding || buying}
+        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+      >
+        <Icon icon="mdi:cart-outline" width={14} height={14} />
+        {adding ? "Adding..." : "Add to Cart"}
+      </button>
+    )}
+  </div>
+)}
+=======
         {(hasRating || hasSold) && (
           <div className="flex items-center gap-2 text-[11px] lg:text-[13px]">
             {hasRating ? (
@@ -116,6 +170,7 @@ export default function BouquetCard({
             ) : null}
           </div>
         )}
+>>>>>>> main
 
         {(onBuyNow || onAddToCart) && (
           <div className="mt-1 flex flex-col gap-2">
