@@ -96,11 +96,11 @@ export default function BouquetCard({
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {categoryPills.map((pill) => (
               <span
                 key={pill}
-                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px] shrink-0"
               >
                 {pill}
               </span>
