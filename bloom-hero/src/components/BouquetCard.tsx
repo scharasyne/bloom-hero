@@ -80,11 +80,18 @@ export default function BouquetCard({
           }
         }}
       >
+  const locationLabel = `${shop} · ${distance}`;
+  const hasRating = rating !== undefined && rating !== null;
+  const hasSold   = sold   !== undefined && sold   !== null;
+
+  return (
+    <div className="group flex w-full max-w-[280px] flex-col overflow-hidden rounded-[22px] border border-[#edeae6] bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0px_12px_30px_0px_rgba(0,0,0,0.09)] lg:max-w-[288px]">
+      <div className="relative aspect-[1/1] w-full overflow-hidden bg-[#f5f2ed]">
         {imageUrls.length > 0 ? (
           <ProductCardImageCarousel
             imageUrls={imageUrls}
             productName={name}
-            imageClassName="absolute inset-0 max-w-none object-cover rounded-tl-[18px] rounded-tr-[18px] size-full"
+            imageClassName="absolute inset-0 size-full rounded-t-[22px] object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#c5bfb7]">
@@ -94,55 +101,35 @@ export default function BouquetCard({
         )}
       </div>
 
-      <div className="content-stretch flex flex-col gap-1.5 items-start justify-center px-4 relative shrink-0 w-full">
-
-        {/* ── Name & Price ── */}
-        <div className="content-stretch flex items-start justify-between leading-0 relative shrink-0 text-center w-full">
-          <div className="flex flex-col font-semibold justify-center relative shrink-0 text-[#1f1f1f] text-[13px] lg:text-[18px] tracking-[-0.09px]">
-            <p className="leading-[1.45]">{name}</p>
-          </div>
-          <div className="flex flex-col font-bold justify-center relative shrink-0 text-[#2f5d3a] text-[14px] lg:text-[20px] tracking-[-0.1px]">
-            <p className="leading-5.5">₱ {price}</p>
+      <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 flex-1 text-[15px] font-semibold leading-[1.35] text-[#1f1f1f] lg:text-[17px]">
+            {name}
+          </h3>
+          <div className="shrink-0 text-right text-[16px] font-bold leading-none text-[#D24B46] lg:text-[18px]">
+            ₱{price.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        {/* ── Shop & Distance ── */}
-        <div className="content-stretch flex gap-1.5 items-center justify-center relative shrink-0">
-          <Icon icon="mdi:map-marker-outline" width={15} height={15} color="#7a7a7a" />
-          <p className="text-[#7a7a7a] text-[11px] lg:text-[13px] font-medium leading-5.5">
-            {shop} · {distance}
-          </p>
+        <div className="flex items-center gap-1.5 text-[#7a7a7a]">
+          <Icon icon="mdi:storefront-outline" width={15} height={15} />
+          <p className="text-[11px] font-medium leading-5 lg:text-[13px]">{locationLabel}</p>
         </div>
 
         {/* ── Category Pills ── */}
         {categoryPills.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             {categoryPills.map((pill) => (
               <span
                 key={pill}
-                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px]"
+                className="inline-flex items-center rounded-full border border-[#e6e1d8] bg-[#f3f0ea] px-2.5 py-1 text-[11px] font-medium tracking-[-0.065px] text-[#2f5d3a] lg:text-[13px] shrink-0"
               >
                 {pill}
               </span>
             ))}
           </div>
         ) : null}
-        {typeof rating === "number" || (sold && sold > 0) ? (
-          <p className="text-[11px] lg:text-[13px] font-medium">
-            <span className="flex gap-0.5 items-center">
-              <span className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <span key={index} className={index < Math.round(rating || 0) ? "text-[#f4b740]" : "text-[#d9d4cd]"}>
-                    ★
-                  </span>
-                ))}
-              </span>
-              <span className="text-[#7a7a7a] ml-1">
-                {(rating || 0).toFixed(1)}{sold !== undefined ? ` (${sold} sold)` : ""}
-              </span>
-            </span>
-          </p>
-        ) : null}
+
         {(onAddToCart || onBuyNow) && (
   <div className="mt-2 flex flex-col gap-2 w-full">
     {onAddToCart && (
@@ -176,7 +163,52 @@ export default function BouquetCard({
     
   </div>
 )}
+        {(hasRating || hasSold) && (
+          <div className="flex items-center gap-2 text-[11px] lg:text-[13px]">
+            {hasRating ? (
+              <span className="inline-flex items-center gap-1 font-semibold text-[#f4b400]">
+                <span>★</span>
+                <span>{rating?.toFixed(1)}</span>
+              </span>
+            ) : null}
+            {hasSold ? (
+              <span className="font-medium text-[#7a7a7a]">
+                {hasRating ? "· " : ""}
+                {sold} sold
+              </span>
+            ) : null}
+            {!hasRating && !hasSold ? (
+              <span className="font-medium text-[#b0a89e]">No ratings yet</span>
+            ) : null}
+          </div>
+        )}
 
+        {(onBuyNow || onAddToCart) && (
+          <div className="mt-1 flex flex-col gap-2">
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={onBuyNow}
+                disabled={buying || adding}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#d24b46] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#b83d39] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Icon icon="mdi:shopping-outline" width={15} height={15} />
+                {buying ? "Processing..." : "Buy Now"}
+              </button>
+            )}
+            {onAddToCart && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={adding || buying}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d24b46] bg-white px-4 py-3 text-sm font-semibold text-[#d24b46] transition-colors hover:bg-[#fff5f5] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Icon icon="mdi:cart-outline" width={15} height={15} />
+                {adding ? "Adding..." : "Add to Cart"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

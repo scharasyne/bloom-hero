@@ -48,12 +48,35 @@ type SearchResults = {
   vendors: SearchVendorRow[];
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  graduation: "Graduation Cheers",
+  "in-loving-memory": "In Loving Memory",
+  "new-beginnings": "New Beginnings",
+  "love-notes": "Love Notes in Bloom",
+  handcrafted: "Handcrafted",
+  anniversary: "Anniversary Classics",
+  "gentle-comfort": "Gentle Comfort",
+  birthday: "Birthday Blooms",
+  "just-because": "Just Because",
+  "missing-you": "Missing You",
+  "get-well": "Get Well Soon",
+  "florists-picks": "Florists' Picks",
+};
+
+const CATEGORY_VALUES = new Set(Object.keys(CATEGORY_LABELS));
+
 function normalizeScope(value: string | null): SearchScope {
   if (value === "flowers" || value === "vendors" || value === "all") {
     return value;
   }
 
   return "all";
+}
+
+function normalizeCategory(value: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  return CATEGORY_VALUES.has(normalized) ? normalized : null;
 }
 
 function scopeLabel(scope: SearchScope) {
@@ -71,37 +94,52 @@ function mapPriceFilter(value: string) {
 }
 
 function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
-  const rating = typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
+  const rating =
+    typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
 
   return (
-    <div className="bg-white content-stretch flex flex-col gap-3 items-start p-5 relative rounded-[18px] shrink-0 w-full border border-[#edeae6] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)]">
-      <div className="flex items-start justify-between gap-4 w-full">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a7a7a]">
+    <div className="group flex w-full flex-col overflow-hidden rounded-[22px] border border-[#edeae6] bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0px_12px_30px_0px_rgba(0,0,0,0.08)]">
+      <div className="flex items-start justify-between gap-3 px-5 py-5">
+        <div className="flex flex-col gap-2">
+          <span className="inline-flex w-fit rounded-full bg-[#f3eee8] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a7a7a]">
             {vendor.vendor_type ?? "Vendor"}
-          </p>
-          <h3 className="mt-1 text-[18px] font-semibold text-[#1f1f1f]">
+          </span>
+          <h3 className="text-[20px] font-semibold leading-tight text-[#1f1f1f]">
             {vendor.shop_name ?? "Untitled vendor"}
           </h3>
+          <p className="max-w-[34rem] text-[14px] leading-6 text-[#7a7a7a]">
+            Browse this shop’s flower listings and discover what they offer at Carbon Market.
+          </p>
         </div>
 
         {rating ? (
-          <div className="rounded-full bg-[#f3f0ea] px-3 py-1 text-xs font-semibold text-[#2f5d3a]">
-            ★ {rating}
+          <div className="inline-flex items-center gap-1 rounded-full bg-[#f8f3e8] px-3 py-1 text-[13px] font-semibold text-[#f4b400] shrink-0">
+            <span>★</span>
+            <span>{rating}</span>
           </div>
         ) : null}
       </div>
 
-      <p className="text-sm leading-6 text-[#7a7a7a]">
-        Browse this vendor&apos;s listings or narrow the search using the shop name.
-      </p>
+      <div className="grid grid-cols-3 gap-2 px-5 pb-4">
+        <div className="aspect-square rounded-[14px] bg-[#f3eee8]" />
+        <div className="aspect-square rounded-[14px] bg-[#f3eee8]" />
+        <div className="aspect-square rounded-[14px] bg-[#f3eee8]" />
+      </div>
 
-      <a
-        href={`/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
-        className="inline-flex items-center justify-center rounded-full bg-[#2f6b4f] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#275940]"
-      >
-        View vendor
-      </a>
+      <div className="flex gap-3 px-5 pb-5">
+        <a
+          href={`/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
+          className="inline-flex flex-1 items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4]"
+        >
+          View vendor
+        </a>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4]"
+        >
+          View products
+        </button>
+      </div>
     </div>
   );
 }
@@ -111,6 +149,9 @@ export default function SearchPage() {
 
   const q = searchParams.get("q") || "";
   const scope = normalizeScope(searchParams.get("scope"));
+  const category = normalizeCategory(searchParams.get("category"));
+  const hasQuery = q.trim().length > 0;
+  const hasCategory = Boolean(category);
 
   const [price, setPrice] = React.useState("Default ");
   const [sort, setSort] = React.useState("Best Sellers");
@@ -127,7 +168,7 @@ export default function SearchPage() {
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, scope]);
+  }, [q, scope, category]);
 
   const handleAddToCart = React.useCallback(
     async (product: SearchFlowerRow) => {
@@ -253,7 +294,7 @@ export default function SearchPage() {
     const controller = new AbortController();
 
     async function load() {
-      if (!q.trim()) {
+      if (!hasQuery && !hasCategory) {
         setResults({ flowers: [], vendors: [] });
         setErrorMsg(null);
         setLoading(false);
@@ -264,7 +305,13 @@ export default function SearchPage() {
       setErrorMsg(null);
 
       try {
-        const params = new URLSearchParams({ q, scope, price: mapPriceFilter(price), sort });
+        const params = new URLSearchParams({ scope, price: mapPriceFilter(price), sort });
+        if (hasQuery) {
+          params.set("q", q);
+        }
+        if (category) {
+          params.set("category", category);
+        }
         const response = await fetch(`/api/search?${params.toString()}`, { signal: controller.signal });
 
         const payload = (await response.json()) as {
@@ -296,7 +343,7 @@ export default function SearchPage() {
 
     load();
     return () => controller.abort();
-  }, [q, price, sort, scope]);
+  }, [q, price, sort, scope, category]);
 
   const flowerResults = results.flowers;
   const vendorResults = results.vendors;
@@ -315,6 +362,7 @@ export default function SearchPage() {
             <SearchBar
               initialQuery={q}
               scope={scope}
+              category={category ?? undefined}
               onSearch={() => setCurrentPage(1)}
             />
           </div>
@@ -330,9 +378,13 @@ export default function SearchPage() {
           </div>
 
           <section>
-            {q && (
+            {(q || category) && (
               <p className="mb-4 text-[#7a7a7a]">
-                Showing {scopeLabel(scope)} results for <strong>{q}</strong>
+                Showing {scopeLabel(scope)} results for{" "}
+                <strong>
+                  {q ? `"${q}"` : CATEGORY_LABELS[category ?? ""] ?? category}
+                </strong>
+                {q && category ? ` • ${CATEGORY_LABELS[category] ?? category}` : null}
               </p>
             )}
 
@@ -454,7 +506,9 @@ export default function SearchPage() {
 
             ) : (
               <div className="mt-8 text-center text-gray-500">
-                {q ? "No results to display" : "Use the search bar above to start a query."}
+                {hasQuery || hasCategory
+                  ? "No results to display"
+                  : "Use the search bar above to start a query."}
               </div>
             )}
           </section>
