@@ -84,6 +84,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
   const { order, existingReview } = reviewState.data;
   const firstItem = order.items[0] ?? null;
   const product = firstItem?.product ?? null;
+  const productId = product?.id ?? null;
   const vendorName = order.vendor.shopName;
   const productName = product?.name ?? "Product";
   const productImage = product?.imageUrl ?? null;
@@ -168,6 +169,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
             <ReviewForm
               orderId={orderId}
               vendorId={vendorId}
+              productId={productId}
               existingReview={existingReview}
             />
           </section>

@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { getOrderReviewEligibility, saveReviewByCustomer } from "@/lib/services/reviews";
+import { getOrderReviewEligibility, getExistingReviewByCustomerAndOrder, saveReviewByCustomer } from "@/lib/services/reviews";
 
 type SubmitReviewInput = {
   orderId: string;
   vendorId: string;
+  productId: string;
   rating: number;
   comment: string;
   reviewId?: string;
@@ -91,21 +92,16 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
   }
 
   const vendorId = data.vendor_id || data.vendors?.[0]?.id || "";
+  const firstItem = data.order_items?.[0];
+  const firstProduct = Array.isArray(firstItem?.products)
+    ? firstItem?.products?.[0]
+    : firstItem?.products;
+  const productId = firstProduct?.id || "";
 
   let existingReview: ReviewPageData["existingReview"] = null;
-  if (vendorId) {
-    const { data: review, error: reviewError } = await supabase
-      .from("reviews")
-      .select("id, rating, comment")
-      .eq("customer_id", session.user.id)
-      .eq("vendor_id", vendorId)
-      .maybeSingle();
-
-    if (reviewError) {
-      throw new Error(`Failed to load review: ${reviewError.message}`);
-    }
-
-    existingReview = review ?? null;
+  if (productId) {
+    const review = await getExistingReviewByCustomerAndOrder(session.user.id, data.id, productId);
+    existingReview = review ? { id: review.id, rating: review.rating, comment: review.comment } : null;
   }
 
   return {
@@ -149,6 +145,10 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
     return { ok: false, error: "Rating must be between 1 and 5." };
   }
 
+  if (!input.productId) {
+    return { ok: false, error: "Missing product for this review." };
+  }
+
   let order;
   try {
     order = await getOrderReviewEligibility(input.orderId, session.user.id);
@@ -168,11 +168,18 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
     return { ok: false, error: "Vendor mismatch for this order." };
   }
 
+  const orderProductIds = (order.order_items ?? []).map((item: any) => item.product_id).filter(Boolean);
+  if (!orderProductIds.includes(input.productId)) {
+    return { ok: false, error: "Product not found in this order." };
+  }
+
   try {
     await saveReviewByCustomer({
       reviewId: input.reviewId,
       customerId: session.user.id,
       vendorId: input.vendorId,
+      orderId: input.orderId,
+      productId: input.productId,
       rating: input.rating,
       comment: input.comment,
     });
