@@ -4,6 +4,7 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 
 import BouquetCard from "@/components/BouquetCard";
+import Link from "next/link";
 import Footer from "@/components/footer";
 import SearchBar from "@/components/SearchBar";
 import SearchFilters from "@/components/SearchFilters";
@@ -401,7 +402,12 @@ export default function SearchPage() {
                           const primaryImageUrl = imageUrls[0] ?? flower.product_image_url ?? flower.image_url ?? null;
 
                           return (
-                            <div key={flower.id} className="animate-fade-in" style={{ animationDelay: `${index * 40}ms` }}>
+                            <Link
+                              key={flower.id}
+                              href={`/products/${flower.id}`}
+                              className="animate-fade-in"
+                              style={{ animationDelay: `${index * 40}ms` }}
+                            >
                               <BouquetCard
                                 image={primaryImageUrl}
                                 images={imageUrls}
@@ -421,7 +427,7 @@ export default function SearchPage() {
                                 onBuyNow={() => handleBuyNow(flower)}
                                 buying={buyingId === flower.id}
                               />
-                            </div>
+                            </Link>
                           );
                         })}
                       </div>

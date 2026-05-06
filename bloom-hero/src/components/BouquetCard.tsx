@@ -135,7 +135,10 @@ export default function BouquetCard({
     {onBuyNow && (
       <button
         type="button"
-        onClick={onBuyNow}
+        onClick={(e) => {
+          e.stopPropagation();
+          onBuyNow();
+        }}
         disabled={buying || adding}
         className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
@@ -147,7 +150,10 @@ export default function BouquetCard({
     {onAddToCart && (
       <button
         type="button"
-        onClick={onAddToCart}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddToCart();
+        }}
         disabled={adding || buying}
         className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >

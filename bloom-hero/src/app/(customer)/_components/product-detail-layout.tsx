@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import { mockBouquets } from "@/lib/mockData";
+import { ProductDetailRow } from "@/lib/products";
+import { addToCart, buyNow } from "@/app/(customer)/_actions/product-actions";
 
 function MainPicture({ src }: { src: string }) {
   return (
@@ -59,38 +61,39 @@ function Thumbnail({ src, alt, active = false, onClick }: { src: string; alt: st
   );
 }
 
-function Gallery() {
+function Gallery({ product }: { product: ProductDetailRow | null }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? mockBouquets.length - 1 : prev - 1));
-  };
+  const imageUrls = (product?.product_images ?? [])
+    .slice()
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((p) => p.image_url)
+    .filter((u) => typeof u === "string" && u.trim().length > 0);
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === mockBouquets.length - 1 ? 0 : prev + 1));
-  };
+  if (product?.product_image_url && imageUrls.length === 0) {
+    imageUrls.push(product.product_image_url);
+  }
 
-  const handleDotClick = (index: number) => {
-    setCurrentIndex(index);
-  };
+  const total = Math.max(1, imageUrls.length);
 
-  const handleThumbnailClick = (index: number) => {
-    setCurrentIndex(index);
-  };
+  const handlePrevious = () => setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
+  const handleNext = () => setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
+  const handleDotClick = (index: number) => setCurrentIndex(index);
+  const handleThumbnailClick = (index: number) => setCurrentIndex(index);
 
   return (
     <div className="flex flex-col items-center w-[560px]">
-      <MainPicture src={mockBouquets[currentIndex].image_url} />
+      <MainPicture src={imageUrls[currentIndex] ?? null} />
 
       <div className="mt-4 flex items-center gap-3">
         <ChevronButton direction="left" onClick={handlePrevious} />
 
         <div className="flex gap-3 overflow-hidden">
-          {mockBouquets.slice(0, 4).map((item, index) => (
+          {imageUrls.slice(0, 4).map((src, index) => (
             <Thumbnail
-              key={item.id}
-              src={item.image_url}
-              alt={item.name}
+              key={src + index}
+              src={src}
+              alt={product?.product_name ?? `Image ${index + 1}`}
               active={index === currentIndex}
               onClick={() => handleThumbnailClick(index)}
             />
@@ -100,27 +103,27 @@ function Gallery() {
         <ChevronButton direction="right" onClick={handleNext} />
       </div>
 
-      <GalleryDots currentIndex={currentIndex} totalItems={mockBouquets.length} onDotClick={handleDotClick} />
+      <GalleryDots currentIndex={currentIndex} totalItems={total} onDotClick={handleDotClick} />
     </div>
   );
 }
 
-function Headline() {
+function Headline({ product }: { product: ProductDetailRow | null }) {
   return (
     <div className="flex flex-col gap-[12px]">
       <h1 className="text-[36px] font-semibold leading-tight text-[#1f1f1f]">
-        Pink Peonies Bouquet
+        {product?.product_name ?? "Product"}
       </h1>
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <span className="text-[18px] font-semibold text-[#F4B400]">★</span>
-          <span className="text-[18px] font-semibold text-[#1f1f1f]">4.9</span>
+          <span className="text-[18px] font-semibold text-[#1f1f1f]">{product?.average_rating ?? "—"}</span>
         </div>
-        <span className="text-[16px] text-[#6b6b6b]">(67 reviews)</span>
+        <span className="text-[16px] text-[#6b6b6b]">({product?.sold_count ?? 0} reviews)</span>
       </div>
       <div className="flex items-center gap-1 text-[16px] text-[#6b6b6b]">
         <Icon icon="mdi:map-marker-outline" className="size-[20px] shrink-0" />
-        <span>Bloom & Co. • 0.5 km</span>
+        <span>{product?.shop_name ?? "Unknown vendor"}</span>
       </div>
     </div>
   );
@@ -142,26 +145,24 @@ function Tags() {
   );
 }
 
-function PriceStock() {
+function PriceStock({ product }: { product: ProductDetailRow | null }) {
   return (
     <div className="flex items-center gap-4">
-      <strong className="text-[24px] font-semibold text-[#2f5d3a]">₱750</strong>
+      <strong className="text-[24px] font-semibold text-[#2f5d3a]">₱{product?.price ?? "—"}</strong>
       <div className="bg-[#2f5d3a] flex gap-[6px] items-center px-[12px] py-[6px] rounded-[999px]">
         <Icon icon="mdi:check" className="size-[18px] text-white shrink-0" />
         <span className="font-medium text-[14px] text-white whitespace-nowrap">
-          In Stock (24 available)
+          In Stock ({product?.sold_count ?? 0} available)
         </span>
       </div>
     </div>
   );
 }
 
-function Quantity() {
-  const [quantity, setQuantity] = useState(1);
-
-  const handleIncrement = () => setQuantity(quantity + 1);
+function Quantity({ quantity, onQuantityChange }: { quantity: number; onQuantityChange: (q: number) => void }) {
+  const handleIncrement = () => onQuantityChange(quantity + 1);
   const handleDecrement = () => {
-    if (quantity > 1) setQuantity(quantity - 1);
+    if (quantity > 1) onQuantityChange(quantity - 1);
   };
 
   return (
@@ -188,56 +189,68 @@ function Quantity() {
   );
 }
 
-function AddToCartButton() {
+function AddToCartButton({ onClick, loading }: { onClick: () => void; loading: boolean }) {
   return (
-    <button className="flex-1 rounded-full border-2 border-[#e6e1dc] px-5 py-3 text-[16px] font-semibold text-[#D24B46] transition hover:border-[#D24B46] hover:bg-[#fff5f3] flex items-center justify-center gap-2">
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      disabled={loading}
+      className="w-full rounded-full border-2 border-[#e6e1dc] px-5 py-3 text-[16px] font-semibold text-[#D24B46] transition hover:border-[#D24B46] hover:bg-[#fff5f3] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+    >
       <Icon icon="mdi:cart-outline" className="size-[20px]" />
-      Add to cart
+      {loading ? "Adding..." : "Add to cart"}
     </button>
   );
 }
 
-function BuyNow() {
+function BuyNow({ onClick, loading }: { onClick: () => void; loading: boolean }) {
   return (
-    <button className="flex-1 rounded-full bg-[#D24B46] px-5 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-[#b03d33] flex items-center justify-center gap-2">
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      disabled={loading}
+      className="w-full rounded-full bg-[#D24B46] px-5 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-[#b03d33] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+    >
       <Icon icon="mdi:shopping-outline" className="size-[20px] text-white shrink-0" />
-      Buy now
+      {loading ? "Processing..." : "Buy now"}
     </button>
   );
 }
 
-function Cta() {
+function Cta({ onAddToCart, onBuyNow, addingLoading, buyingLoading }: { onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean }) {
   return (
-    <div className="flex flex-wrap gap-3 pt-2">
-      <AddToCartButton />
-      <BuyNow />
+    <div className="flex flex-col gap-3 pt-2 w-full">
+      <AddToCartButton onClick={onAddToCart} loading={addingLoading} />
+      <BuyNow onClick={onBuyNow} loading={buyingLoading} />
     </div>
   );
 }
 
-function Text() {
+function Text({ product, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading }: { product: ProductDetailRow | null; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean }) {
   return (
     <div className="flex max-w-[560px] flex-col gap-[32px]">
-      <Headline />
+      <Headline product={product} />
       <Tags />
-      <PriceStock />
+      <PriceStock product={product} />
       <p className="text-[16px] leading-7 text-[#3a3733]">
-        A soft bouquet of pink peonies arranged for a graceful, romantic look.
-        This is mock data for the product detail page; real listings will later
-        use vendor-uploaded images and product information.
+        {product?.description ?? "No description available for this product."}
       </p>
-      <Quantity />
-      <Cta />
+      <Quantity quantity={quantity} onQuantityChange={onQuantityChange} />
+      <Cta onAddToCart={onAddToCart} onBuyNow={onBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} />
     </div>
   );
 }
 
-function ProductDetails() {
+function ProductDetails({ product, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading }: { product: ProductDetailRow | null; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean }) {
   return (
     <section className="w-full max-w-[1200px] px-[64px] pt-[64px] pb-[32px]">
       <div className="flex items-start gap-[48px]">
-        <Gallery />
-        <Text />
+        <Gallery product={product} />
+        <Text product={product} quantity={quantity} onQuantityChange={onQuantityChange} onAddToCart={onAddToCart} onBuyNow={onBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} />
       </div>
     </section>
   );
@@ -284,23 +297,6 @@ function ReviewCard({ name, avatar, review, date }: ReviewCardProps) {
   );
 }
 
-// function ReviewsSection() {
-//   return (
-//     <section className="w-full max-w-[1200px] px-[64px] pb-[64px]">
-//       <h2 className="text-[24px] font-semibold text-[#1f1f1f]">Reviews</h2>
-//       <div className="mt-[20px] grid gap-[16px] md:grid-cols-2">
-//         <ReviewCard
-//           name="Maria Santos"
-//           text="The bouquet looked even better in person. The colors were soft and elegant, and delivery was on time."
-//         />
-//         <ReviewCard
-//           name="Juan Dela Cruz"
-//           text="Very fresh flowers and nicely arranged. Great for an anniversary gift or a simple surprise."
-//         />
-//       </div>
-//     </section>
-//   );
-// }
 function ReviewsSection() {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -370,10 +366,64 @@ function ReviewsSection() {
   );
 }
 
-export function ProductDetailLayout() {
+export function ProductDetailLayout({ product }: { product?: ProductDetailRow | null }) {
+  const router = useRouter();
+  const [quantity, setQuantity] = useState(1);
+  const [addingLoading, setAddingLoading] = useState(false);
+  const [buyingLoading, setBuyingLoading] = useState(false);
+
+  const handleAddToCart = useCallback(async () => {
+    if (!product || !product.vendor_id) {
+      alert("Product information is missing.");
+      return;
+    }
+
+    try {
+      setAddingLoading(true);
+      const result = await addToCart(product.id, product.vendor_id, product.price, quantity);
+
+      if (!result.success) {
+        alert(result.error || "Failed to add to cart.");
+        return;
+      }
+
+      alert("Added to cart!");
+      setQuantity(1);
+    } catch (err) {
+      console.error("Add to cart failed:", err);
+      alert("Failed to add to cart. Please try again.");
+    } finally {
+      setAddingLoading(false);
+    }
+  }, [product, quantity]);
+
+  const handleBuyNow = useCallback(async () => {
+    if (!product || !product.vendor_id) {
+      alert("Product information is missing.");
+      return;
+    }
+
+    try {
+      setBuyingLoading(true);
+      const result = await buyNow(product.id, product.vendor_id, product.price, quantity);
+
+      if (!result.success) {
+        alert(result.error || "Failed to place order.");
+        return;
+      }
+
+      router.push("/customer/orders");
+    } catch (err) {
+      console.error("Buy now failed:", err);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setBuyingLoading(false);
+    }
+  }, [product, quantity, router]);
+
   return (
     <div className="flex w-full flex-col items-center bg-[#fbf7f4]">
-      <ProductDetails />
+      <ProductDetails product={product ?? null} quantity={quantity} onQuantityChange={setQuantity} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} />
       <ReviewsSection />
     </div>
   );

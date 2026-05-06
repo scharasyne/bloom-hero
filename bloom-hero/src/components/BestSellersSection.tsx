@@ -111,18 +111,19 @@ export default function BestSellersSection() {
             const { image, images } = getPrimaryImage(flower);
 
             return (
-              <BouquetCard
-                key={flower.id}
-                image={image}
-                images={images}
-                name={flower.product_name}
-                price={Number(flower.price) || 0}
-                shop={flower.shop_name ?? "Untitled shop"}
-                distance=""
-                category={flower.categories?.[0] ?? flower.vendor_type ?? "Best Seller"}
-                rating={typeof flower.average_rating === "number" ? flower.average_rating : undefined}
-                sold={typeof flower.sold_count === "number" ? flower.sold_count : undefined}
-              />
+              <Link key={flower.id} href={`/products/${flower.id}`} className="animate-fade-in">
+                <BouquetCard
+                  image={image}
+                  images={images}
+                  name={flower.product_name}
+                  price={Number(flower.price) || 0}
+                  shop={flower.shop_name ?? "Untitled shop"}
+                  distance=""
+                  category={flower.categories?.[0] ?? flower.vendor_type ?? "Best Seller"}
+                  rating={typeof flower.average_rating === "number" ? flower.average_rating : undefined}
+                  sold={typeof flower.sold_count === "number" ? flower.sold_count : undefined}
+                />
+              </Link>
             );
           })}
         </div>
