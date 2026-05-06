@@ -19,6 +19,7 @@ Cleaner + reusable + testable.
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import BouquetCard from "@/components/BouquetCard";
@@ -114,6 +115,11 @@ function mapPriceFilter(value: string) {
 function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
   const rating =
     typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
+  const vendorTypePath =
+    vendor.vendor_type === "market" || vendor.vendor_type === "pop-up" ? vendor.vendor_type : null;
+  const profileHref = vendorTypePath
+    ? `/vendors/${vendorTypePath}/${vendor.id}`
+    : `/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`;
 
   return (
     <div className="group flex w-full flex-col overflow-hidden rounded-[22px] border border-[#edeae6] bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0px_12px_30px_0px_rgba(0,0,0,0.08)]">
@@ -145,18 +151,18 @@ function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
       </div>
 
       <div className="flex gap-3 px-5 pb-5">
-        <a
-          href={`/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
+        <Link
+          href={profileHref}
           className="inline-flex flex-1 items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4]"
         >
           View vendor
-        </a>
-        <button
-          type="button"
+        </Link>
+        <Link
+          href={`/search?scope=flowers&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
           className="inline-flex items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4]"
         >
           View products
-        </button>
+        </Link>
       </div>
     </div>
   );

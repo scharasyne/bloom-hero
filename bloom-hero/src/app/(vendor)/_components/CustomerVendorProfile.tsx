@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 import { Star } from "lucide-react";
 import PopUpLocationRequest from "./PopUpLocationRequest";
@@ -27,7 +27,11 @@ interface Review {
 interface Vendor {
   id: string;
   shop_name: string;
-  description?: string;
+  about?: string | null;
+  location_text?: string | null;
+  phone_number?: string | null;
+  opens_at?: string | null;
+  closes_at?: string | null;
 }
 
 interface CustomerVendorProfileProps {
@@ -36,18 +40,32 @@ interface CustomerVendorProfileProps {
   products: Product[];
   reviews?: Review[];
   vendorType: VendorType;
-  onRequestLocation?: (location: string) => void;
+  galleryPhotos?: {
+    id: string;
+    image_url: string;
+    caption: string | null;
+    location: string | null;
+    event_name: string | null;
+  }[];
 }
 
 export default function CustomerVendorProfile({
+  vendorId,
   vendor,
   products,
   reviews = [],
   vendorType,
-  onRequestLocation,
+  galleryPhotos = [],
 }: CustomerVendorProfileProps) {
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
+  const [selectedGalleryPhotoId, setSelectedGalleryPhotoId] = useState<string | null>(null);
+  const [requestMessage, setRequestMessage] = useState<string | null>(null);
   const shopInitial = (vendor.shop_name || "?").charAt(0).toUpperCase();
+  const scheduleLabel =
+    vendor.opens_at && vendor.closes_at
+      ? `${vendor.opens_at.slice(0, 5)} - ${vendor.closes_at.slice(0, 5)}`
+      : "Schedule not set";
 
   const formatPeso = (value: number) =>
     new Intl.NumberFormat("en-PH", {
@@ -56,10 +74,37 @@ export default function CustomerVendorProfile({
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(value);
+  const selectedGalleryPhoto =
+    galleryPhotos.find((photo) => photo.id === selectedGalleryPhotoId) ?? null;
 
-  const handleLocationSubmit = (location: string) => {
+  const handleLocationSubmit = async (payload: {
+    location: string;
+    latitude: number;
+    longitude: number;
+    requestedDate: string;
+    startTime: string;
+    endTime: string;
+  }) => {
+    const response = await fetch("/api/pop-up-location-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vendorId,
+        location: payload.location,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        requestedDate: payload.requestedDate,
+        startTime: payload.startTime,
+        endTime: payload.endTime,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok || !result?.success) {
+      setRequestMessage(result?.error || "Failed to submit location request.");
+      return;
+    }
+    setRequestMessage("Location request sent.");
     setShowLocationModal(false);
-    onRequestLocation?.(location);
   };
 
   return (
@@ -83,11 +128,15 @@ export default function CustomerVendorProfile({
                 <div className="mt-3 flex flex-wrap gap-4 text-xs text-[#8a847d] sm:text-[13px]">
                   <div className="flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#2f5d3a]" />
-                    <span>Open for orders</span>
+                    <span>{vendor.location_text?.trim() || "Location not set"}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#f5ad2e]" />
-                    <span>5.0 average rating</span>
+                    <span>{vendor.phone_number?.trim() || "Phone not set"}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#8b847c]" />
+                    <span>{scheduleLabel}</span>
                   </div>
                 </div>
               </div>
@@ -105,24 +154,82 @@ export default function CustomerVendorProfile({
 
           <div className="mt-6 border-t border-[#ece4dc] pt-3">
             <nav className="flex flex-wrap gap-4 text-sm text-[#8b847c]">
-              <a
-                href="#bouquets"
-                className="border-b-2 border-[#2f5d3a] pb-1 font-medium text-[#2f5d3a]"
-              >
-                Bouquets
-              </a>
+              {vendorType === "market" ? (
+                <a
+                  href="#bouquets"
+                  className="border-b-2 border-[#2f5d3a] pb-1 font-medium text-[#2f5d3a]"
+                >
+                  Bouquets
+                </a>
+              ) : null}
+              {vendorType === "pop-up" ? (
+                <>
+                  <a
+                    href="#gallery"
+                    className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
+                  >
+                    Gallery
+                  </a>
+                </>
+              ) : null}
               <a
                 href="#reviews"
                 className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
               >
                 Reviews
               </a>
+              <a
+                href="#about"
+                className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
+              >
+                About
+              </a>
             </nav>
           </div>
         </div>
 
+        {vendorType === "pop-up" ? (
+          <section id="gallery" className="mt-8 scroll-mt-20">
+            <h2 className="text-lg font-semibold tracking-tight text-[#262321]">Gallery</h2>
+            {galleryPhotos.length === 0 ? (
+              <p className="mt-1 text-sm text-[#8d867d]">No gallery photos yet.</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {galleryPhotos.map((photo) => (
+                  <button
+                    key={photo.id}
+                    type="button"
+                    onClick={() => setSelectedGalleryPhotoId(photo.id)}
+                    className="overflow-hidden rounded-2xl border border-[#ece5dd] bg-[#fbf9f6]"
+                  >
+                    <div className="h-44 w-full overflow-hidden bg-[#e8dfd5]">
+                      <img
+                        src={photo.image_url}
+                        alt={photo.caption || "Pop-up gallery photo"}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="space-y-1 px-4 py-3">
+                      <p className="text-sm font-semibold text-[#2a2724]">
+                        {photo.caption?.trim() || "Pop-up moment"}
+                      </p>
+                      {photo.location?.trim() ? (
+                        <p className="text-xs text-[#80786f]">{photo.location}</p>
+                      ) : null}
+                      {photo.event_name?.trim() ? (
+                        <p className="text-xs text-[#9a9289]">{photo.event_name}</p>
+                      ) : null}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
+
         {/* Bouquets */}
-        <section id="bouquets" className="mt-10 scroll-mt-20">
+        {vendorType === "market" ? (
+          <section id="bouquets" className="mt-10 scroll-mt-20">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-[#262321]">
               Bouquets
@@ -187,48 +294,135 @@ export default function CustomerVendorProfile({
               ))}
             </div>
           )}
-        </section>
+          </section>
+        ) : null}
 
         {/* Reviews */}
-        {reviews.length > 0 && (
-          <section id="reviews" className="mt-14 scroll-mt-20">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-[#262321]">
-                Reviews
-              </h2>
-              <p className="mt-1 text-sm text-[#8d867d]">
-                What customers are saying.
-              </p>
-            </div>
+        <section id="reviews" className="mt-14 scroll-mt-20">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-[#262321]">
+              Reviews
+            </h2>
+            <p className="mt-1 text-sm text-[#8d867d]">
+              What customers are saying.
+            </p>
+          </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {reviews.length === 0 ? (
+            <p className="mt-4 text-sm text-[#8d867d]">Reviews not found yet.</p>
+          ) : (
+            <>
+              <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
+                {reviews.slice(0, 3).map((review) => (
+                  <article
+                    key={review.id}
+                    className="flex h-full flex-col rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5 shadow-[0_6px_20px_rgba(15,23,42,0.05)]"
+                  >
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-xs font-semibold text-[#2f5d3a]">
+                        {review.name[0]}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#2a2724]">
+                          {review.name}
+                        </h3>
+                        <p className="text-[11px] text-[#9a9289]">
+                          {review.daysAgo} days ago
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="flex-1 text-sm leading-relaxed text-[#4c4742]">
+                      {review.comment}
+                    </p>
+
+                    <div className="mt-4 flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={12}
+                          className={`${
+                            i < review.rating
+                              ? "fill-[#f5ad2e] text-[#f5ad2e]"
+                              : "text-[#d8d0c7]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {reviews.length > 3 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllReviewsModal(true)}
+                  className="mt-4 inline-flex rounded-full border border-[#e0d8cf] px-4 py-2 text-xs font-semibold text-[#4a453f] hover:bg-[#f3eee8]"
+                >
+                  See more
+                </button>
+              ) : null}
+            </>
+          )}
+        </section>
+
+        <section id="about" className="mt-14 scroll-mt-20">
+          <h2 className="text-lg font-semibold tracking-tight text-[#262321]">About</h2>
+          <div className="mt-4 rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-6 py-5">
+            <p className="text-sm leading-relaxed text-[#4c4742]">
+              {vendor.about?.trim() || "No about information yet."}
+            </p>
+          </div>
+        </section>
+      </div>
+      {requestMessage ? (
+        <p className="mt-3 text-xs text-[#6f6a65]">{requestMessage}</p>
+      ) : null}
+
+      {showLocationModal && (
+        <PopUpLocationRequest
+          vendorName={vendor.shop_name}
+          onSubmit={handleLocationSubmit}
+          onClose={() => setShowLocationModal(false)}
+        />
+      )}
+
+      {showAllReviewsModal ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
+          onClick={() => setShowAllReviewsModal(false)}
+        >
+          <div
+            className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-7"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowAllReviewsModal(false)}
+              className="absolute right-4 top-4 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
+            >
+              Close
+            </button>
+            <h3 className="text-lg font-semibold tracking-tight text-[#262321]">All Reviews</h3>
+            <div className="mt-5 grid grid-cols-1 gap-4">
               {reviews.map((review) => (
                 <article
-                  key={review.id}
-                  className="flex h-full flex-col rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5 shadow-[0_6px_20px_rgba(15,23,42,0.05)]"
+                  key={`modal-${review.id}`}
+                  className="rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5"
                 >
-                  <div className="mb-3 flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-xs font-semibold text-[#2f5d3a]">
                       {review.name[0]}
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-[#2a2724]">
-                        {review.name}
-                      </h3>
-                      <p className="text-[11px] text-[#9a9289]">
-                        {review.daysAgo} days ago
-                      </p>
+                      <h4 className="text-sm font-semibold text-[#2a2724]">{review.name}</h4>
+                      <p className="text-[11px] text-[#9a9289]">{review.daysAgo} days ago</p>
                     </div>
                   </div>
-
-                  <p className="flex-1 text-sm leading-relaxed text-[#4c4742]">
-                    {review.comment}
-                  </p>
-
-                  <div className="mt-4 flex items-center gap-1">
+                  <p className="mt-3 text-sm leading-relaxed text-[#4c4742]">{review.comment}</p>
+                  <div className="mt-3 flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
-                        key={i}
+                        key={`${review.id}-modal-star-${i}`}
                         size={12}
                         className={`${
                           i < review.rating
@@ -241,17 +435,49 @@ export default function CustomerVendorProfile({
                 </article>
               ))}
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+        </div>
+      ) : null}
 
-      {showLocationModal && (
-        <PopUpLocationRequest
-          vendorName={vendor.shop_name}
-          onSubmit={handleLocationSubmit}
-          onClose={() => setShowLocationModal(false)}
-        />
-      )}
+      {selectedGalleryPhoto ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
+          onClick={() => setSelectedGalleryPhotoId(null)}
+        >
+          <div
+            className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedGalleryPhotoId(null)}
+              className="absolute right-4 top-4 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
+            >
+              Close
+            </button>
+
+            <div className="overflow-hidden rounded-2xl bg-[#e8dfd5]">
+              <img
+                src={selectedGalleryPhoto.image_url}
+                alt={selectedGalleryPhoto.caption || "Pop-up gallery photo"}
+                className="max-h-[60vh] w-full object-cover"
+              />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <h3 className="text-base font-semibold text-[#2a2724]">
+                {selectedGalleryPhoto.caption?.trim() || "Pop-up moment"}
+              </h3>
+              <p className="text-sm text-[#6f6a65]">
+                {selectedGalleryPhoto.location?.trim() || "Location not set"}
+              </p>
+              <p className="text-sm text-[#8b847c]">
+                {selectedGalleryPhoto.event_name?.trim() || "Event not set"}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

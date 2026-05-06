@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
 import { X, MapPin } from "lucide-react";
 
 interface PopUpLocationRequestProps {
   vendorName: string;
-  onSubmit: (location: string) => void;
+  onSubmit: (payload: {
+    location: string;
+    latitude: number;
+    longitude: number;
+    requestedDate: string;
+    startTime: string;
+    endTime: string;
+  }) => void | Promise<void>;
   onClose: () => void;
 }
 
@@ -16,8 +22,9 @@ export default function PopUpLocationRequest({
   onClose,
 }: PopUpLocationRequestProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const leafletRef = useRef<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
@@ -30,9 +37,14 @@ export default function PopUpLocationRequest({
     { lat: number; lng: number; name: string }[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [requestedDate, setRequestedDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
 
-  const setMapPin = (lat: number, lng: number, name: string, map?: L.Map) => {
+  const setMapPin = (lat: number, lng: number, name: string, map?: any) => {
     const activeMap = map ?? mapInstanceRef.current;
+    const L = leafletRef.current;
+    if (!L) return;
     if (!activeMap) return;
 
     if (markerRef.current) {
@@ -48,41 +60,57 @@ export default function PopUpLocationRequest({
 
   useEffect(() => {
     if (!mapRef.current) return;
+    let mounted = true;
+    let map: any = null;
+    let handleMapClick: ((e: any) => Promise<void>) | null = null;
+    let resizeTimer: number | null = null;
 
-    const map = L.map(mapRef.current).setView([10.3157, 123.8854], 13);
-    mapInstanceRef.current = map;
+    void import("leaflet").then((L) => {
+      if (!mounted || !mapRef.current) return;
+      leafletRef.current = L;
+      map = L.map(mapRef.current).setView([10.3157, 123.8854], 13);
+      mapInstanceRef.current = map;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-      maxZoom: 19,
-    }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
 
-    // Ensure correct tile layout after modal animation/layout settles.
-    const resizeTimer = window.setTimeout(() => {
-      map.invalidateSize();
-    }, 150);
+      // Ensure correct tile layout after modal animation/layout settles.
+      resizeTimer = window.setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
 
-    const handleMapClick = async (e: L.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
+      handleMapClick = async (e: any) => {
+        const { lat, lng } = e.latlng;
 
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-        );
-        const data = await response.json();
-        const address = data.address?.road || data.display_name || `${lat}, ${lng}`;
-        setMapPin(lat, lng, address, map);
-      } catch (error) {
-        setMapPin(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`, map);
-      }
-    };
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+          );
+          const data = await response.json();
+          const address = data.address?.road || data.display_name || `${lat}, ${lng}`;
+          setMapPin(lat, lng, address, map);
+        } catch {
+          setMapPin(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`, map);
+        }
+      };
 
-    map.on("click", handleMapClick);
+      map.on("click", handleMapClick);
+    });
 
     return () => {
-      window.clearTimeout(resizeTimer);
-      map.off("click", handleMapClick);
-      map.remove();
+      mounted = false;
+      if (resizeTimer) window.clearTimeout(resizeTimer);
+      if (map && handleMapClick) {
+        map.off("click", handleMapClick);
+      }
+      if (map) {
+        map.remove();
+      }
+      mapInstanceRef.current = null;
+      markerRef.current = null;
+      leafletRef.current = null;
     };
   }, []);
 
@@ -146,11 +174,18 @@ export default function PopUpLocationRequest({
   };
 
   const handleSubmit = async () => {
-    if (!selectedLocation) return;
+    if (!selectedLocation || !requestedDate || !startTime || !endTime) return;
 
     setIsLoading(true);
     try {
-      onSubmit(selectedLocation.name);
+      await onSubmit({
+        location: selectedLocation.name,
+        latitude: selectedLocation.lat,
+        longitude: selectedLocation.lng,
+        requestedDate,
+        startTime,
+        endTime,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -242,6 +277,26 @@ export default function PopUpLocationRequest({
               </div>
             </div>
           )}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <input
+              type="date"
+              value={requestedDate}
+              onChange={(e) => setRequestedDate(e.target.value)}
+              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+            />
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+            />
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+            />
+          </div>
         </div>
 
         <div className="border-t border-[#ece4dc] px-6 py-4 sm:flex sm:justify-end sm:gap-3">
@@ -253,7 +308,7 @@ export default function PopUpLocationRequest({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedLocation || isLoading}
+            disabled={!selectedLocation || !requestedDate || !startTime || !endTime || isLoading}
             className="mt-2 w-full rounded-full bg-[#2f5d3a] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f] disabled:opacity-50 sm:mt-0 sm:w-auto"
           >
             {isLoading ? "Submitting..." : "Submit request"}
