@@ -13,6 +13,7 @@ export type ProductDetailRow = {
   price: number;
   description?: string | null;
   created_at?: string;
+  stocks?: number | null;
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
@@ -37,7 +38,7 @@ export async function getProductById(id: string) {
   const supabase = await createSupabaseServerClient();
 
   // Try to include product_images relation if it exists
-  const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, product_images(image_url, display_order)";
+  const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, stocks, product_images(image_url, display_order)";
   const { data: productRowsWithImages, error: productsError } = await supabase
     .from("products")
     .select(selectWithImages)
@@ -50,7 +51,7 @@ export async function getProductById(id: string) {
     // Attempt fallback without images relation
     const { data: productRowsNoImages, error: fallbackError } = await supabase
       .from("products")
-      .select("id, vendor_id, product_name, product_image_url, price, description, created_at")
+      .select("id, vendor_id, product_name, product_image_url, price, description, created_at, stocks")
       .eq("id", id)
       .limit(1)
       .maybeSingle();
