@@ -21,10 +21,30 @@ interface PopUpSchedule {
   longitude?: number | null;
 }
 
+export interface PopUpGalleryPhoto {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  location: string | null;
+  event_name: string | null;
+}
+
 interface Vendor {
   id: string;
   shop_name: string;
-  description?: string;
+  about?: string | null;
+  location_text?: string | null;
+  phone_number?: string | null;
+  opens_at?: string | null;
+  closes_at?: string | null;
+}
+
+export interface VendorReview {
+  id: string;
+  name: string;
+  comment: string;
+  rating: number;
+  daysAgo: number;
 }
 
 export async function getVendorProfile(vendorId: string): Promise<Vendor | null> {
@@ -32,7 +52,7 @@ export async function getVendorProfile(vendorId: string): Promise<Vendor | null>
 
   const { data, error } = await supabase
     .from("vendors")
-    .select("id, shop_name")
+    .select("id, shop_name, about, location_text, phone_number, opens_at, closes_at")
     .eq("id", vendorId)
     .maybeSingle();
 
@@ -42,6 +62,46 @@ export async function getVendorProfile(vendorId: string): Promise<Vendor | null>
   }
 
   return data || null;
+}
+
+export async function getVendorReviews(vendorId: string): Promise<VendorReview[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("id, customer_id, rating, comment, review_date")
+    .eq("vendor_id", vendorId)
+    .order("review_date", { ascending: false });
+
+  if (reviewError) {
+    console.error("Error fetching reviews:", reviewError);
+    return [];
+  }
+
+  const reviewerIds = Array.from(
+    new Set((reviewRows ?? []).map((review) => review.customer_id).filter(Boolean))
+  );
+  const { data: reviewerRows } = reviewerIds.length
+    ? await supabase.from("users").select("id, name, email").in("id", reviewerIds)
+    : { data: [] };
+
+  const reviewerMap = new Map(
+    (reviewerRows ?? []).map((row) => [row.id, row.name?.trim() || row.email || "Customer"])
+  );
+
+  const now = Date.now();
+  return (reviewRows ?? []).map((review) => {
+    const reviewTimestamp = review.review_date ? new Date(review.review_date).getTime() : now;
+    const diffMs = Math.max(0, now - reviewTimestamp);
+    const daysAgo = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    return {
+      id: review.id,
+      name: reviewerMap.get(review.customer_id) ?? "Customer",
+      comment: review.comment?.trim() || "Customer left a rating.",
+      rating: Number(review.rating) || 0,
+      daysAgo,
+    };
+  });
 }
 
 export async function getVendorProducts(vendorId: string): Promise<Product[]> {
@@ -84,9 +144,37 @@ export async function getPopUpSchedule(vendorId: string): Promise<PopUpSchedule[
   return (data as PopUpSchedule[]) || [];
 }
 
+export async function getPopUpGalleryPhotosByVendor(
+  vendorId: string
+): Promise<PopUpGalleryPhoto[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("popup_gallery_photos")
+    .select("id, image_url, caption, location, event_name, display_order, created_at")
+    .eq("vendor_id", vendorId)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching pop-up gallery:", error);
+    return [];
+  }
+
+  return (data as PopUpGalleryPhoto[]) || [];
+}
+
 export type RequestedLocationRank = {
   location: string;
   count: number;
+};
+
+export type RecentPopUpLocationRequest = {
+  id: string;
+  location: string;
+  createdAt: string | null;
+  requestedDate: string | null;
+  requestedStartTime: string | null;
+  requestedEndTime: string | null;
 };
 
 type SupabaseLikeError = {
@@ -160,6 +248,63 @@ export async function getTopRequestedLocations(
   return ranking.slice(0, limit);
 }
 
+export async function getRecentPopUpLocationRequests(
+  vendorId: string,
+  limit = 5
+): Promise<RecentPopUpLocationRequest[]> {
+  const supabase = await createSupabaseServerClient();
+  const primary = await supabase
+    .from("popup_location_requests")
+    .select("id, location, created_at, requested_date, requested_start_time, requested_end_time")
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  let rows =
+    (primary.data as Array<{
+      id: string;
+      location?: string | null;
+      created_at?: string | null;
+      requested_date?: string | null;
+      requested_start_time?: string | null;
+      requested_end_time?: string | null;
+    }>) ??
+    [];
+  let error = primary.error;
+
+  if (error?.message?.includes("popup_location_requests.location does not exist")) {
+    const fallback = await supabase
+      .from("popup_location_requests")
+      .select("id, requested_location, requested_date")
+      .eq("vendor_id", vendorId)
+      .order("requested_date", { ascending: false })
+      .limit(limit);
+
+    rows =
+      (fallback.data as Array<{
+        id: string;
+        requested_location?: string | null;
+        requested_date?: string | null;
+      }>)?.map((item) => ({
+        id: item.id,
+        location: item.requested_location,
+        requested_date: item.requested_date,
+      })) ?? [];
+    error = fallback.error;
+  }
+
+  if (error) return [];
+
+  return rows.map((row) => ({
+    id: row.id,
+    location: (row.location ?? "").trim() || "Unknown location",
+    createdAt: row.created_at ?? null,
+    requestedDate: row.requested_date ?? null,
+    requestedStartTime: row.requested_start_time ?? null,
+    requestedEndTime: row.requested_end_time ?? null,
+  }));
+}
+
 type CreatePopUpScheduleInput = {
   vendorId: string;
   location: string;
@@ -218,20 +363,58 @@ export async function submitPopUpLocationRequest(
   vendorId: string,
   location: string,
   latitude?: number,
-  longitude?: number
+  longitude?: number,
+  requestedDate?: string,
+  startTime?: string,
+  endTime?: string
 ) {
   const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "You must be logged in." };
 
-  const { data, error } = await supabase
+  // Ensure FK target exists for popup_location_requests.customer_id.
+  const customerEnsure = await supabase
+    .from("customers")
+    .upsert({ user_id: user.id }, { onConflict: "user_id" });
+  if (customerEnsure.error) {
+    return { success: false, error: customerEnsure.error.message };
+  }
+
+  const dateValue = requestedDate || new Date().toISOString().slice(0, 10);
+
+  const firstTry = await supabase
     .from("popup_location_requests")
     .insert({
+      customer_id: user.id,
       vendor_id: vendorId,
       location,
+      requested_location: location,
+      requested_date: dateValue,
+      requested_start_time: startTime || null,
+      requested_end_time: endTime || null,
       latitude: latitude || null,
       longitude: longitude || null,
       status: "pending",
       created_at: new Date().toISOString(),
     });
+  let data = firstTry.data;
+  let error = firstTry.error;
+
+  if (error) {
+    const fallback = await supabase
+      .from("popup_location_requests")
+      .insert({
+        customer_id: user.id,
+        vendor_id: vendorId,
+        requested_location: location,
+        requested_date: dateValue,
+        status: "pending",
+      });
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     console.error("Error submitting location request:", error);

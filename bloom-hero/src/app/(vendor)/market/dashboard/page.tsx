@@ -1,69 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { AlertCircle } from "lucide-react";
-
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import { VendorMarketDashboardContent } from "@/app/(vendor)/_components/VendorMarketDashboardContent";
+import { getVendorStatusByOwner } from "@/lib/vendors/common/actions";
 
 type VendorStatus = "pending" | "approved" | "rejected";
 
-export default function VendorMarketDashboardPage() {
-  const [status, setStatus] = useState<VendorStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
-
-  useEffect(() => {
-    async function fetchVendorStatus() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/login");
-          return;
-        }
-
-        const { data: vendorData, error } = await supabase
-          .from("vendors")
-          .select("status")
-          .eq("owner_id", user.id)
-          .single();
-
-        if (error || !vendorData) {
-          console.error("Error fetching vendor status:", error);
-          setStatus(null);
-        } else if (vendorData.status === "rejected") {
-          router.push("/customer/dashboard");
-        } else {
-          setStatus(vendorData.status as VendorStatus);
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchVendorStatus();
-  }, [supabase, router]);
-
-  if (loading) {
-    return (
-      <main className="flex">
-        <div className="lg:p-6">
-          <VendorDashboardSidebarCard activeTab="dashboard" vendorType="market" />
-        </div>
-        <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </main>
-    );
-  }
+export default async function VendorMarketDashboardPage() {
+  const status = (await getVendorStatusByOwner("market")) as VendorStatus | null;
+  if (!status) redirect("/login");
+  if (status === "rejected") redirect("/customer/dashboard");
 
   return (
     <main className="flex">
