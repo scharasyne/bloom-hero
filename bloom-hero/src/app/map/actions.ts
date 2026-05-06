@@ -1,20 +1,7 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getPopupLocationsWithVendor, PopUpLocationRow } from "@/lib/services/popup-locations";
 import { PopUpMapVendor } from "@/typess";
-
-interface PopUpLocationRow {
-  id: string;
-  location: string;
-  scheduled_date: string;
-  start_time: string | null;
-  end_time: string | null;
-  latitude: number | string | null;
-  longitude: number | string | null;
-  vendors: {
-    shop_name: string | null;
-  } | null;
-}
 
 function formatShortDate(value: string | null) {
   if (!value) return "N/A";
@@ -39,20 +26,18 @@ function parseCoordinate(value: number | string | null) {
 }
 
 export async function getPopUpMapVendors(): Promise<PopUpMapVendor[]> {
-  const supabase = await createSupabaseServerClient();
-
-  const { data, error } = await supabase
-    .from("popup_locations")
-    .select("id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(shop_name)")
-    .order("scheduled_date", { ascending: true })
-    .order("start_time", { ascending: true });
-
-  if (error) {
-    console.error("Failed to fetch popup map vendors:", error.message);
+  let data: PopUpLocationRow[] = [];
+  try {
+    data = await getPopupLocationsWithVendor();
+  } catch (error) {
+    console.error(
+      "Failed to fetch popup map vendors:",
+      error instanceof Error ? error.message : "unknown error"
+    );
     return [];
   }
 
-  return ((data ?? []) as unknown as PopUpLocationRow[])
+  return data
     .map((row, index) => {
       const lat = parseCoordinate(row.latitude);
       const lng = parseCoordinate(row.longitude);

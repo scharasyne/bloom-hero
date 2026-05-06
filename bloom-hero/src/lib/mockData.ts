@@ -371,3 +371,96 @@ export const mockMarketRevenueTrend: MarketTrendPoint[] = [
   { label: "Apr 21", value: 555 },
   { label: "Apr 22", value: 600 },
 ];
+
+// ── Vendors ────────────────────────────────────────────────
+export type VendorStatus = "active" | "suspended";
+export type VendorType   = "market" | "pop-up";
+
+export type VendorRecord = {
+  id:          string;
+  storeName:   string;
+  ownerName:   string;
+  vendorType:  VendorType;
+  status:      VendorStatus;
+  location:    string;
+  joinedAt:    string;
+  totalOrders: number;
+  email:       string;
+};
+
+export const mockVendors: VendorRecord[] = [
+  { id: "1", storeName: "Petal & Co.",       ownerName: "Maria Santos", vendorType: "market", status: "active",    location: "Stall 12-A, Carbon Market",   joinedAt: "Nov 3, 2024",  totalOrders: 142, email: "maria.santos@email.com"  },
+  { id: "2", storeName: "Bloom & Bud",       ownerName: "Jose Reyes",   vendorType: "market", status: "active",    location: "Stall 7-B, Carbon Market",    joinedAt: "Dec 15, 2024", totalOrders: 98,  email: "jose.reyes@email.com"    },
+  { id: "3", storeName: "Sampaguita Street", ownerName: "Ana Cruz",     vendorType: "pop-up", status: "suspended", location: "Pop-up Event · IT Park",      joinedAt: "Jan 10, 2025", totalOrders: 23,  email: "ana.cruz@email.com"      },
+  { id: "4", storeName: "Zarah's Flowers",   ownerName: "Zarah Lim",    vendorType: "market", status: "suspended", location: "Stall 3-C, Carbon Market",    joinedAt: "Oct 22, 2024", totalOrders: 67,  email: "zarah.lim@email.com"     },
+  { id: "5", storeName: "Garden Fresh",      ownerName: "Ben Tan",      vendorType: "pop-up", status: "active",    location: "Pop-up Event · Ayala Center", joinedAt: "Feb 5, 2025",  totalOrders: 51,  email: "ben.tan@email.com"       },
+  { id: "6", storeName: "The Flower Room",   ownerName: "Claire Uy",    vendorType: "market", status: "active",    location: "Stall 20-D, Carbon Market",   joinedAt: "Mar 1, 2025",  totalOrders: 38,  email: "claire.uy@email.com"     },
+];
+
+// ── Reviews ────────────────────────────────────────────────
+export type ReviewStatus = "pending" | "flagged" | "approved" | "rejected";
+
+export type ReviewRecord = {
+  id:               string;
+  reviewerName:     string;
+  storeName:        string;
+  rating:           number;
+  postedAt:         string;
+  body:             string;
+  photoAttached?:   boolean;
+  flagReason?:      string;
+  orderNumber?:     string;
+  verifiedPurchase: boolean;
+  status:           ReviewStatus;
+  showInvestigate?: boolean;
+  showBlockUser?:   boolean;
+};
+
+export const mockReviews: ReviewRecord[] = [
+  {
+    id: "r1", reviewerName: "Rock Tongue Rosa", storeName: "Bloom & Co.",
+    rating: 5, postedAt: "Feb 12, 2026",
+    body: "Terrible service! Flowers arrived dead. Scam!",
+    flagReason: "Inappropriate language detected",
+    orderNumber: "3245", verifiedPurchase: true,
+    status: "flagged",
+  },
+  {
+    id: "r2", reviewerName: "Robin De Fresh", storeName: "Petal & Stem",
+    rating: 2, postedAt: "Feb 11, 2026",
+    body: "Overpriced and bad quality. Don't buy here!!!",
+    photoAttached: true,
+    flagReason: "Competitor suspected (IP match)",
+    orderNumber: undefined, verifiedPurchase: false,
+    status: "flagged", showInvestigate: true, showBlockUser: true,
+  },
+  {
+    id: "r3", reviewerName: "Lena Flores", storeName: "Garden Fresh",
+    rating: 1, postedAt: "Feb 10, 2026",
+    body: "Never received my order and no response from vendor.",
+    flagReason: "Spam score high",
+    orderNumber: "3201", verifiedPurchase: true,
+    status: "flagged", showBlockUser: true,
+  },
+  {
+    id: "r4", reviewerName: "Marco Villanueva", storeName: "The Flower Room",
+    rating: 4, postedAt: "Feb 9, 2026",
+    body: "Good quality flowers, delivery was a bit late but overall satisfied.",
+    orderNumber: "3188", verifiedPurchase: true,
+    status: "pending",
+  },
+  {
+    id: "r5", reviewerName: "Sofia Ramos", storeName: "Petal & Co.",
+    rating: 5, postedAt: "Feb 9, 2026",
+    body: "Absolutely beautiful arrangement! Will definitely order again.",
+    orderNumber: "3190", verifiedPurchase: true,
+    status: "pending",
+  },
+  {
+    id: "r6", reviewerName: "Diego Cruz", storeName: "Bloom & Bud",
+    rating: 3, postedAt: "Feb 8, 2026",
+    body: "Flowers were okay, nothing special. Expected more for the price.",
+    orderNumber: "3175", verifiedPurchase: true,
+    status: "pending",
+  },
+];

@@ -6,17 +6,21 @@ import { ActivityLog, DetailLine } from "@/typess";
 type Props = { log: ActivityLog };
 
 const dotConfig = {
-  approved:  { color: "bg-[#2e7d5b]",  text: "text-[#2e7d5b]",  icon: "mdi:check-circle"   },
-  rejected:  { color: "bg-[#c43c30]",  text: "text-[#c43c30]",  icon: "mdi:close-circle"   },
-  suspended: { color: "bg-[#b86a2a]",  text: "text-[#b86a2a]",  icon: "mdi:alert-circle"   },
-  login:     { color: "bg-[#1565c0]",  text: "text-[#1565c0]",  icon: "mdi:login"          },
+  approved:    { color: "bg-[#2e7d5b]",  text: "text-[#2e7d5b]",  icon: "mdi:check-circle"   },
+  rejected:    { color: "bg-[#c43c30]",  text: "text-[#c43c30]",  icon: "mdi:close-circle"   },
+  suspended:   { color: "bg-[#b86a2a]",  text: "text-[#b86a2a]",  icon: "mdi:alert-circle"   },
+  unsuspended: { color: "bg-[#2e7d5b]",  text: "text-[#2e7d5b]",  icon: "mdi:check-circle"   },
+  login:       { color: "bg-[#1565c0]",  text: "text-[#1565c0]",  icon: "mdi:login"          },
+  logout:      { color: "bg-[#7a746e]",  text: "text-[#7a746e]",  icon: "mdi:logout"         },
 };
 
 const actionIcon = {
-  approved:  "mdi:check-circle",
-  rejected:  "mdi:close-circle",
-  suspended: "mdi:alert",        
-  login:     "mdi:login",
+  approved:    "mdi:check-circle",
+  rejected:    "mdi:close-circle",
+  suspended:   "mdi:alert",        
+  unsuspended: "mdi:check-circle",
+  login:       "mdi:login",
+  logout:      "mdi:logout",
 };
 
 function DetailRow({ detail }: { detail: DetailLine }) {

@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { signInWithPasswordAction } from "@/app/(auth)/login/actions";
 
 export default function Login() {
   const router = useRouter();
@@ -14,18 +15,19 @@ export default function Login() {
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (err) setStatus(decodeURIComponent(err));
+  }, []);
+
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("");
     setIsSubmitting(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setStatus(error.message);
+    const destination = await signInWithPasswordAction(email, password);
+    if (!destination.ok) {
+      setStatus(destination.message);
       setIsSubmitting(false);
       return;
     }

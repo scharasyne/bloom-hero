@@ -5,8 +5,6 @@ import { Icon } from "@iconify/react";
 import type { VendorApplicationRecord } from "@/typess";
 import { useVendorApplications } from "@/hooks/useVendorApplications";
 import ApplicationCard from "@/components/admin/ApplicationCard";
-import AdminNavBar from "@/components/admin/AdminNavBar";
-import AdminSidebarNav from "@/components/admin/AdminSidebarNav";
 import type { IssuedVendorCredentials } from "./actions";
 
 const BULK_REJECTION_REASON = "Rejected in bulk by admin";
@@ -39,7 +37,6 @@ function SkeletonCard() {
   );
 }
 
-// ── Simple toast ─────────────────────────────────────────
 function Toast({ message, type }: { message: string; type: "success" | "error" }) {
   return (
     <div
@@ -52,6 +49,7 @@ function Toast({ message, type }: { message: string; type: "success" | "error" }
   );
 }
 
+// ✅ Only change: outer layout shell removed — layout.tsx now owns bg, height, padding, sidebar offset
 export default function VendorApplicationsPage() {
   const { data: applications, isLoading, error, approve, reject } = useVendorApplications();
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -129,17 +127,14 @@ export default function VendorApplicationsPage() {
   // ── Batch handlers ────────────────────────────────────
   const handleApproveSelected = async () => {
     const selectedApplications = applications.filter((application) => selectedIds.has(application.id));
-
     try {
       const approvals = await Promise.all(selectedApplications.map((application) => approve(application)));
       const newCredentials = approvals
         .map((approval) => approval?.credentials)
         .filter((credential): credential is IssuedVendorCredentials => Boolean(credential));
-
       if (newCredentials.length > 0) {
         setIssuedCredentials((prev) => [...newCredentials, ...prev]);
       }
-
       showToast(`${selectedApplications.length} vendor(s) approved. Credentials are listed below.`, "success");
       setSelectedIds(new Set());
     } catch (err) {
@@ -162,137 +157,121 @@ export default function VendorApplicationsPage() {
   const allSelected = applications.length > 0 && selectedIds.size === applications.length;
 
   return (
-    <div className="flex flex-col h-screen bg-[#f7f4ef]" style={{ fontFamily: "'Quicksand', sans-serif" }}>
-      {/* Top Nav */}
-      <div className="shrink-0 h-[88px]">
-        <AdminNavBar />
+    <div className="flex flex-col gap-[32px]">
+
+      {/* Header Row */}
+      <div className="flex items-center justify-between w-full">
+        <h1 className="font-semibold text-[40px] text-[#2c2a28] leading-[48px]">
+          Vendor Applications
+        </h1>
+        <button className="bg-white border border-[#e6e2dd] flex gap-[4px] h-[44px] items-center justify-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors">
+          Filter ▾
+        </button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <AdminSidebarNav />
+      {/* Pending count */}
+      <p className="text-[#7a746e] text-[14px] -mt-[20px]">
+        Pending Applications ({isLoading ? "..." : applications.length})
+      </p>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto px-[80px] py-[48px] flex flex-col gap-[32px]">
+      {/* Batch Actions Row */}
+      <div className="flex gap-[12px] items-center flex-wrap">
+        <button
+          onClick={handleSelectAll}
+          disabled={isLoading || applications.length === 0}
+          className="bg-[#e6e2dd] flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#d9d5d0] transition-colors"
+        >
+          {allSelected ? "☑" : "☐"} Select All ▾
+        </button>
+        <button
+          onClick={handleApproveSelected}
+          disabled={isLoading || selectedIds.size === 0}
+          className="bg-[#2e7d5b] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#255f45] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          ✓ Approve Selected
+        </button>
+        <button
+          onClick={handleRejectAll}
+          disabled={isLoading || applications.length === 0}
+          className="bg-[#cc3526] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#b02d1e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          ✕ Reject All
+        </button>
+        {selectedIds.size > 0 && (
+          <span className="text-[#7a746e] text-[14px]">
+            {selectedIds.size} selected
+          </span>
+        )}
+      </div>
 
-          {/* Header Row */}
-          <div className="flex items-center justify-between w-full">
-            <h1 className="font-semibold text-[40px] text-[#2c2a28] leading-[48px]">
-              Vendor Applications
-            </h1>
-            <button className="bg-white border border-[#e6e2dd] flex gap-[4px] h-[44px] items-center justify-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors">
-              Filter ▾
-            </button>
-          </div>
-
-          {/* Pending count */}
-          <p className="text-[#7a746e] text-[14px] -mt-[20px]">
-            Pending Applications ({isLoading ? "..." : applications.length})
-          </p>
-
-          {/* Batch Actions Row */}
-          <div className="flex gap-[12px] items-center flex-wrap">
-            <button
-              onClick={handleSelectAll}
-              disabled={isLoading || applications.length === 0}
-              className="bg-[#e6e2dd] flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#d9d5d0] transition-colors"
-            >
-              {allSelected ? "☑" : "☐"} Select All ▾
-            </button>
-            <button
-              onClick={handleApproveSelected}
-              disabled={isLoading || selectedIds.size === 0}
-              className="bg-[#2e7d5b] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#255f45] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              ✓ Approve Selected
-            </button>
-            <button
-              onClick={handleRejectAll}
-              disabled={isLoading || applications.length === 0}
-              className="bg-[#cc3526] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#b02d1e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              ✕ Reject All
-            </button>
-
-            {/* Selected count pill */}
-            {selectedIds.size > 0 && (
-              <span className="text-[#7a746e] text-[14px]">
-                {selectedIds.size} selected
-              </span>
-            )}
-          </div>
-
-          {issuedCredentials.length > 0 && (
-            <section className="rounded-[16px] border border-[#d6e8dd] bg-[#f2faf5] p-[20px] flex flex-col gap-[14px]">
-              <div className="flex items-center justify-between gap-[12px] flex-wrap">
-                <div>
-                  <p className="text-[#235640] font-semibold text-[18px]">Issued Vendor Credentials</p>
-                  <p className="text-[#497361] text-[13px] mt-[2px]">Share these temporary credentials with approved vendors. They can change the password after logging in.</p>
-                </div>
-                <button
-                  onClick={() => setIssuedCredentials([])}
-                  className="bg-white border border-[#d6e8dd] text-[#235640] h-[36px] px-[12px] rounded-[10px] text-[13px] font-medium cursor-pointer hover:bg-[#e9f6ef] transition-colors"
-                >
-                  Clear List
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-[10px]">
-                {issuedCredentials.map((credential) => (
-                  <div
-                    key={credential.userId}
-                    className="rounded-[12px] border border-[#d6e8dd] bg-white p-[12px] flex flex-col gap-[6px]"
-                  >
-                    <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Email:</span> {credential.email}</p>
-                    <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Temporary Password:</span> {credential.password}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Cards list or Empty state */}
-          {isLoading ? (
-            <div className="flex flex-col gap-[24px] w-full">
-              <SkeletonCard />
-              <SkeletonCard />
+      {/* Issued Credentials */}
+      {issuedCredentials.length > 0 && (
+        <section className="rounded-[16px] border border-[#d6e8dd] bg-[#f2faf5] p-[20px] flex flex-col gap-[14px]">
+          <div className="flex items-center justify-between gap-[12px] flex-wrap">
+            <div>
+              <p className="text-[#235640] font-semibold text-[18px]">Issued Vendor Credentials</p>
+              <p className="text-[#497361] text-[13px] mt-[2px]">Share these temporary credentials with approved vendors. They can change the password after logging in.</p>
             </div>
-          ) : error ? (
-            <div className="bg-white border border-[#f5c6c3] rounded-[16px] p-[24px] flex items-center justify-between gap-[16px]">
-              <div>
-                <p className="text-[#cc3526] font-semibold text-[18px]">Unable to load vendor applications</p>
-                <p className="text-[#7a746e] text-[14px] mt-[4px]">{error}</p>
-              </div>
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-[#2e7d5b] text-white h-[44px] px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#255f45] transition-colors"
+            <button
+              onClick={() => setIssuedCredentials([])}
+              className="bg-white border border-[#d6e8dd] text-[#235640] h-[36px] px-[12px] rounded-[10px] text-[13px] font-medium cursor-pointer hover:bg-[#e9f6ef] transition-colors"
+            >
+              Clear List
+            </button>
+          </div>
+          <div className="flex flex-col gap-[10px]">
+            {issuedCredentials.map((credential) => (
+              <div
+                key={credential.userId}
+                className="rounded-[12px] border border-[#d6e8dd] bg-white p-[12px] flex flex-col gap-[6px]"
               >
-                Retry
-              </button>
-            </div>
-          ) : applications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-[80px] gap-[12px]">
-              <Icon icon="mdi:leaf" width={48} height={48} className="text-[#b8b2ab]" />
-              <p className="text-[#2c2a28] font-semibold text-[20px]">All caught up!</p>
-              <p className="text-[#7a746e] text-[14px]">No pending vendor applications at this time.</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-[32px] w-full">
-              {applications.map((app) => (
-                <ApplicationCard
-                  key={app.id}
-                  application={app}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  isSelected={selectedIds.has(app.id)}
-                  onToggle={handleToggle}
-                />
-              ))}
-            </div>
-          )}
+                <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Email:</span> {credential.email}</p>
+                <p className="text-[#2c2a28] text-[14px]"><span className="font-semibold">Temporary Password:</span> {credential.password}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-        </main>
-      </div>
+      {/* Cards list or Empty state */}
+      {isLoading ? (
+        <div className="flex flex-col gap-[24px] w-full">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : error ? (
+        <div className="bg-white border border-[#f5c6c3] rounded-[16px] p-[24px] flex items-center justify-between gap-[16px]">
+          <div>
+            <p className="text-[#cc3526] font-semibold text-[18px]">Unable to load vendor applications</p>
+            <p className="text-[#7a746e] text-[14px] mt-[4px]">{error}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-[#2e7d5b] text-white h-[44px] px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#255f45] transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      ) : applications.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-[80px] gap-[12px]">
+          <Icon icon="mdi:leaf" width={48} height={48} className="text-[#b8b2ab]" />
+          <p className="text-[#2c2a28] font-semibold text-[20px]">All caught up!</p>
+          <p className="text-[#7a746e] text-[14px]">No pending vendor applications at this time.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-[32px] w-full">
+          {applications.map((app) => (
+            <ApplicationCard
+              key={app.id}
+              application={app}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              isSelected={selectedIds.has(app.id)}
+              onToggle={handleToggle}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} />}

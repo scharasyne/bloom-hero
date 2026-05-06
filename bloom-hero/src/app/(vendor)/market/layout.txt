@@ -1,10 +1,13 @@
-import NavBar from "@/components/navbar";
 
-export default function MarketVendorLayout({ children }: { children: React.ReactNode }) {
+import { VendorDashboardSidebarCard } from "../_components/vendor-dashboard-sidebar-card";
+
+export default function MarketLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <NavBar type="market" />
-      {children}
-    </>
+    <div className="flex h-screen bg-[#fbf7f4]">
+      <VendorDashboardSidebarCard vendorType="market" activeTab="settings" />
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
+    </div>
   );
 }
