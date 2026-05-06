@@ -56,6 +56,12 @@ export default function BouquetCard({
     router.push(href);
   };
 
+  // return (
+    
+  const locationLabel = `${shop} · ${distance}`;
+  const hasRating = rating !== undefined && rating !== null;
+  const hasSold   = sold   !== undefined && sold   !== null;
+
   return (
     <div
       className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
@@ -80,13 +86,6 @@ export default function BouquetCard({
           }
         }}
       >
-  const locationLabel = `${shop} · ${distance}`;
-  const hasRating = rating !== undefined && rating !== null;
-  const hasSold   = sold   !== undefined && sold   !== null;
-
-  return (
-    <div className="group flex w-full max-w-[280px] flex-col overflow-hidden rounded-[22px] border border-[#edeae6] bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0px_12px_30px_0px_rgba(0,0,0,0.09)] lg:max-w-[288px]">
-      <div className="relative aspect-[1/1] w-full overflow-hidden bg-[#f5f2ed]">
         {imageUrls.length > 0 ? (
           <ProductCardImageCarousel
             imageUrls={imageUrls}
@@ -130,39 +129,6 @@ export default function BouquetCard({
           </div>
         ) : null}
 
-        {(onAddToCart || onBuyNow) && (
-  <div className="mt-2 flex flex-col gap-2 w-full">
-    {onAddToCart && (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onAddToCart();
-        }}
-        disabled={adding || buying}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-[#d24b46] bg-white hover:bg-[#fff5f5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:cart-outline" width={14} height={14} />
-        {adding ? "Adding..." : "Add to Cart"}
-      </button>
-    )}
-    {onBuyNow && (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onBuyNow();
-        }}
-        disabled={buying || adding}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:shopping-outline" width={14} height={14} />
-        {buying ? "Processing..." : "Buy Now"}
-      </button>
-    )}
-    
-  </div>
-)}
         {(hasRating || hasSold) && (
           <div className="flex items-center gap-2 text-[11px] lg:text-[13px]">
             {hasRating ? (
