@@ -47,12 +47,35 @@ type SearchResults = {
   vendors: SearchVendorRow[];
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  graduation: "Graduation Cheers",
+  "in-loving-memory": "In Loving Memory",
+  "new-beginnings": "New Beginnings",
+  "love-notes": "Love Notes in Bloom",
+  handcrafted: "Handcrafted",
+  anniversary: "Anniversary Classics",
+  "gentle-comfort": "Gentle Comfort",
+  birthday: "Birthday Blooms",
+  "just-because": "Just Because",
+  "missing-you": "Missing You",
+  "get-well": "Get Well Soon",
+  "florists-picks": "Florists' Picks",
+};
+
+const CATEGORY_VALUES = new Set(Object.keys(CATEGORY_LABELS));
+
 function normalizeScope(value: string | null): SearchScope {
   if (value === "flowers" || value === "vendors" || value === "all") {
     return value;
   }
 
   return "all";
+}
+
+function normalizeCategory(value: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  return CATEGORY_VALUES.has(normalized) ? normalized : null;
 }
 
 function scopeLabel(scope: SearchScope) {
@@ -110,6 +133,9 @@ export default function SearchPage() {
 
   const q = searchParams.get("q") || "";
   const scope = normalizeScope(searchParams.get("scope"));
+  const category = normalizeCategory(searchParams.get("category"));
+  const hasQuery = q.trim().length > 0;
+  const hasCategory = Boolean(category);
 
   const [price, setPrice] = React.useState("Under P1000");
   const [sort, setSort] = React.useState("Best Sellers");
@@ -126,7 +152,7 @@ export default function SearchPage() {
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, scope]);
+  }, [q, scope, category]);
 
   const handleAddToCart = React.useCallback(
     async (product: SearchFlowerRow) => {
@@ -289,7 +315,7 @@ export default function SearchPage() {
     const controller = new AbortController();
 
     async function load() {
-      if (!q.trim()) {
+      if (!hasQuery && !hasCategory) {
         setResults({ flowers: [], vendors: [] });
         setErrorMsg(null);
         setLoading(false);
@@ -300,7 +326,13 @@ export default function SearchPage() {
       setErrorMsg(null);
 
       try {
-        const params = new URLSearchParams({ q, scope, price: mapPriceFilter(price), sort });
+        const params = new URLSearchParams({ scope, price: mapPriceFilter(price), sort });
+        if (hasQuery) {
+          params.set("q", q);
+        }
+        if (category) {
+          params.set("category", category);
+        }
         const response = await fetch(`/api/search?${params.toString()}`, { signal: controller.signal });
 
         const payload = (await response.json()) as {
@@ -332,7 +364,7 @@ export default function SearchPage() {
 
     load();
     return () => controller.abort();
-  }, [q, price, sort, scope]);
+  }, [q, price, sort, scope, category]);
 
   const flowerResults = results.flowers;
   const vendorResults = results.vendors;
@@ -351,6 +383,7 @@ export default function SearchPage() {
             <SearchBar
               initialQuery={q}
               scope={scope}
+              category={category ?? undefined}
               onSearch={() => setCurrentPage(1)}
             />
           </div>
@@ -366,9 +399,13 @@ export default function SearchPage() {
           </div>
 
           <section>
-            {q && (
+            {(q || category) && (
               <p className="mb-4 text-[#7a7a7a]">
-                Showing {scopeLabel(scope)} results for <strong>{q}</strong>
+                Showing {scopeLabel(scope)} results for{" "}
+                <strong>
+                  {q ? `"${q}"` : CATEGORY_LABELS[category ?? ""] ?? category}
+                </strong>
+                {q && category ? ` • ${CATEGORY_LABELS[category] ?? category}` : null}
               </p>
             )}
 
@@ -490,7 +527,9 @@ export default function SearchPage() {
 
             ) : (
               <div className="mt-8 text-center text-gray-500">
-                {q ? "No results to display" : "Use the search bar above to start a query."}
+                {hasQuery || hasCategory
+                  ? "No results to display"
+                  : "Use the search bar above to start a query."}
               </div>
             )}
           </section>
