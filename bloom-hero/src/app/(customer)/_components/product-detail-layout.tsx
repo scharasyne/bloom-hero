@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { ProductDetailRow } from "@/lib/products";
-import { addToCart, buyNow } from "@/app/(customer)/_actions/product-actions";
+import { addToCart } from "@/app/(customer)/_actions/product-actions";
 
 function MainPicture({ src }: { src: string }) {
   return (
@@ -405,17 +405,17 @@ export function ProductDetailLayout({ product }: { product?: ProductDetailRow | 
 
     try {
       setBuyingLoading(true);
-      const result = await buyNow(product.id, product.vendor_id, product.price, quantity);
+      const result = await addToCart(product.id, product.vendor_id, product.price, quantity);
 
       if (!result.success) {
-        alert(result.error || "Failed to place order.");
+        alert(result.error || "Failed to add to cart.");
         return;
       }
 
-      router.push("/customer/orders");
+      router.push("/cart");
     } catch (err) {
       console.error("Buy now failed:", err);
-      alert("Failed to place order. Please try again.");
+      alert("Failed to add to cart. Please try again.");
     } finally {
       setBuyingLoading(false);
     }

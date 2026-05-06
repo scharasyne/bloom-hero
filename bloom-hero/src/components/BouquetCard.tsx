@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 
 interface BouquetCardProps {
@@ -12,6 +13,7 @@ interface BouquetCardProps {
   categories?: string[];
   rating?: number;        // optional — undefined = hide rating row
   sold?: number;          // optional — undefined = hide sold count
+  href?: string;
   onAddToCart?: () => void;
   adding?: boolean;
   onBuyNow?: () => void;
@@ -29,11 +31,13 @@ export default function BouquetCard({
   categories,
   rating,
   sold,
+  href,
   onAddToCart,
   adding,
   onBuyNow,
   buying,
 }: BouquetCardProps) {
+  const router = useRouter();
   const normalizedImages = (images ?? []).filter(
     (url) => typeof url === "string" && url.trim().length > 0
   );
@@ -47,6 +51,11 @@ export default function BouquetCard({
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 
+  const handleImageClick = () => {
+    if (!href) return;
+    router.push(href);
+  };
+
   return (
     <div
       className="bg-white content-stretch flex flex-col gap-3 items-start pb-6 relative rounded-[18px] shrink-0 w-full lg:w-70"
@@ -58,7 +67,19 @@ export default function BouquetCard({
       />
 
       {/* ── Product Image ── */}
-      <div className="h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden">
+      <div
+        className={`h-45 lg:h-65 relative rounded-tl-[18px] rounded-tr-[18px] shrink-0 w-full bg-[#f5f2ed] overflow-hidden ${href ? "cursor-pointer" : ""}`}
+        onClick={handleImageClick}
+        role={href ? "link" : undefined}
+        tabIndex={href ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (!href) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            router.push(href);
+          }
+        }}
+      >
         {imageUrls.length > 0 ? (
           <ProductCardImageCarousel
             imageUrls={imageUrls}
@@ -131,22 +152,6 @@ export default function BouquetCard({
         */}
         {(onAddToCart || onBuyNow) && (
   <div className="mt-2 flex flex-col gap-2 w-full">
-    {/* Buy Now — primary solid pill (most urgent action) */}
-    {onBuyNow && (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onBuyNow();
-        }}
-        disabled={buying || adding}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        <Icon icon="mdi:shopping-outline" width={14} height={14} />
-        {buying ? "Processing..." : "Buy Now"}
-      </button>
-    )}
-    {/* Add to Cart — secondary outlined pill (low-commitment action) */}
     {onAddToCart && (
       <button
         type="button"
@@ -161,6 +166,21 @@ export default function BouquetCard({
         {adding ? "Adding..." : "Add to Cart"}
       </button>
     )}
+    {onBuyNow && (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onBuyNow();
+        }}
+        disabled={buying || adding}
+        className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#d24b46] px-3 py-2 text-xs lg:text-sm font-semibold text-white hover:bg-[#b83d39] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+      >
+        <Icon icon="mdi:shopping-outline" width={14} height={14} />
+        {buying ? "Processing..." : "Buy Now"}
+      </button>
+    )}
+    
   </div>
 )}
 
