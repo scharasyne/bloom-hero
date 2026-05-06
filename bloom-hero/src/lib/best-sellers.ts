@@ -139,6 +139,21 @@ export async function getFlowerBestSellers(
     soldCountByProductId.set(row.product_id, currentCount + (Number(row.quantity) || 0));
   }
 
+  // Get product average ratings from reviews table
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("vendor_id, rating")
+    .in("vendor_id", [...new Set(products.map((product) => product.vendor_id).filter(Boolean))]);
+
+  const ratingsByVendorId = new Map<string, number[]>();
+  if (!reviewError && reviewRows) {
+    for (const row of (reviewRows ?? []) as { vendor_id: string; rating: number }[]) {
+      const current = ratingsByVendorId.get(row.vendor_id) ?? [];
+      current.push(row.rating);
+      ratingsByVendorId.set(row.vendor_id, current);
+    }
+  }
+
   const vendorIds = [...new Set(products.map((product) => product.vendor_id).filter(Boolean))];
   const vendorMap = new Map<string, VendorMetaRow>();
 
@@ -179,13 +194,15 @@ export async function getFlowerBestSellers(
     .map((product) => {
       const soldCount = soldCountByProductId.get(product.id) ?? 0;
       const vendor = vendorMap.get(product.vendor_id);
+      const vendorRatings = ratingsByVendorId.get(product.vendor_id) ?? [];
+      const averageRating = vendorRatings.length > 0 ? vendorRatings.reduce((a, b) => a + b, 0) / vendorRatings.length : null;
 
       return {
         ...product,
         categories: categoriesByProductId.get(product.id) ?? [],
         shop_name: vendor?.shop_name ?? null,
         vendor_type: vendor?.vendor_type ?? null,
-        average_rating: vendor?.average_rating ?? null,
+        average_rating: averageRating,
         sold_count: soldCount,
       } satisfies BestSellerFlowerRow;
     })

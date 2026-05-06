@@ -1,6 +1,6 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import Footer from "@/components/footer";
 import { ReviewForm } from "../_components/ReviewForm";
+import { loadReviewPage } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -9,34 +9,7 @@ type ReviewPageProps = {
 };
 
 export default async function CustomerReviewPage({ searchParams }: ReviewPageProps) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
   const params = await searchParams;
-
-  if (!session) {
-    return (
-      <>
-        <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-red-100 px-8 py-10 text-center max-w-md w-full">
-            <h1 className="text-xl font-semibold text-red-600 mb-2">Please sign in</h1>
-            <p className="text-sm text-gray-700 mb-6">
-              You need to be logged in to leave a review.
-            </p>
-            <a
-              href="/login"
-              className="inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#25492e]"
-            >
-              Go to login
-            </a>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   const rawOrderId = params.orderId;
   const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
@@ -62,25 +35,31 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
     );
   }
 
-  // Load all items for this order belonging to the logged-in customer
-  const { data: rows, error: loadError } = await supabase
-    .from("order_items")
-    .select(
-      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, customer_id, order_date, vendors(id, shop_name))"
-    )
-    .eq("orders.id", orderId)
-    .eq("orders.customer_id", session.user.id);
+  const reviewState = await loadReviewPage(orderId);
 
-  if (loadError) {
-    console.error("Failed to load order for review:", loadError);
+  if (reviewState.status === "unauthenticated") {
+    return (
+      <>
+        <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-red-100 px-8 py-10 text-center max-w-md w-full">
+            <h1 className="text-xl font-semibold text-red-600 mb-2">Please sign in</h1>
+            <p className="text-sm text-gray-700 mb-6">
+              You need to be logged in to leave a review.
+            </p>
+            <a
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full bg-[#2f5d3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#25492e]"
+            >
+              Go to login
+            </a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
-  const items = rows ?? [];
-  const first = items[0];
-  const order = first?.orders?.[0] ?? null;
-  const product = first?.products?.[0] ?? null;
-
-  if (!first || loadError || !order || !product) {
+  if (reviewState.status !== "ready") {
     return (
       <>
         <main className="min-h-screen flex items-center justify-center bg-[#f5f2eb] px-4">
@@ -102,24 +81,13 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
     );
   }
 
-  const vendorName = order.vendors?.[0]?.shop_name ?? "Vendor";
-  const productName = product.product_name ?? "Product";
-  const productImage = product.product_image_url ?? null;
-  const vendorId = order.vendors?.[0]?.id ?? null;
-
-  // Load existing review (if any) for this vendor & customer
-  let existingReview: { id: string; rating: number; comment: string | null } | null =
-    null;
-  if (vendorId) {
-    const { data: review } = await supabase
-      .from("reviews")
-      .select("id, rating, comment")
-      .eq("customer_id", session.user.id)
-      .eq("vendor_id", vendorId)
-      .maybeSingle();
-
-    existingReview = review ?? null;
-  }
+  const { order, existingReview } = reviewState.data;
+  const firstItem = order.items[0] ?? null;
+  const product = firstItem?.product ?? null;
+  const vendorName = order.vendor.shopName;
+  const productName = product?.name ?? "Product";
+  const productImage = product?.imageUrl ?? null;
+  const vendorId = order.vendor.id || null;
 
   return (
     <>
@@ -133,7 +101,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {vendorName}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {order.order_date ? new Date(order.order_date).toLocaleString() : ""}
+                  {order.orderDate ? new Date(order.orderDate).toLocaleString() : ""}
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
@@ -157,12 +125,12 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                     {productName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    ₱ {Number(product.price) || 0} per stem
+                    ₱ {Number(product?.price) || 0} per stem
                   </p>
                 </div>
                 <div className="text-right text-sm">
                   <p className="text-gray-600">
-                    {first.quantity}× • ₱ {Number(first.subtotal) || 0}
+                    {firstItem?.quantity ?? 0}× • ₱ {Number(firstItem?.subtotal) || 0}
                   </p>
                 </div>
               </div>
@@ -192,7 +160,7 @@ export default async function CustomerReviewPage({ searchParams }: ReviewPagePro
                   {productName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  ₱ {Number(product.price) || 0} per stem
+                  ₱ {Number(product?.price) || 0} per stem
                 </p>
               </div>
             </div>

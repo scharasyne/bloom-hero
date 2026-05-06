@@ -38,7 +38,7 @@ export function ReviewForm({ orderId, vendorId, existingReview }: ReviewFormProp
       }
 
       alert("Thank you for your review!");
-      router.push("/customer/orders");
+      router.push("/orders");
       router.refresh();
     } catch (err) {
       console.error("submit review failed:", err);

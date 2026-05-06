@@ -7,11 +7,26 @@ import { Icon } from "@iconify/react";
 interface SearchBarProps {
   initialQuery?: string;
   scope?: string;
+  category?: string;
   onSearch?: () => void;
 }
 
 type SearchScope = "all" | "flowers" | "vendors";
 type SearchType = "All" | "Flowers" | "Vendors";
+const CATEGORY_VALUES = new Set([
+  "graduation",
+  "in-loving-memory",
+  "new-beginnings",
+  "love-notes",
+  "handcrafted",
+  "anniversary",
+  "gentle-comfort",
+  "birthday",
+  "just-because",
+  "missing-you",
+  "get-well",
+  "florists-picks",
+]);
 const searchTypes: SearchType[] = ["All", "Flowers", "Vendors"];
 const placeholders: Record<SearchType, string> = {
   All: "Search bouquets, vendors, or occasions...",
@@ -31,7 +46,7 @@ function typeToScope(type: SearchType): SearchScope {
   return "all";
 }
 
-export default function SearchBar({ initialQuery = "", scope, onSearch }: SearchBarProps) {
+export default function SearchBar({ initialQuery = "", scope, category, onSearch }: SearchBarProps) {
   const router = useRouter();
   const [term, setTerm] = useState(initialQuery);
   const [searchType, setSearchType] = useState<SearchType>(scopeToType(scope));
@@ -59,13 +74,21 @@ export default function SearchBar({ initialQuery = "", scope, onSearch }: Search
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = term.trim();
+    const normalizedQuery = query.toLowerCase();
+    const categoryFromQuery = CATEGORY_VALUES.has(normalizedQuery) ? normalizedQuery : null;
     onSearch?.();
 
     const params = new URLSearchParams();
-    if (query) {
-      params.set("q", query);
-    }
     params.set("scope", typeToScope(searchType));
+    if (query) {
+      if (categoryFromQuery) {
+        params.set("category", categoryFromQuery);
+      } else {
+        params.set("q", query);
+      }
+    } else if (category) {
+      params.set("category", category);
+    }
 
     const queryString = params.toString();
     router.push(`/search${queryString ? `?${queryString}` : ""}`);

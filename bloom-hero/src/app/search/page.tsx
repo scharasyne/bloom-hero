@@ -9,6 +9,7 @@ import SearchBar from "@/components/SearchBar";
 import SearchFilters from "@/components/SearchFilters";
 import SkeletonCard from "@/components/SkeletonCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { addToCart as addToCartAction } from "@/app/(customer)/_actions/product-actions";
 
 type SearchScope = "all" | "flowers" | "vendors";
 
@@ -47,12 +48,35 @@ type SearchResults = {
   vendors: SearchVendorRow[];
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  graduation: "Graduation Cheers",
+  "in-loving-memory": "In Loving Memory",
+  "new-beginnings": "New Beginnings",
+  "love-notes": "Love Notes in Bloom",
+  handcrafted: "Handcrafted",
+  anniversary: "Anniversary Classics",
+  "gentle-comfort": "Gentle Comfort",
+  birthday: "Birthday Blooms",
+  "just-because": "Just Because",
+  "missing-you": "Missing You",
+  "get-well": "Get Well Soon",
+  "florists-picks": "Florists' Picks",
+};
+
+const CATEGORY_VALUES = new Set(Object.keys(CATEGORY_LABELS));
+
 function normalizeScope(value: string | null): SearchScope {
   if (value === "flowers" || value === "vendors" || value === "all") {
     return value;
   }
 
   return "all";
+}
+
+function normalizeCategory(value: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  return CATEGORY_VALUES.has(normalized) ? normalized : null;
 }
 
 function scopeLabel(scope: SearchScope) {
@@ -65,7 +89,7 @@ function mapPriceFilter(value: string) {
   if (value === "Under P500") return "<500";
   if (value === "Over P500") return ">500";
   if (value === "Under P700") return "<700";
-  if (value === "Under P1000") return "<1000";
+  if (value === "Default") return "<100000";
   return "<1000";
 }
 
@@ -125,8 +149,11 @@ export default function SearchPage() {
 
   const q = searchParams.get("q") || "";
   const scope = normalizeScope(searchParams.get("scope"));
+  const category = normalizeCategory(searchParams.get("category"));
+  const hasQuery = q.trim().length > 0;
+  const hasCategory = Boolean(category);
 
-  const [price, setPrice] = React.useState("Under P1000");
+  const [price, setPrice] = React.useState("Default ");
   const [sort, setSort] = React.useState("Best Sellers");
   const [moreFilter, setMoreFilter] = React.useState("All");
   const [results, setResults] = React.useState<SearchResults>({ flowers: [], vendors: [] });
@@ -141,7 +168,7 @@ export default function SearchPage() {
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [q, scope]);
+  }, [q, scope, category]);
 
   const handleAddToCart = React.useCallback(
     async (product: SearchFlowerRow) => {
@@ -244,67 +271,30 @@ export default function SearchPage() {
     async (product: SearchFlowerRow) => {
       try {
         setBuyingId(product.id);
+        const result = await addToCartAction(product.id, product.vendor_id, product.price, 1);
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-          window.location.href = "/login";
+        if (!result.success) {
+          console.error("buy now - add to cart error:", result.error);
+          alert(result.error ?? "Unable to add to cart right now.");
           return;
         }
 
-        await supabase.from("customers").upsert({ user_id: user.id }, { onConflict: "user_id" });
-
-        const priceValue = Number(product.price) || 0;
-
-        const { data: newOrder, error: insertOrderError } = await supabase
-          .from("orders")
-          .insert({
-            customer_id: user.id,
-            vendor_id: product.vendor_id,
-            total_amount: priceValue,
-            status: "completed",
-          })
-          .select("id")
-          .single();
-
-        if (insertOrderError || !newOrder) {
-          console.error("buy now - create order error:", insertOrderError);
-          alert("Unable to place order right now.");
-          return;
-        }
-
-        const { error: itemError } = await supabase.from("order_items").insert({
-          order_id: newOrder.id,
-          product_id: product.id,
-          quantity: 1,
-          subtotal: priceValue,
-        });
-
-        if (itemError) {
-          console.error("buy now - create order item error:", itemError);
-          alert("Unable to place order right now.");
-          return;
-        }
-
-        window.location.href = "/customer/orders";
+        window.location.href = "/cart";
       } catch (err) {
         console.error("Buy now failed:", err);
-        alert("Failed to place order. Please try again.");
+        alert("Failed to add to cart. Please try again.");
       } finally {
         setBuyingId(null);
       }
     },
-    [supabase]
+    []
   );
 
   React.useEffect(() => {
     const controller = new AbortController();
 
     async function load() {
-      if (!q.trim()) {
+      if (!hasQuery && !hasCategory) {
         setResults({ flowers: [], vendors: [] });
         setErrorMsg(null);
         setLoading(false);
@@ -315,7 +305,13 @@ export default function SearchPage() {
       setErrorMsg(null);
 
       try {
-        const params = new URLSearchParams({ q, scope, price: mapPriceFilter(price), sort });
+        const params = new URLSearchParams({ scope, price: mapPriceFilter(price), sort });
+        if (hasQuery) {
+          params.set("q", q);
+        }
+        if (category) {
+          params.set("category", category);
+        }
         const response = await fetch(`/api/search?${params.toString()}`, { signal: controller.signal });
 
         const payload = (await response.json()) as {
@@ -347,7 +343,7 @@ export default function SearchPage() {
 
     load();
     return () => controller.abort();
-  }, [q, price, sort, scope]);
+  }, [q, price, sort, scope, category]);
 
   const flowerResults = results.flowers;
   const vendorResults = results.vendors;
@@ -366,6 +362,7 @@ export default function SearchPage() {
             <SearchBar
               initialQuery={q}
               scope={scope}
+              category={category ?? undefined}
               onSearch={() => setCurrentPage(1)}
             />
           </div>
@@ -381,9 +378,13 @@ export default function SearchPage() {
           </div>
 
           <section>
-            {q && (
+            {(q || category) && (
               <p className="mb-4 text-[#7a7a7a]">
-                Showing {scopeLabel(scope)} results for <strong>{q}</strong>
+                Showing {scopeLabel(scope)} results for{" "}
+                <strong>
+                  {q ? `"${q}"` : CATEGORY_LABELS[category ?? ""] ?? category}
+                </strong>
+                {q && category ? ` • ${CATEGORY_LABELS[category] ?? category}` : null}
               </p>
             )}
 
@@ -416,27 +417,27 @@ export default function SearchPage() {
                           const primaryImageUrl = imageUrls[0] ?? flower.product_image_url ?? flower.image_url ?? null;
 
                           return (
-                            <div key={flower.id} className="animate-fade-in" style={{ animationDelay: `${index * 40}ms` }}>
-                              <BouquetCard
-                                image={primaryImageUrl}
-                                images={imageUrls}
-                                name={flower.product_name}
-                                price={flower.price}
-                                shop={flower.shop_name || ""}
-                                distance={flower.distance || ""}
-                                categories={flower.categories || []}
-                                rating={
-                                  typeof flower.rating === "number" && flower.rating > 0
-                                    ? flower.rating
-                                    : flower.average_rating ?? undefined
-                                }
-                                sold={flower.sold_count ?? undefined}
-                                onAddToCart={() => handleAddToCart(flower)}
-                                adding={addingId === flower.id}
-                                onBuyNow={() => handleBuyNow(flower)}
-                                buying={buyingId === flower.id}
-                              />
-                            </div>
+                            <BouquetCard
+                              key={flower.id}
+                              href={`/products/${flower.id}`}
+                              image={primaryImageUrl}
+                              images={imageUrls}
+                              name={flower.product_name}
+                              price={flower.price}
+                              shop={flower.shop_name || ""}
+                              distance={flower.distance || ""}
+                              categories={flower.categories || []}
+                              rating={
+                                typeof flower.average_rating === "number" && flower.average_rating > 0
+                                  ? flower.average_rating
+                                  : undefined
+                              }
+                              sold={flower.sold_count ?? undefined}
+                              onAddToCart={() => handleAddToCart(flower)}
+                              adding={addingId === flower.id}
+                              onBuyNow={() => handleBuyNow(flower)}
+                              buying={buyingId === flower.id}
+                            />
                           );
                         })}
                       </div>
@@ -505,7 +506,9 @@ export default function SearchPage() {
 
             ) : (
               <div className="mt-8 text-center text-gray-500">
-                {q ? "No results to display" : "Use the search bar above to start a query."}
+                {hasQuery || hasCategory
+                  ? "No results to display"
+                  : "Use the search bar above to start a query."}
               </div>
             )}
           </section>

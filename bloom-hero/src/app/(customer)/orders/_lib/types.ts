@@ -14,6 +14,8 @@ export type OrderItemRow = {
     order_date: string;
     status: string;
     total_amount: number;
+    receipt_proof_url: string | null;
+    receipt_submitted_at: string | null;
     vendors: {
       id: string | null;
       shop_name: string | null;
@@ -28,6 +30,8 @@ export type OrderGroup = {
   status: string;
   orderDate: string;
   total: number;
+  receiptProofUrl: string | null;
+  receiptSubmittedAt: string | null;
   items: OrderItemRow[];
   hasReview: boolean;
 };
