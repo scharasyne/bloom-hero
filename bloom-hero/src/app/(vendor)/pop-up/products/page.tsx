@@ -3,7 +3,7 @@ import VendorListProductPage from "@/app/(vendor)/_components/ListProduct";
 
 export default function PopupProductPage(){
   return(
-    <div>
+    <div className="p-4 sm:p-6 lg:p-8">
       <VendorListProductPage type="pop-up"/>
     </div>      
   )
