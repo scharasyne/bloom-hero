@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getProductById } from "@/lib/products";
+import { getProductById, getProductReviewsByVendorId } from "@/lib/products";
 import { ProductDetailLayout } from "@/app/(customer)/_components/product-detail-layout";
 
 type Props = {
@@ -21,7 +21,15 @@ export default async function ProductPage({ params }: Props) {
 
     if (!product) return notFound();
 
-    return <ProductDetailLayout product={product} />;
+    const { data: reviews, error: reviewsError } = await getProductReviewsByVendorId(
+      product.vendor_id
+    );
+
+    if (reviewsError) {
+      console.error("getProductReviewsByVendorId error:", reviewsError.message || JSON.stringify(reviewsError));
+    }
+
+    return <ProductDetailLayout product={product} reviews={reviews ?? []} />;
   } catch (err) {
     console.error(err);
     return notFound();

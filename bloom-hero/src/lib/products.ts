@@ -21,6 +21,15 @@ export type ProductDetailRow = {
   sold_count?: number;
 };
 
+export type ProductReviewRow = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+  reviewDate: string;
+};
+
 type ProductCategoryRow = { product_id: string; category: { category_name: string } | null };
 
 export async function getProductById(id: string) {
@@ -28,7 +37,13 @@ export async function getProductById(id: string) {
 
   // Try to include product_images relation if it exists
   const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, product_images(image_url, display_order)";
-  let { data: productRows, error: productsError } = await supabase.from("products").select(selectWithImages).eq("id", id).limit(1).maybeSingle();
+  const { data: productRowsWithImages, error: productsError } = await supabase
+    .from("products")
+    .select(selectWithImages)
+    .eq("id", id)
+    .limit(1)
+    .maybeSingle();
+  let productRows: ProductDetailRow | null = productRowsWithImages as ProductDetailRow | null;
 
   if (productsError) {
     // Attempt fallback without images relation
@@ -43,7 +58,7 @@ export async function getProductById(id: string) {
       return { data: null as ProductDetailRow | null, error: fallbackError };
     }
 
-    productRows = productRowsNoImages;
+    productRows = productRowsNoImages as ProductDetailRow | null;
   }
 
   if (!productRows) return { data: null as ProductDetailRow | null, error: null };
@@ -108,4 +123,56 @@ export async function getProductById(id: string) {
   };
 
   return { data: result, error: null };
+}
+
+export async function getProductReviewsByVendorId(vendorId: string) {
+  const supabase = await createSupabaseServerClient();
+
+  if (!vendorId || vendorId.trim() === "") {
+    console.warn("getProductReviewsByVendorId: vendorId is empty or missing");
+    return { data: [] as ProductReviewRow[], error: null };
+  }
+
+  const { data: reviewRows, error: reviewError } = await supabase
+    .from("reviews")
+    .select("id, customer_id, rating, comment, review_date")
+    .eq("vendor_id", vendorId)
+    .order("review_date", { ascending: false });
+
+  if (reviewError) {
+    console.error("getProductReviewsByVendorId Supabase error:", reviewError.message || JSON.stringify(reviewError));
+    return { data: [] as ProductReviewRow[], error: reviewError };
+  }
+
+  const customerIds = Array.from(
+    new Set((reviewRows ?? []).map((review) => review.customer_id).filter(Boolean))
+  );
+
+  let customerNames = new Map<string, string>();
+
+  if (customerIds.length > 0) {
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("id, name")
+      .in("id", customerIds);
+
+    if (usersError) {
+      return { data: [] as ProductReviewRow[], error: usersError };
+    }
+
+    customerNames = new Map(
+      (users ?? []).map((user) => [user.id, user.name ?? "Customer"])
+    );
+  }
+
+  const reviews = (reviewRows ?? []).map((review) => ({
+    id: review.id,
+    customerId: review.customer_id,
+    customerName: customerNames.get(review.customer_id) ?? "Customer",
+    rating: Number(review.rating) || 0,
+    comment: review.comment ?? null,
+    reviewDate: review.review_date,
+  }));
+
+  return { data: reviews, error: null };
 }
