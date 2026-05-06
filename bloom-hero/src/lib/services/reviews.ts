@@ -4,7 +4,7 @@ export async function getOrderReviewEligibility(orderId: string, customerId: str
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("orders")
-    .select("id, status, vendor_id")
+    .select("id, status, vendor_id, order_items(product_id)")
     .eq("id", orderId)
     .eq("customer_id", customerId)
     .maybeSingle();
@@ -40,13 +40,18 @@ export async function getOrderForReviewByCustomer(orderId: string, customerId: s
   return data;
 }
 
-export async function getExistingReviewByCustomerAndVendor(customerId: string, vendorId: string) {
+export async function getExistingReviewByCustomerAndOrder(
+  customerId: string,
+  orderId: string,
+  productId: string
+) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("reviews")
-    .select("id, rating, comment, created_at, updated_at")
+    .select("id, rating, comment, status")
     .eq("customer_id", customerId)
-    .eq("vendor_id", vendorId)
+    .eq("order_id", orderId)
+    .eq("product_id", productId)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
@@ -57,6 +62,8 @@ export async function saveReviewByCustomer(input: {
   reviewId?: string;
   customerId: string;
   vendorId: string;
+  orderId: string;
+  productId: string;
   rating: number;
   comment: string;
 }) {
@@ -64,6 +71,9 @@ export async function saveReviewByCustomer(input: {
   const payload = {
     rating: input.rating,
     comment: input.comment.trim() || null,
+    status: "pending",
+    order_id: input.orderId,
+    product_id: input.productId,
   };
 
   if (input.reviewId) {
@@ -72,7 +82,9 @@ export async function saveReviewByCustomer(input: {
       .update(payload)
       .eq("id", input.reviewId)
       .eq("customer_id", input.customerId)
-      .eq("vendor_id", input.vendorId);
+      .eq("vendor_id", input.vendorId)
+      .eq("order_id", input.orderId)
+      .eq("product_id", input.productId);
     if (error) throw new Error(error.message);
     return;
   }
@@ -80,8 +92,11 @@ export async function saveReviewByCustomer(input: {
   const { error } = await supabase.from("reviews").insert({
     customer_id: input.customerId,
     vendor_id: input.vendorId,
+    order_id: input.orderId,
+    product_id: input.productId,
     rating: input.rating,
     comment: input.comment.trim() || null,
+    status: "pending",
   });
   if (error) throw new Error(error.message);
 }
