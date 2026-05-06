@@ -2,7 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { Icon } from "@iconify/react";
-import { mockVendors, type VendorRecord, type VendorStatus, type VendorType } from "@/lib/mockData";
+import {
+  useVendors,
+  type VendorRecord,
+  type VendorStatus,
+} from "@/hooks/useVendors";
+import { setVendorSuspensionStatus } from "@/app/admin/vendors/actions";
 
 // ── Skeleton card ──────────────────────────────────────────
 function SkeletonCard() {
@@ -48,7 +53,7 @@ function VendorCard({
   onUnsuspend: (id: string) => void;
 }) {
   const isSuspended = vendor.status === "suspended";
-  const isMarket    = vendor.vendorType === "market";
+  const isMarket = vendor.vendorType === "market";
 
   return (
     <div className="bg-white rounded-[16px] w-full border border-[#e6e2dd] shadow-[0px_6px_24px_0px_rgba(0,0,0,0.06)] flex flex-col gap-[14px] p-[20px]">
@@ -146,12 +151,12 @@ function VendorCard({
 
 // ── Page ───────────────────────────────────────────────────
 export default function VendorsPage() {
-  // TODO: swap mockVendors with data from useVendors() hook when ready
-  const [vendors, setVendors]       = useState<VendorRecord[]>(mockVendors);
+  const { data: vendors, isLoading, error, refresh } = useVendors();
   const [activeFilter, setActiveFilter] = useState<VendorStatus | "all">("all");
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
-  const isLoading = false;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
 
   // ── Filter + search ───────────────────────────────────
   const filtered = useMemo(() => {
@@ -189,26 +194,84 @@ export default function VendorsPage() {
   };
 
   // ── Suspend / unsuspend ───────────────────────────────
-  const handleSuspend = (id: string) => {
-    setVendors((prev) => prev.map((v) => v.id === id ? { ...v, status: "suspended" } : v));
+  const handleSuspend = async (id: string) => {
+    const reason = window.prompt("Enter suspension reason:")?.trim();
+    if (!reason) {
+      setActionError("Suspension reason is required.");
+      return;
+    }
+
+    setActionError(null);
+    setIsMutating(true);
+
+    const result = await setVendorSuspensionStatus(id, true, reason);
+    if (!result.ok) {
+      setActionError(result.error ?? "Failed to suspend vendor.");
+      setIsMutating(false);
+      return;
+    }
+
+    await refresh();
+    setIsMutating(false);
   };
 
-  const handleUnsuspend = (id: string) => {
-    setVendors((prev) => prev.map((v) => v.id === id ? { ...v, status: "active" } : v));
+  const handleUnsuspend = async (id: string) => {
+    setActionError(null);
+    setIsMutating(true);
+
+    const result = await setVendorSuspensionStatus(id, false);
+    if (!result.ok) {
+      setActionError(result.error ?? "Failed to unsuspend vendor.");
+      setIsMutating(false);
+      return;
+    }
+
+    await refresh();
+    setIsMutating(false);
   };
 
-  const handleSuspendSelected = () => {
-    setVendors((prev) =>
-      prev.map((v) => selectedIds.has(v.id) ? { ...v, status: "suspended" } : v)
-    );
+  const handleSuspendSelected = async () => {
+    const reason = window.prompt("Enter suspension reason for selected vendors:")?.trim();
+    if (!reason) {
+      setActionError("Suspension reason is required.");
+      return;
+    }
+
+    setActionError(null);
+    setIsMutating(true);
+
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      const result = await setVendorSuspensionStatus(id, true, reason);
+      if (!result.ok) {
+        setActionError(result.error ?? "Failed to suspend one or more vendors.");
+        setIsMutating(false);
+        return;
+      }
+    }
+
     setSelectedIds(new Set());
+    await refresh();
+    setIsMutating(false);
   };
 
-  const handleUnsuspendSelected = () => {
-    setVendors((prev) =>
-      prev.map((v) => selectedIds.has(v.id) ? { ...v, status: "active" } : v)
-    );
+  const handleUnsuspendSelected = async () => {
+    setActionError(null);
+    setIsMutating(true);
+
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      const result = await setVendorSuspensionStatus(id, false);
+      if (!result.ok) {
+        setActionError(result.error ?? "Failed to unsuspend one or more vendors.");
+        setIsMutating(false);
+        return;
+      }
+    }
+
     setSelectedIds(new Set());
+    await refresh();
+    setIsMutating(false);
   };
 
   const counts = {
@@ -294,21 +357,21 @@ export default function VendorsPage() {
       <div className="flex gap-[12px] items-center flex-wrap">
         <button
           onClick={handleSelectAll}
-          disabled={isLoading || filtered.length === 0}
+          disabled={isLoading || isMutating || filtered.length === 0}
           className="bg-[#e6e2dd] flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#d9d5d0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {allSelected ? "☑" : "☐"} Select All
         </button>
         <button
           onClick={handleSuspendSelected}
-          disabled={selectedIds.size === 0}
+          disabled={isMutating || selectedIds.size === 0}
           className="bg-[#cc3526] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#b02d1e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           ✕ Suspend Selected
         </button>
         <button
           onClick={handleUnsuspendSelected}
-          disabled={selectedIds.size === 0}
+          disabled={isMutating || selectedIds.size === 0}
           className="bg-[#2e7d5b] text-white flex gap-[8px] h-[44px] items-center px-[16px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#255f45] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           ✓ Unsuspend Selected
@@ -319,6 +382,14 @@ export default function VendorsPage() {
       </div>
 
       <div className="bg-[#e6e2dd] h-px w-full" />
+
+      {error ? (
+        <p className="text-[14px] text-[#c43c30]">Failed to load vendors: {error}</p>
+      ) : null}
+
+      {actionError ? (
+        <p className="text-[14px] text-[#c43c30]">{actionError}</p>
+      ) : null}
 
       {/* ── Cards / loading / empty ───────────────────────── */}
       {isLoading ? (

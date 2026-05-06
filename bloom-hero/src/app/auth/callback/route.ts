@@ -1,3 +1,6 @@
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getSession } from "@/lib/auth/getSession";
+import { logAdminLogin } from "@/app/admin/actions/activity-log";
 import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
