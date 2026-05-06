@@ -275,6 +275,7 @@ type ReviewCardProps = {
   review: string;
   rating: number;
   date: string;
+  approved?: boolean;
 };
 
 function Stars({ rating }: { rating: number }) {
@@ -291,7 +292,7 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function ReviewCard({ name, review, rating, date }: ReviewCardProps) {
+function ReviewCard({ name, review, rating, date, approved = false }: ReviewCardProps) {
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -306,7 +307,16 @@ function ReviewCard({ name, review, rating, date }: ReviewCardProps) {
           {initials || "C"}
         </div>
         <div className="flex flex-col">
-          <p className="text-[16px] font-bold text-[#1f1f1f]">{name}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[16px] font-bold text-[#1f1f1f]">{name}</p>
+            {approved ? (
+              <Icon
+                icon="mdi:check-decagram"
+                className="size-[16px] text-[#2e7d5b]"
+                aria-label="Approved review"
+              />
+            ) : null}
+          </div>
           <Stars rating={rating} />
         </div>
       </div>
@@ -363,6 +373,7 @@ function ReviewsSection({ reviews }: { reviews: ProductReviewRow[] }) {
               review={review.comment ?? ""}
               rating={review.rating}
               date={formatReviewDate(review.reviewDate)}
+              approved={review.status === "approved"}
             />
           ))}
         </div>

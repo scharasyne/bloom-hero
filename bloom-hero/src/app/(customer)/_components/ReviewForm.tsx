@@ -7,10 +7,11 @@ import { submitCustomerReview } from "../review/actions";
 type ReviewFormProps = {
   orderId: string;
   vendorId: string | null;
+  productId: string | null;
   existingReview?: { id: string; rating: number; comment: string | null } | null;
 };
 
-export function ReviewForm({ orderId, vendorId, existingReview }: ReviewFormProps) {
+export function ReviewForm({ orderId, vendorId, productId, existingReview }: ReviewFormProps) {
   const router = useRouter();
   const [rating, setRating] = useState(existingReview?.rating ?? 5);
   const [comment, setComment] = useState(existingReview?.comment ?? "");
@@ -22,11 +23,16 @@ export function ReviewForm({ orderId, vendorId, existingReview }: ReviewFormProp
       alert("Missing vendor for this order.");
       return;
     }
+    if (!productId) {
+      alert("Missing product for this order.");
+      return;
+    }
     try {
       setSubmitting(true);
       const result = await submitCustomerReview({
         orderId,
         vendorId,
+        productId,
         rating,
         comment,
         reviewId: existingReview?.id,
