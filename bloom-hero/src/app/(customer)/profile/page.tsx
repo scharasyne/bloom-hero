@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import Footer from "@/components/footer";
 import { ProfileForm } from "../_components/profile-form";
 import { LinkedVendorCredentialsBox } from "../_components/LinkedVendorCredentialsBox";
@@ -108,6 +109,26 @@ export default async function CustomerProfilePage() {
     Boolean(linkedVendorCredentials?.password) &&
     isLinkedVendorCredentialsActive(linkedVendorCredentials?.issued_at);
 
+  let shouldShowLinkedVendorCredentials = false;
+
+  if (hasLinkedVendorCredentials && linkedVendorCredentials?.vendor_user_id) {
+    try {
+      const supabaseAdmin = createSupabaseAdminClient();
+      const { data: vendorAuth } = await supabaseAdmin.auth.admin.getUserById(
+        linkedVendorCredentials.vendor_user_id
+      );
+
+      const vendorMetadata =
+        (vendorAuth?.user?.user_metadata as Record<string, unknown> | undefined) ?? {};
+
+      shouldShowLinkedVendorCredentials = Boolean(
+        vendorMetadata.must_change_password
+      );
+    } catch {
+      shouldShowLinkedVendorCredentials = false;
+    }
+  }
+
   const memberSince = new Date(user.created_at).toLocaleDateString("en-PH", {
     month: "long", year: "numeric",
   });
@@ -182,7 +203,7 @@ export default async function CustomerProfilePage() {
             email={user.email ?? ""}
           />
 
-          {hasLinkedVendorCredentials && linkedVendorCredentials && (
+          {shouldShowLinkedVendorCredentials && linkedVendorCredentials && (
             <LinkedVendorCredentialsBox
               credentials={{
                 email: linkedVendorCredentials.email,
