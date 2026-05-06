@@ -5,8 +5,6 @@ import { Icon } from "@iconify/react";
 import { ActivityLogType } from "@/typess";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import ActivityLogCard from "@/components/admin/ActivityLogCard";
-import AdminNavBar from "@/components/admin/AdminNavBar";
-import AdminSidebarNav from "@/components/admin/AdminSidebarNav";
 import { mockActivityLogs } from "@/lib/mockData";
 
 // ── Skeleton card ─────────────────────────────────────────
@@ -45,6 +43,7 @@ const chipActive: Record<string, string> = {
   login:     "bg-[#e3f2fd] border border-[#e6e2dd] text-[#1565c0]",
 };
 
+// ✅ Only change: outer layout shell removed — layout.tsx now owns bg, height, padding, sidebar offset
 export default function ActivityLogsPage() {
   const [activeFilter, setActiveFilter] = useState<ActivityLogType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,143 +77,130 @@ export default function ActivityLogsPage() {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-[#f7f4ef]" style={{ fontFamily: "'Quicksand', sans-serif" }}>
-      <div className="shrink-0 h-[88px]">
-        <AdminNavBar />
+    <div className="flex flex-col gap-[24px]">
+
+      {/* Header */}
+      <h1 className="font-semibold text-[40px] text-[#2c2a28] leading-[48px]">
+        Activity Logs
+      </h1>
+
+      {/* Search + Export */}
+      <div className="flex items-center justify-between w-full">
+        <div className="bg-white border border-[#e6e2dd] flex gap-[10px] h-[38px] items-center pl-[12px] pr-[16px] rounded-[12px] w-[480px]">
+          <Icon icon="mdi:magnify" width={20} height={20} className="text-[#7a746e] shrink-0" />
+          <input
+            type="text"
+            placeholder="Search logs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 text-[14px] text-[#2c2a28] bg-transparent outline-none placeholder:text-[#7a746e]"
+          />
+        </div>
+
+        <div className="flex gap-[12px] items-center">
+          {/* Dropdown filters — UI only */}
+          {["All Actions", "Today", "All Admins"].map((label) => (
+            <button
+              key={label}
+              className="bg-white border border-[#e6e2dd] flex gap-[6px] h-[38px] items-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors"
+            >
+              {label}
+              <Icon icon="mdi:chevron-down" width={16} height={16} className="text-[#7a746e]" />
+            </button>
+          ))}
+          {/* Export — UI only */}
+          <button className="bg-white border border-[#e6e2dd] flex h-[38px] items-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors">
+            Export
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <AdminSidebarNav />
+      {/* Filter chips */}
+      <div className="flex gap-[10px] items-center flex-wrap">
 
-        <main className="flex-1 overflow-y-auto px-[80px] py-[48px] flex flex-col gap-[24px]">
+        {/* All */}
+        <button
+          onClick={() => setActiveFilter("all")}
+          className={`flex gap-[8px] h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "all" ? "bg-[#e6e2dd]" : "bg-white hover:bg-[#f0eeeb]"}`}
+        >
+          <Icon icon="mdi:view-grid" width={16} height={16} className="text-[#2c2a28]" />
+          <span className="text-[#2c2a28]">All: {mockActivityLogs.length}</span>
+        </button>
 
-          {/* Header */}
-          <h1 className="font-semibold text-[40px] text-[#2c2a28] leading-[48px]">
-            Activity Logs
-          </h1>
+        {/* Approvals */}
+        <button
+          onClick={() => setActiveFilter("approved")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "approved" ? "bg-[#c8e6d8]" : "bg-[#eaf3ef] hover:bg-[#d6ecdf]"}`}
+        >
+          <span className="text-[#2e7d5b]">Approvals: {mockActivityLogs.filter(l => l.actionType === "approved").length}</span>
+        </button>
 
-          {/* Search + Export */}
-          <div className="flex items-center justify-between w-full">
-            <div className="bg-white border border-[#e6e2dd] flex gap-[10px] h-[38px] items-center pl-[12px] pr-[16px] rounded-[12px] w-[480px]">
-              <Icon icon="mdi:magnify" width={20} height={20} className="text-[#7a746e] shrink-0" />
-              <input
-                type="text"
-                placeholder="Search logs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 text-[14px] text-[#2c2a28] bg-transparent outline-none placeholder:text-[#7a746e]"
-              />
-            </div>
+        {/* Rejections */}
+        <button
+          onClick={() => setActiveFilter("rejected")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "rejected" ? "bg-[#f9c8c4]" : "bg-[#fde4e1] hover:bg-[#fbd4d0]"}`}
+        >
+          <span className="text-[#c43c30]">Rejections: {mockActivityLogs.filter(l => l.actionType === "rejected").length}</span>
+        </button>
 
-            <div className="flex gap-[12px] items-center">
-              {/* Dropdown filters — UI only */}
-              {["All Actions", "Today", "All Admins"].map((label) => (
-                <button
-                  key={label}
-                  className="bg-white border border-[#e6e2dd] flex gap-[6px] h-[38px] items-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors"
-                >
-                  {label}
-                  <Icon icon="mdi:chevron-down" width={16} height={16} className="text-[#7a746e]" />
-                </button>
-              ))}
-              {/* Export — UI only */}
-              <button className="bg-white border border-[#e6e2dd] flex h-[38px] items-center px-[14px] rounded-[12px] text-[#2c2a28] text-[14px] font-medium cursor-pointer hover:bg-[#f3f2f0] transition-colors">
-                Export
-              </button>
-            </div>
-          </div>
+        {/* Suspensions */}
+        <button
+          onClick={() => setActiveFilter("suspended")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "suspended" ? "bg-[#f0d0b0]" : "bg-[#f7e8d8] hover:bg-[#f2dcc4]"}`}
+        >
+          <span className="text-[#b86a2a]">Suspensions: {mockActivityLogs.filter(l => l.actionType === "suspended").length}</span>
+        </button>
 
-          {/* Filter chips — always colored, static Figma counts */}
-            {/* Filter chips */}
-<div className="flex gap-[10px] items-center flex-wrap">
+        {/* Logins */}
+        <button
+          onClick={() => setActiveFilter("login")}
+          className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
+            ${activeFilter === "login" ? "bg-[#bad8f5]" : "bg-[#e3f2fd] hover:bg-[#cce5fa]"}`}
+        >
+          <span className="text-[#1565c0]">Logins: {mockActivityLogs.filter(l => l.actionType === "login").length}</span>
+        </button>
 
-  {/* All */}
-  <button
-    onClick={() => setActiveFilter("all")}
-    className={`flex gap-[8px] h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
-      ${activeFilter === "all" ? "bg-[#e6e2dd]" : "bg-white hover:bg-[#f0eeeb]"}`}
-  >
-    <Icon icon="mdi:view-grid" width={16} height={16} className="text-[#2c2a28]" />
-    <span className="text-[#2c2a28]">All: {mockActivityLogs.length}</span>
-  </button>
+      </div>
 
-  {/* Approvals */}
-  <button
-    onClick={() => setActiveFilter("approved")}
-    className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
-      ${activeFilter === "approved" ? "bg-[#c8e6d8]" : "bg-[#eaf3ef] hover:bg-[#d6ecdf]"}`}
-  >
-    <span className="text-[#2e7d5b]">Approvals: {mockActivityLogs.filter(l => l.actionType === "approved").length}</span>
-  </button>
+      <div className="bg-[#e6e2dd] h-px w-full" />
 
-  {/* Rejections */}
-  <button
-    onClick={() => setActiveFilter("rejected")}
-    className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
-      ${activeFilter === "rejected" ? "bg-[#f9c8c4]" : "bg-[#fde4e1] hover:bg-[#fbd4d0]"}`}
-  >
-    <span className="text-[#c43c30]">Rejections: {mockActivityLogs.filter(l => l.actionType === "rejected").length}</span>
-  </button>
-
-  {/* Suspensions */}
-  <button
-    onClick={() => setActiveFilter("suspended")}
-    className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
-      ${activeFilter === "suspended" ? "bg-[#f0d0b0]" : "bg-[#f7e8d8] hover:bg-[#f2dcc4]"}`}
-  >
-    <span className="text-[#b86a2a]">Suspensions: {mockActivityLogs.filter(l => l.actionType === "suspended").length}</span>
-  </button>
-
-  {/* Logins */}
-  <button
-    onClick={() => setActiveFilter("login")}
-    className={`flex h-[40px] items-center px-[14px] rounded-[12px] text-[14px] font-medium cursor-pointer transition-colors border border-[#e6e2dd]
-      ${activeFilter === "login" ? "bg-[#bad8f5]" : "bg-[#e3f2fd] hover:bg-[#cce5fa]"}`}
-  >
-    <span className="text-[#1565c0]">Logins: {mockActivityLogs.filter(l => l.actionType === "login").length}</span>
-  </button>
-
-</div>
-            
-
-
-          <div className="bg-[#e6e2dd] h-px w-full" />
-
-          {/* Cards */}
-          {isLoading ? (
-            <div className="flex flex-col gap-[24px]">
-              {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
-            </div>
-          ) : filteredLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-[80px] gap-[12px]">
-              <Icon icon="mdi:file-search-outline" width={64} height={64} className="text-[#b8b2ab]" />
-              <p className="text-[#2c2a28] font-semibold text-[20px]">No logs found</p>
-              <p className="text-[#7a746e] text-[14px]">Try adjusting your search or filter.</p>
-            </div>
-          ) : (
-            Object.entries(grouped).map(([dateLabel, dateLogs]) => (
-              <div key={dateLabel} className="flex flex-col gap-[16px]">
-                {/* Date group header */}
-                <div className="bg-white rounded-[16px] border border-[#e6e2dd] px-[24px] py-[18px] shadow-[0px_6px_24px_0px_rgba(0,0,0,0.06)]">
-                  <span className="font-semibold text-[20px] text-[#2c2a28]">
-                    {dateLabel}
-                    {dateLabel === "Today" || dateLabel === "Yesterday" ? (
-                      <span className="font-medium text-[#7a746e]">
-                        {" — "}
-                        {new Date().toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    ) : null}
+      {/* Cards */}
+      {isLoading ? (
+        <div className="flex flex-col gap-[24px]">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : filteredLogs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-[80px] gap-[12px]">
+          <Icon icon="mdi:file-search-outline" width={64} height={64} className="text-[#b8b2ab]" />
+          <p className="text-[#2c2a28] font-semibold text-[20px]">No logs found</p>
+          <p className="text-[#7a746e] text-[14px]">Try adjusting your search or filter.</p>
+        </div>
+      ) : (
+        Object.entries(grouped).map(([dateLabel, dateLogs]) => (
+          <div key={dateLabel} className="flex flex-col gap-[16px]">
+            {/* Date group header */}
+            <div className="bg-white rounded-[16px] border border-[#e6e2dd] px-[24px] py-[18px] shadow-[0px_6px_24px_0px_rgba(0,0,0,0.06)]">
+              <span className="font-semibold text-[20px] text-[#2c2a28]">
+                {dateLabel}
+                {dateLabel === "Today" || dateLabel === "Yesterday" ? (
+                  <span className="font-medium text-[#7a746e]">
+                    {" — "}
+                    {new Date().toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
                   </span>
-                </div>
-                {dateLogs.map((log) => (
-                  <ActivityLogCard key={log.id} log={log} />
-                ))}
-              </div>
-            ))
-          )}
+                ) : null}
+              </span>
+            </div>
+            {dateLogs.map((log) => (
+              <ActivityLogCard key={log.id} log={log} />
+            ))}
+          </div>
+        ))
+      )}
 
-        </main>
-      </div>
     </div>
   );
 }
