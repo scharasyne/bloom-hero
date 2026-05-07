@@ -8,6 +8,9 @@ import {
   type VendorOrderDetails,
   type VendorReviewCard,
 } from "./VendorReviewsSection"
+import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor"
+import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader"
+import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions"
 
 type vendorType = 'market' | 'pop-up';
 
@@ -61,11 +64,28 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
     redirect("/login")
   }
 
-  const { data: vendor, error: vendorError } = await supabase
-    .from("vendors")
-    .select("id, shop_name, vendor_type")
-    .eq("owner_id", user.id)
-    .maybeSingle()
+  const commonProfile = await getVendorCommonProfileByOwner(type)
+  if (!commonProfile) {
+    redirect("/login")
+  }
+
+  let vendor: VendorProfileRow | null = {
+    id: commonProfile.vendorId,
+    shop_name: commonProfile.shopName,
+    vendor_type: type,
+  }
+  let vendorError: Error | null = null
+
+  {
+    const primary = await supabase
+      .from("vendors")
+      .select("id, shop_name, vendor_type")
+      .eq("owner_id", user.id)
+      .maybeSingle()
+
+    vendor = (primary.data as VendorProfileRow | null) ?? null
+    vendorError = primary.error
+  }
 
   if (vendorError) {
     throw new Error(vendorError.message)
@@ -153,6 +173,15 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
     (reviewerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
   )
 
+  const editableReviews = reviews.map((review) => ({
+    id: review.id,
+    customerId: review.customer_id,
+    customerName: reviewerMap.get(review.customer_id) ?? "Customer",
+    rating: review.rating,
+    comment: review.comment?.trim() || "",
+    reviewDate: review.review_date,
+  }))
+
   const reviewCards: VendorReviewCard[] = reviews.map((review) => ({
     id: review.id,
     customerName: reviewerMap.get(review.customer_id) ?? "Customer",
@@ -226,53 +255,11 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
       {/* Content */}
       <section className="w-full px-4 py-6 sm:px-8 lg:px-10 lg:py-8">
         {/* Profile header card */}
-        <div className="rounded-3xl border border-[#ebe5de] bg-[#fbf9f6] px-5 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-6 sm:py-7 lg:px-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4 sm:gap-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#d9e7da] text-3xl font-bold text-[#2f5d3a] sm:h-24 sm:w-24 sm:text-4xl">
-                {shopInitial}
-              </div>
-
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-[#2c2825] sm:text-[26px]">
-                  {vendor.shop_name}
-                </h1>
-                <p className="mt-1 text-sm text-[#8a847d]">
-                  Handcrafted blooms, made to order.
-                </p>
-
-                {/* Quick stats (placeholder for now) */}
-                <div className="mt-3 flex flex-wrap gap-4 text-xs text-[#8a847d] sm:text-[13px]">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#2f5d3a]" />
-                    <span>Open for orders</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#f5ad2e]" />
-                    <span>5.0 average rating</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Primary actions (future: edit profile etc) */}
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                type="button"
-                className="inline-flex h-10 items-center justify-center rounded-full border border-[#e0d8cf] px-4 text-xs font-medium text-[#4a453f] hover:bg-[#f3eee8]"
-              >
-                Preview as customer
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-10 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f]"
-              >
-                Edit profile
-              </button>
-            </div>
-          </div>
-
-          {/* Tabs */}
+        <div>
+          <VendorProfileHeader
+            profile={commonProfile}
+            previewHref={`/vendors/${type}/${commonProfile.vendorId}`}
+          />
           <div className="mt-6 border-t border-[#ece4dc] pt-3">
             <nav className="flex flex-wrap gap-4 text-sm text-[#8b847c]">
               <a
@@ -296,6 +283,10 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
             </nav>
           </div>
         </div>
+
+        <VendorProfileEditor
+          initialReviews={editableReviews}
+        />
 
         {/* Bouquets */}
         <section id="bouquets" className="mt-10 scroll-mt-20">

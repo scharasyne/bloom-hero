@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Icon } from "@iconify/react";
 import { X } from "lucide-react";
-import type { RequestedLocationRank } from "@/lib/vendors/vendor-actions";
+import type { RecentPopUpLocationRequest, RequestedLocationRank } from "@/lib/vendors/vendor-actions";
 import type { LeafletMouseEvent, Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
 
 type UpcomingPopUp = {
@@ -31,17 +31,20 @@ export default function PopUpScheduleClient({
   vendorId,
   topRequested,
   ranking,
+  recentRequests,
   initialUpcoming,
   createScheduleAction,
 }: {
   vendorId: string;
   topRequested: RequestedLocationRank[];
   ranking: RequestedLocationRank[];
+  recentRequests: RecentPopUpLocationRequest[];
   initialUpcoming: UpcomingPopUp[];
   createScheduleAction: (input: CreateScheduleInput) => Promise<{ success: boolean; error?: string; data?: UpcomingPopUp }>;
 }) {
   const leafletRef = useRef<(typeof import("leaflet")) | null>(null);
   const [showRanking, setShowRanking] = useState(false);
+  const [selectedMapLocation, setSelectedMapLocation] = useState<string | null>(null);
   const [showNewSchedule, setShowNewSchedule] = useState(false);
   const [upcoming, setUpcoming] = useState(initialUpcoming);
   const [location, setLocation] = useState("");
@@ -86,6 +89,45 @@ export default function PopUpScheduleClient({
       day: d.getDate(),
     };
   };
+
+  const formatRecentDate = (value: string | null) => {
+    if (!value) return "Recently";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "Recently";
+    return parsed.toLocaleDateString("en-PH", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatRequestedTime = (start?: string | null, end?: string | null) => {
+    if (!start && !end) return "Time not set";
+    const to12h = (value?: string | null) => {
+      if (!value) return "--:--";
+      const match = value.match(/(\d{2}):(\d{2})/);
+      if (!match) return value;
+      const hour = Number(match[1]);
+      const minute = match[2];
+      const ampm = hour >= 12 ? "PM" : "AM";
+      return `${hour % 12 || 12}:${minute} ${ampm}`;
+    };
+    return `${to12h(start)} - ${to12h(end)}`;
+  };
+
+  const toPinnedLabel = (rawLocation: string) => {
+    const normalized = (rawLocation || "").trim();
+    if (!normalized) return "Pinned location";
+    if (/gyud\s*food/i.test(normalized)) return "Gyudfood";
+    if (/\bup\b.*cebu|\buniversity of the philippines cebu\b/i.test(normalized)) return "UP Cebu";
+    const noLandmark = normalized.split(" - ")[0]?.trim() || normalized;
+    const firstPart = noLandmark.split(",")[0]?.trim() || noLandmark;
+    return firstPart;
+  };
+
+  const mapEmbedUrl = selectedMapLocation
+    ? `https://maps.google.com/maps?q=${encodeURIComponent(selectedMapLocation)}&z=15&output=embed`
+    : "";
 
   const setMapPin = (lat: number, lng: number, name: string, map?: LeafletMap) => {
     const leaflet = leafletRef.current;
@@ -221,13 +263,61 @@ export default function PopUpScheduleClient({
               <h2 className="flex items-center gap-2 text-[17px] font-bold text-[#1f1f1f]">Most Requested</h2>
               <button onClick={() => setShowRanking(true)} className="text-sm font-semibold text-[#2f5d3a] hover:underline">View All</button>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3">
               {topRequested.length === 0 ? <p className="col-span-2 py-8 text-center text-sm font-medium text-[#7a7a7a]">No requests yet this month.</p> : topRequested.map((item) => (
-                <div key={item.location} className="flex items-center justify-between rounded-[14px] border border-[#d6d0c8] bg-white p-4">
-                  <p className="text-lg font-bold text-[#1f1f1f]">{item.location}</p>
-                  <p className="text-2xl font-black leading-none text-[#2f5d3a]">{item.count}</p>
+                <div key={item.location} className="flex gap-3">
+                  <div className="flex h-18 min-w-15 flex-col items-center justify-center rounded-[14px] border border-[#d6d0c8] bg-white">
+                    <span className="text-[10px] font-bold text-[#7a7a7a]">REQ</span>
+                    <span className="text-2xl font-black leading-none text-[#1f1f1f]">{item.count}</span>
+                  </div>
+                  <div className="flex-1 rounded-[14px] border border-[#d6d0c8] bg-white p-4">
+                    <p className="text-sm font-bold text-[#1f1f1f]">{toPinnedLabel(item.location)}</p>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMapLocation(item.location)}
+                      className="mt-1 text-[11px] font-semibold text-[#2f5d3a] hover:underline"
+                    >
+                      View map location
+                    </button>
+                  </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-6 border-t border-[#edeae6] pt-5">
+              <h3 className="text-[15px] font-bold text-[#1f1f1f]">Recently Requested</h3>
+              <div className="mt-3 flex flex-col gap-3">
+                {recentRequests.length === 0 ? (
+                  <p className="py-4 text-sm font-medium text-[#7a7a7a]">No recent requests yet.</p>
+                ) : (
+                  recentRequests.map((item) => (
+                    <div key={item.id} className="flex gap-3">
+                      <div className="flex h-18 min-w-15 flex-col items-center justify-center rounded-[14px] border border-[#d6d0c8] bg-white px-2 text-center">
+                        <span className="text-[10px] font-bold uppercase text-[#7a7a7a]">Date</span>
+                        <span className="text-[11px] font-semibold leading-tight text-[#1f1f1f]">
+                          {formatRecentDate(item.requestedDate || item.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex-1 rounded-[14px] border border-[#d6d0c8] bg-white p-4">
+                        <p className="text-sm font-bold text-[#1f1f1f]">{toPinnedLabel(item.location)}</p>
+                        <p className="mt-1 text-[11px] text-[#6f6a65]">
+                          {formatRecentDate(item.requestedDate || item.createdAt)}
+                        </p>
+                        <p className="text-[11px] text-[#6f6a65]">
+                          {formatRequestedTime(item.requestedStartTime, item.requestedEndTime)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMapLocation(item.location)}
+                          className="mt-1 text-[11px] font-semibold text-[#2f5d3a] hover:underline"
+                        >
+                          View map location
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </section>
         </div>
@@ -274,6 +364,32 @@ export default function PopUpScheduleClient({
           </div>
         </div>
       )}
+
+      {selectedMapLocation ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#2a2724]">{toPinnedLabel(selectedMapLocation)}</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedMapLocation(null)}
+                className="rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
+              >
+                Close
+              </button>
+            </div>
+            <div className="h-[380px] overflow-hidden rounded-xl border border-[#ece5dd]">
+              <iframe
+                title="Requested location map"
+                src={mapEmbedUrl}
+                className="h-full w-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {showNewSchedule && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

@@ -5,6 +5,7 @@ import PopUpScheduleClient from "@/app/(vendor)/_components/PopUpScheduleClient"
 import {
   createPopUpSchedule,
   getPopUpSchedule,
+  getRecentPopUpLocationRequests,
   getRequestedLocationRanking,
 } from "@/lib/vendors/vendor-actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -26,9 +27,10 @@ export default async function PopUpDashboardPage() {
 
   if (error || !vendor) redirect("/customer/dashboard");
 
-  const [ranking, upcoming] = await Promise.all([
+  const [ranking, upcoming, recentRequests] = await Promise.all([
     getRequestedLocationRanking(vendor.id),
     getPopUpSchedule(vendor.id),
+    getRecentPopUpLocationRequests(vendor.id, 5),
   ]);
   const topRequested = ranking.slice(0, 4);
 
@@ -50,6 +52,7 @@ export default async function PopUpDashboardPage() {
               vendorId={vendor.id}
               topRequested={topRequested}
               ranking={ranking}
+              recentRequests={recentRequests}
               initialUpcoming={upcoming}
               createScheduleAction={createPopUpSchedule}
             />
