@@ -8,11 +8,16 @@ import {
   type VendorOrderDetails,
   type VendorReviewCard,
 } from "./VendorReviewsSection"
-import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor"
 import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader"
 import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions"
 
 type vendorType = 'market' | 'pop-up';
+
+type VendorProfileRow = {
+  id: string
+  shop_name: string
+  vendor_type: string | null
+}
 
 type ProductRow = {
   id: string
@@ -173,15 +178,6 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
     (reviewerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
   )
 
-  const editableReviews = reviews.map((review) => ({
-    id: review.id,
-    customerId: review.customer_id,
-    customerName: reviewerMap.get(review.customer_id) ?? "Customer",
-    rating: review.rating,
-    comment: review.comment?.trim() || "",
-    reviewDate: review.review_date,
-  }))
-
   const reviewCards: VendorReviewCard[] = reviews.map((review) => ({
     id: review.id,
     customerName: reviewerMap.get(review.customer_id) ?? "Customer",
@@ -283,10 +279,6 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
             </nav>
           </div>
         </div>
-
-        <VendorProfileEditor
-          initialReviews={editableReviews}
-        />
 
         {/* Bouquets */}
         <section id="bouquets" className="mt-10 scroll-mt-20">
