@@ -104,11 +104,13 @@ function Hero() {
 }
 
 function PopUpMapSection() {
-  const [vendors, setVendors] = useState<PopUpMapVendor[]>([]);
+  const [vendors, setVendors] = useState<PopUpMapVendor[] | null>(null);
 
   useEffect(() => {
     getPopUpMapVendors().then(setVendors);
   }, []);
+
+  if (vendors === null) return null; // wait until loaded
 
   return <PopUpMap initialVendors={vendors} />;
 }
