@@ -1,10 +1,16 @@
-import { requireRole } from "@/lib/auth/require-role";
+import { VendorDashboardSidebarCard } from "@/components/vendor-dashboard-sidebar-card";
 
-export default async function MarketVendorLayout({
+export default function MarketVendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireRole(["market"]);
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen">
+      <VendorDashboardSidebarCard vendorType="market" />
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
+    </div>
+  );
 }
