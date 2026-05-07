@@ -31,7 +31,7 @@ export async function resolvePostLoginDestination() {
     role = "customer";
   }
 
-  if (role === "admin") return { ok: true as const, path: "/admin/vendor-applications" };
+  if (role === "admin") return { ok: true as const, path: "/admin/dashboard" };
   if (role === "vendor") {
     const vendorType = await getVendorTypeByOwnerId(user.id);
     if (!vendorType) {

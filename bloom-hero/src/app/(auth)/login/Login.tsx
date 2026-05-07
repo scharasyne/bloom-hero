@@ -96,7 +96,7 @@ export default function Login() {
     }
 
     if (role === "admin") {
-      router.push("/admin/vendor-applications");
+      router.push("/admin/dashboard");
     } else if (role === "vendor") {
       const { data: vendorData, error: vendorError } = await supabase
         .from("vendors")

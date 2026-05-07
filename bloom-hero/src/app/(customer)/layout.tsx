@@ -1,10 +1,14 @@
 import { requireRole } from "@/lib/auth/require-role";
+import { getSession } from "@/lib/auth/getSession";
+import NavBar from "@/components/navbar";
 
-export default async function CustomerLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function CustomerLayout({ children }: { children: React.ReactNode }) {
   await requireRole(["customer"]);
-  return <>{children}</>;
+  const session = await getSession();
+  return (
+    <>
+      <NavBar session={session} />
+      {children}
+    </>
+  );
 }
