@@ -1,53 +1,88 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import SidebarAlertCard from "@/components/admin/SidebarAlertCard";
 
 const navItems = [
-  { label: "Dashboard",           href: "/admin/dashboard",                  icon: "mdi:home" },
-  { label: "Vendor Applications", href: "/admin/vendor-applications",         icon: "mdi:clipboard-text" },
-  { label: "Vendors",             href: "/admin/vendors", icon: "mdi:account-multiple" },
-  { label: "Reviews",             href: "/admin/review-moderation",     icon: "mdi:star" },
-  { label: "Activity Logs",       href: "/admin/activity-logs",               icon: "mdi:clock" },
+  { label: "Dashboard",           href: "/admin/dashboard",          icon: "mdi:home-outline"             },
+  { label: "Vendor Applications", href: "/admin/vendor-applications", icon: "mdi:clipboard-text-outline"   },
+  { label: "Vendors",             href: "/admin/vendors",             icon: "mdi:account-multiple-outline" },
+  { label: "Reviews",             href: "/admin/review-moderation",   icon: "mdi:star-outline"             },
+  { label: "Activity Logs",       href: "/admin/activity-logs",       icon: "mdi:clock-outline"            },
 ];
 
 export default function AdminSidebarNav() {
   const pathname = usePathname();
+  const router   = useRouter();
+  const supabase = createSupabaseBrowserClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
-    <div
-      className="flex flex-col gap-[12px] items-start px-[24px] py-[16px] h-full border-r border-[#edeae6] w-[240px] shrink-0"
+    <aside
+      className="sticky top-0 h-screen w-[260px] shrink-0 flex flex-col bg-[#162d1e]"
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
-      {navItems.map((item) => {
-        const isActive = pathname === item.href;
-
-        return isActive ? (
-          <div
-            key={item.label}
-            className="bg-[#eaf3ef] flex gap-[12px] h-[48px] items-center px-[12px] rounded-[12px] w-full"
-          >
-            <div className="bg-[#2e7d5b] h-[28px] w-[4px] rounded-full shrink-0" />
-            <Icon icon={item.icon} width={20} height={20} className="text-[#2e7d5b] shrink-0" />
-            <span className="text-[#2e7d5b] text-[16px] font-medium tracking-[0.64px]">
-              {item.label}
-            </span>
+      {/* ── Brand ─────────────────────────────────────── */}
+      <div className="px-[24px] py-[28px] border-b border-white/10">
+        <div className="flex items-center gap-[10px]">
+          <div className="size-[34px] rounded-[10px] bg-white/15 flex items-center justify-center shrink-0">
+            <Icon icon="mdi:flower-tulip-outline" width={18} height={18} className="text-white" />
           </div>
-        ) : (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="flex gap-[12px] h-[48px] items-center px-[12px] rounded-[12px] w-full hover:bg-[#f3f2f0] transition-colors cursor-pointer"
+          <div>
+            <p className="text-white font-bold text-[15px] leading-none tracking-wide">Arianna</p>
+            <p className="text-white/40 text-[10px] mt-[4px] uppercase tracking-[0.12em]">BloomHero Admin</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Nav items ─────────────────────────────────── */}
+      <nav className="flex flex-col gap-[4px] px-[14px] py-[18px] flex-1">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+
+          return isActive ? (
+            <div
+              key={item.label}
+              className="flex gap-[10px] h-[44px] items-center px-[12px] rounded-[12px] w-full bg-white"
+            >
+              <Icon icon={item.icon} width={18} height={18} className="text-[#162d1e] shrink-0" />
+              <span className="text-[#162d1e] text-[14px] font-bold">{item.label}</span>
+            </div>
+          ) : (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex gap-[10px] h-[44px] items-center px-[12px] rounded-[12px] w-full text-white/55 hover:text-white hover:bg-white/10 transition-all duration-150"
+            >
+              <Icon icon={item.icon} width={18} height={18} className="shrink-0" />
+              <span className="text-[14px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* ── Bottom ────────────────────────────────────── */}
+      <div className="px-[14px] pb-[24px] flex flex-col gap-[8px]">
+        <SidebarAlertCard />
+
+        <div className="border-t border-white/10 pt-[8px]">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-[10px] h-[40px] w-full px-[12px] rounded-[12px] text-white/40 hover:text-white hover:bg-white/10 transition-all duration-150"
           >
-            <Icon icon={item.icon} width={20} height={20} className="text-[#5f5a55] shrink-0" />
-            <span className="text-[#5f5a55] text-[16px] font-medium tracking-[0.64px]">
-              {item.label}
-            </span>
-          </Link>
-        );
-      })}
-    </div>
+            <Icon icon="mdi:logout" width={16} height={16} />
+            <span className="text-[13px] font-medium">Sign out</span>
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 }
