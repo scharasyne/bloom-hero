@@ -7,8 +7,11 @@ import Link from "next/link";
 import BestSellersSection from "@/components/BestSellersSection";
 import Footer from "@/components/footer";
 import SearchBar from "@/components/SearchBar";
+import PopUpMap from "@/app/(vendor)/_components/PopUpMap";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { getPopUpMapVendors } from "@/app/map/actions";
 import { mockBouquets } from "@/lib/mockData";
+import { PopUpMapVendor } from "@/typess";
 
 const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
 const MAX_VISIBLE = 6;
@@ -100,6 +103,18 @@ function Hero() {
   );
 }
 
+function PopUpMapSection() {
+  const [vendors, setVendors] = useState<PopUpMapVendor[] | null>(null);
+
+  useEffect(() => {
+    getPopUpMapVendors().then(setVendors);
+  }, []);
+
+  if (vendors === null) return null; // wait until loaded
+
+  return <PopUpMap initialVendors={vendors} />;
+}
+
 const categoryGroups = [
   {
     title: "CELEBRATIONS & MILESTONES",
@@ -189,6 +204,7 @@ export default function DesktopClient() {
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
       <Hero />
       <BestSellersSection />
+      <PopUpMapSection />
       <ShopByCategory />
       <Footer />
     </div>
