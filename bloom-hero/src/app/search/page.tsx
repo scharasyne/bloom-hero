@@ -358,7 +358,7 @@ export default function SearchPage() {
           return;
         }
 
-        window.location.href = "/customer/orders";
+        window.location.href = "/orders";
       } catch (err) {
         console.error("Buy now failed:", err);
         alert("Failed to add to cart. Please try again.");
