@@ -18,10 +18,10 @@ export const TAB_STATUS_MAP: Record<TabKey, string[]> = {
   FIX 5: Semantic badge colors per status.
   Each state has a distinct hue so the customer can read status at a glance
   without needing to read the text label.
-    pending   → amber   (needs action — warm urgency)
-    confirmed → blue    (in progress — calm, informational)
-    shipped   → purple  (in transit — distinct from confirmed)
-    completed → green   (positive resolution)
+    pending payment      → amber   (needs action — warm urgency)
+    pending confirmation → blue    (awaiting vendor review)
+    confirmed            → purple  (vendor accepted and shipped)
+    completed            → green   (positive resolution)
 */
 export const STATUS_BADGE: Record<TabKey, { bg: string; border: string; text: string; label: string }> = {
   "to-pay": {
@@ -34,13 +34,13 @@ export const STATUS_BADGE: Record<TabKey, { bg: string; border: string; text: st
     bg:     "bg-blue-50",
     border: "border-blue-200",
     text:   "text-blue-700",
-    label:  "Confirmed",
+    label:  "Pending Confirmation",
   },
   "to-receive": {
     bg:     "bg-purple-50",
     border: "border-purple-200",
     text:   "text-purple-700",
-    label:  "Shipped",
+    label:  "Confirmed",
   },
   "completed": {
     bg:     "bg-emerald-50",
@@ -52,7 +52,7 @@ export const STATUS_BADGE: Record<TabKey, { bg: string; border: string; text: st
 
 export const EMPTY_STATE: Record<TabKey, { heading: string; body: string }> = {
   "to-pay":     { heading: "No pending payments",    body: "Orders waiting for payment will appear here." },
-  "to-ship":    { heading: "Nothing to ship yet",     body: "Confirmed orders will appear here." },
-  "to-receive": { heading: "Nothing on the way yet",  body: "Shipped orders will appear here." },
+  "to-ship":    { heading: "Nothing to ship yet",     body: "Orders awaiting confirmation will appear here." },
+  "to-receive": { heading: "Nothing on the way yet",  body: "Confirmed orders on the way will appear here." },
   "completed":  { heading: "No completed orders yet", body: "Once you receive an order, it will appear here." },
 };

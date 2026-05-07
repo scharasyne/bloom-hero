@@ -123,6 +123,7 @@ export async function uploadOrderReceiptProof(formData: FormData) {
         // Store the private storage path instead of a public URL.
         receipt_proof_url: filePath,
         receipt_submitted_at: new Date().toISOString(),
+        status: "to_ship",
       })
       .eq("id", orderId);
 
@@ -132,9 +133,9 @@ export async function uploadOrderReceiptProof(formData: FormData) {
 
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
-    revalidatePath("/vendor/market/orders");
-    revalidatePath("/vendor/pop-up/orders");
-    redirect("/orders?tab=to-pay&success=Receipt+uploaded");
+    revalidatePath("/market/orders");
+    revalidatePath("/pop-up/orders");
+    redirect("/orders?tab=to-ship&success=Receipt+uploaded");
   } catch (error) {
     unstable_rethrow(error);
 
@@ -232,8 +233,8 @@ export async function cancelCustomerOrder(formData: FormData) {
 
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
-    revalidatePath("/vendor/market/orders");
-    revalidatePath("/vendor/pop-up/orders");
+    revalidatePath("/market/orders");
+    revalidatePath("/pop-up/orders");
     redirect("/orders?tab=to-pay&success=Order+cancelled");
   } catch (error) {
     unstable_rethrow(error);
@@ -284,10 +285,10 @@ export async function loadCustomerPayPage(orderId: string): Promise<CustomerPayP
 
 export async function vendorConfirmPayment(formData: FormData) {
   const orderId = String(formData.get("orderId") || "");
-  let vendorRoute = "/vendor/market/orders";
+  let vendorRoute = "/market/orders";
 
   if (!orderId) {
-    redirect("/vendor/market/orders?error=Invalid+order");
+    redirect("/market/orders?error=Invalid+order");
   }
 
   try {
@@ -301,7 +302,7 @@ export async function vendorConfirmPayment(formData: FormData) {
     if (!order.vendors) {
       throw new Error("You are not allowed to confirm this payment.");
     }
-    vendorRoute = `/vendor/${order.vendors.vendor_type}/orders`;
+    vendorRoute = `/${order.vendors.vendor_type}/orders`;
 
     if (order.status !== "to_pay" || order.payment_method !== "online") {
       throw new Error("Only online orders in To Pay can be confirmed.");
@@ -323,8 +324,8 @@ export async function vendorConfirmPayment(formData: FormData) {
       throw updateError;
     }
 
-    revalidatePath("/vendor/market/orders");
-    revalidatePath("/vendor/pop-up/orders");
+    revalidatePath("/market/orders");
+    revalidatePath("/pop-up/orders");
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
     redirect(`${vendorRoute}?success=Payment+confirmed`);
@@ -339,10 +340,10 @@ export async function vendorConfirmPayment(formData: FormData) {
 
 export async function vendorMarkAsShipped(formData: FormData) {
   const orderId = String(formData.get("orderId") || "");
-  let vendorRoute = "/vendor/market/orders";
+  let vendorRoute = "/market/orders";
 
   if (!orderId) {
-    redirect("/vendor/market/orders?error=Invalid+order");
+    redirect("/market/orders?error=Invalid+order");
   }
 
   try {
@@ -356,10 +357,59 @@ export async function vendorMarkAsShipped(formData: FormData) {
     if (!order.vendors) {
       throw new Error("You are not allowed to update this order.");
     }
-    vendorRoute = `/vendor/${order.vendors.vendor_type}/orders`;
+    vendorRoute = `/${order.vendors.vendor_type}/orders`;
 
     if (order.status !== "to_ship") {
       throw new Error("Only To Ship orders can be marked shipped.");
+    }
+
+    const { data: itemRows, error: itemsError } = await supabase
+      .from("order_items")
+      .select("product_id, quantity")
+      .eq("order_id", orderId);
+
+    if (itemsError) {
+      throw itemsError;
+    }
+
+    const quantityByProduct = new Map<string, number>();
+    for (const item of itemRows ?? []) {
+      if (!item.product_id) continue;
+      const currentQty = quantityByProduct.get(item.product_id) ?? 0;
+      quantityByProduct.set(item.product_id, currentQty + (Number(item.quantity) || 0));
+    }
+
+    if (quantityByProduct.size > 0) {
+      const productIds = Array.from(quantityByProduct.keys());
+      const { data: productRows, error: productsError } = await supabase
+        .from("products")
+        .select("id, stocks")
+        .in("id", productIds);
+
+      if (productsError) {
+        throw productsError;
+      }
+
+      const stockMap = new Map(
+        (productRows ?? []).map((row) => [row.id, Number(row.stocks) || 0])
+      );
+
+      const updateResults = await Promise.all(
+        productIds.map((productId) => {
+          const currentStock = stockMap.get(productId) ?? 0;
+          const nextStock = Math.max(0, currentStock - (quantityByProduct.get(productId) ?? 0));
+          return supabase
+            .from("products")
+            .update({ stocks: nextStock })
+            .eq("id", productId);
+        })
+      );
+
+      for (const result of updateResults) {
+        if (result.error) {
+          throw result.error;
+        }
+      }
     }
 
     const { error: updateError } = await supabase
@@ -371,8 +421,8 @@ export async function vendorMarkAsShipped(formData: FormData) {
       throw updateError;
     }
 
-    revalidatePath("/vendor/market/orders");
-    revalidatePath("/vendor/pop-up/orders");
+    revalidatePath("/market/orders");
+    revalidatePath("/pop-up/orders");
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
     redirect(`${vendorRoute}?success=Order+marked+as+shipped`);
