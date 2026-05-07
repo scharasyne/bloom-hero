@@ -86,6 +86,8 @@ export interface PopUpMapVendor {
   displayNumber: number;
   name: string;
   address: string;
+  scheduledDate: string;
+  endRaw: string | null;
   startDate: string;
   endDate: string;
   lat: number;
