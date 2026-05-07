@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { PopUpGalleryManager } from "@/app/(vendor)/_components/PopUpGalleryManager";
 import { PopUpProfileScheduleEditor } from "@/app/(vendor)/_components/PopUpProfileScheduleEditor";
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader";
 import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor";
 import { getPopupGalleryPhotos } from "@/lib/services/popup-gallery";
@@ -33,10 +32,6 @@ export default async function PopUpProfilePage() {
 
   return (
     <main className="flex min-h-screen bg-[#fbf7f4]">
-      <div className="p-4 sm:p-6 lg:p-8">
-        <VendorDashboardSidebarCard activeTab="profile" vendorType="pop-up" />
-      </div>
-
       <section className="w-full px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6 lg:px-8 lg:pb-10 lg:pt-8">
         <VendorProfileHeader profile={commonProfile} previewHref={`/vendors/pop-up/${profile.vendorId}`} />
 

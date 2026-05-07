@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation";
-
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import PopUpScheduleClient from "@/app/(vendor)/_components/PopUpScheduleClient";
 import {
   createPopUpSchedule,
@@ -39,10 +37,6 @@ export default async function PopUpDashboardPage() {
       className="flex min-h-screen bg-[#fbf7f4] text-[#1f1f1f]"
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
-      {/* Sidebar */}
-      <div className="p-4 sm:p-6 lg:p-8">
-        <VendorDashboardSidebarCard activeTab="schedule" vendorType="pop-up" />
-      </div>
 
       {/* Main */}
       <main className="flex-1 flex flex-col overflow-hidden">

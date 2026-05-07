@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import EditProductModalTrigger from "@/app/(vendor)/_components/EditProductModalTrigger"
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
@@ -93,8 +92,6 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   return (
     <main className = "flex">
       <div className="lg:p-6">
-        {/* <VendorDashboardSidebarCard activeTab="products" vendorType="pop-up" /> */}
-        <VendorDashboardSidebarCard activeTab="products" vendorType={type} />
       </div>
       <div className = "w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
         <div>

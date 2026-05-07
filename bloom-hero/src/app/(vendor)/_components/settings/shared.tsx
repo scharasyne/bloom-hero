@@ -364,7 +364,7 @@ export function SettingsShell({
 
       <div className="border-t border-[#edeae6] bg-white px-7 py-3.5 flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(47,93,58,0.07)]">
         <p className="text-[12.5px] text-[#6b7a6f]">
-          <span className="font-bold text-[#1e2a22]">Unsaved changes</span> — don&apos;t forget to save before leaving
+          <span className="font-bold text-[#1e2a22]">Unsaved changes</span>{" — don't forget to save before leaving"}
         </p>
         <div className="flex gap-2">
           <Btn variant="ghost">Discard</Btn>

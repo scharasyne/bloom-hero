@@ -2,7 +2,6 @@ import { redirect } from "next/navigation"
 
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
 import {
   VendorReviewsSection,
   type VendorOrderDetails,
@@ -244,9 +243,9 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
   return (
     // <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
     <main className = "flex">
-      <div className="lg:p-6">
+      {/* <div className="lg:p-6">
         <VendorDashboardSidebarCard activeTab="profile" vendorType={type} />
-      </div>
+      </div> */}
 
       {/* Content */}
       <section className="w-full px-4 py-6 sm:px-8 lg:px-10 lg:py-8">

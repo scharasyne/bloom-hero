@@ -1,6 +1,4 @@
 import Link from "next/link";
-
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import VendorOrdersTable from "@/app/(vendor)/_components/VendorOrdersTable";
 
 type VendorOrdersPageProps = {
@@ -27,7 +25,6 @@ export default async function VendorMarketOrdersPage({
   return (
     <main className="flex">
       <div className="lg:p-6">
-        <VendorDashboardSidebarCard activeTab="orders" vendorType="market" />
       </div>
 
       <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
