@@ -89,6 +89,8 @@ export default function NavBar({
     else router.push("/search");
   };
   
+  if (role === "admin" || role === "vendor") return null;
+  
   return (
   <nav className="relative w-full bg-[#FBF7F4] border-b border-[#edeae6]">
     {/* ── Desktop row ─────────────────────────────────────────── */}
