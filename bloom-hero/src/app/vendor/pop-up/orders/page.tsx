@@ -11,11 +11,12 @@ export default async function VendorPopUpOrdersPage({
   const params = await searchParams;
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
+    <main className="flex min-h-screen bg-[#fbf7f4]">
+      <div className="p-4 sm:p-6 lg:p-8">
         <VendorDashboardSidebarCard activeTab="orders" vendorType="pop-up" />
+      </div>
 
-        <section className="space-y-4">
+      <section className="flex-1 space-y-4 px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6 lg:px-8 lg:pb-10 lg:pt-8">
           <div className="mb-2">
             <h1 className="text-2xl font-semibold">Orders</h1>
             <p className="text-sm text-muted-foreground">
@@ -28,8 +29,7 @@ export default async function VendorPopUpOrdersPage({
             successMessage={params.success}
             errorMessage={params.error}
           />
-        </section>
-      </div>
+      </section>
     </main>
   );
 }

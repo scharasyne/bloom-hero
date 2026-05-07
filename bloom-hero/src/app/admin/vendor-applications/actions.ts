@@ -6,7 +6,6 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { logActivity } from "@/app/admin/actions/activity-log";
 import { DetailLine } from "@/typess";
-import { normalizeEmail } from "@/lib/utils/email";
 import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
 import { VendorApplicationRecord } from "@/typess";
 

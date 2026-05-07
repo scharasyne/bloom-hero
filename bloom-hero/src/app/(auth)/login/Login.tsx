@@ -31,7 +31,97 @@ export default function Login() {
       setIsSubmitting(false);
       return;
     }
-    router.push(destination.path);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setStatus("Unable to load your account. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const userMetadata = (user.user_metadata as Record<string, unknown> | undefined) ?? {};
+
+    if (userMetadata.must_change_password) {
+      router.replace("/forgot-password");
+      router.refresh();
+      return;
+    }
+
+    const { data: roleData, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (roleError) {
+      setStatus(roleError.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    let role = roleData?.role as string | undefined;
+
+    if (!role) {
+      const { error: upsertUserError } = await supabase
+        .from("users")
+        .upsert(
+          {
+            id: user.id,
+            email: user.email ?? "",
+            role: "customer",
+          },
+          { onConflict: "id" }
+        );
+
+      if (upsertUserError) {
+        setStatus(upsertUserError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { error: upsertCustomerError } = await supabase
+        .from("customers")
+        .upsert({ user_id: user.id }, { onConflict: "user_id" });
+
+      if (upsertCustomerError) {
+        setStatus(upsertCustomerError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      role = "customer";
+    }
+
+    if (role === "admin") {
+      router.push("/admin/vendor-applications");
+    } else if (role === "vendor") {
+      const { data: vendorData, error: vendorError } = await supabase
+        .from("vendors")
+        .select("vendor_type")
+        .eq("owner_id", user.id)
+        .single();
+
+      // Only allow login if vendor record exists
+      if (vendorError || !vendorData) {
+        setStatus("Your account is not registered as a vendor. Please contact support or sign up as a vendor.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (vendorData.vendor_type === "market") {
+        router.push("/market/dashboard");
+      } else {
+        router.push("/pop-up/dashboard");
+      }
+    } else if (role === "customer") {
+      // router.push("/customer/dashboard"); // For testing purposes, redirect to home page instead of customer dashboard
+      router.push("/");
+    } else {
+      router.push("/");
+    }
 
     router.refresh();
     setIsSubmitting(false);

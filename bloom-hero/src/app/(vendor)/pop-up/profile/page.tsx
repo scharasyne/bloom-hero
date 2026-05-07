@@ -1,321 +1,179 @@
-import { redirect } from "next/navigation"
-import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
-import { createSupabaseServerClient } from "@/lib/supabase/server-client"
-import { Icon } from "@iconify/react/dist/iconify.js"
-import { mockUpcomingEvents } from "@/lib/mockData"
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { redirect } from "next/navigation";
 
-type ProductRow = {
-  id: string
-  product_name: string
-  product_image_url: string | null
-  product_images?: { image_url: string; display_order: number }[] | null
-  description: string | null
-  price: number
+import { PopUpGalleryManager } from "@/app/(vendor)/_components/PopUpGalleryManager";
+import { PopUpProfileScheduleEditor } from "@/app/(vendor)/_components/PopUpProfileScheduleEditor";
+import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
+import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader";
+import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor";
+import { getPopupGalleryPhotos } from "@/lib/services/popup-gallery";
+import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions";
+import { getPopUpVendorProfileData } from "@/lib/vendors/pop-up/actions";
+import { getRecentPopUpLocationRequests } from "@/lib/vendors/vendor-actions";
+
+function formatDate(value: string | null) {
+  if (!value) return "Recently";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  return date.toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
-const mockTags = ["Pop-up", "Romantic", "Budget-friendly"]
+export default async function PopUpProfilePage() {
+  const profile = await getPopUpVendorProfileData();
+  const commonProfile = await getVendorCommonProfileByOwner("pop-up");
+  if (!profile) redirect("/login");
+  if (!commonProfile) redirect("/login");
 
-const mockReviews = [
-  { id: "1", name: "Sara Duterte", comment: "Absolutely gorgeous arrangements! My go-to florist for any occasion.", rating: 5, daysAgo: 3 },
-  { id: "2", name: "Bongbong Marcos", comment: "Fresh blooms and very thoughtful wrapping. Will definitely order again.", rating: 5, daysAgo: 3 },
-  { id: "3", name: "Leni Robredo", comment: "Beautiful bouquet quality and fast turnaround. Highly recommended shop.", rating: 5, daysAgo: 5 },
-]
-
-function formatPeso(value: number) {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
-
-function getShopInitial(shopName: string) {
-  const trimmed = shopName?.trim()
-  return trimmed?.length > 0 ? trimmed[0].toUpperCase() : "?"
-}
-
-export default async function Page() {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
-
-  const { data: vendor, error: vendorError } = await supabase
-    .from("vendors")
-    .select("id, shop_name")
-    .eq("owner_id", user.id)
-    .eq("vendor_type", "pop-up")
-    .maybeSingle()
-
-  if (vendorError || !vendor) throw new Error(vendorError?.message || "Pop-up vendor profile not found.")
-
-  let productsData: ProductRow[] | null = null
-  let productsError: any = null
-
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, product_name, product_image_url, description, price, product_images(image_url, display_order)")
-    .eq("vendor_id", vendor.id)
-    .order("created_at", { ascending: false })
-
-  productsData = data as ProductRow[] | null
-  productsError = error
-
-  if (productsError && /product_images|relationship|schema cache|does not exist/i.test(productsError.message)) {
-    const fallback = await supabase
-      .from("products")
-      .select("id, product_name, product_image_url, description, price")
-      .eq("vendor_id", vendor.id)
-      .order("created_at", { ascending: false })
-    productsData = fallback.data as ProductRow[] | null
-    productsError = fallback.error
-  }
-
-  if (productsError) throw new Error(productsError.message)
-
-  const products: ProductRow[] = (productsData ?? []) as ProductRow[]
-  const shopInitial = getShopInitial(vendor.shop_name)
+  const galleryPhotos = await getPopupGalleryPhotos(profile.vendorId);
+  const recentLocationRequests = await getRecentPopUpLocationRequests(profile.vendorId);
 
   return (
-    <div className="min-h-screen bg-[#f5f1ec]" style={{ fontFamily: "'Quicksand', sans-serif" }}>
-      <div className="max-w-4xl mx-auto px-6 py-10">
+    <main className="flex min-h-screen bg-[#fbf7f4]">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <VendorDashboardSidebarCard activeTab="profile" vendorType="pop-up" />
+      </div>
 
-        {/* ── Top: Info left, Hero image right ── */}
-        <div className="flex flex-col md:flex-row gap-8 mb-8">
-          <div className="flex-1">
-            <h1 className="text-[40px] font-bold text-[#1f1f1f] tracking-tight leading-tight">
-              {vendor.shop_name}
-            </h1>
-            <div className="flex items-center gap-1.5 mt-2 text-[#6f6a65] text-[14px] font-medium">
-              <Icon icon="mdi:map-marker-outline" width={16} height={16} />
-              <span>Cebu City</span>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {mockTags.map((tag) => (
-                <span key={tag} className="px-3 py-1 rounded-full border border-[#d6d0c8] bg-white text-[#3a3633] text-[13px] font-medium">
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="mt-4 flex flex-col gap-2 text-[14px] text-[#4c4742]">
-              <div className="flex items-center gap-2">
-                <Icon icon="mdi:phone-outline" width={16} height={16} color="#7a7a7a" />
-                <span>0998 123 4567</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Icon icon="mdi:clock-outline" width={16} height={16} color="#7a7a7a" />
-                <span>Schedule Varies</span>
-              </div>
-            </div>
-          </div>
+      <section className="w-full px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6 lg:px-8 lg:pb-10 lg:pt-8">
+        <VendorProfileHeader profile={commonProfile} previewHref={`/vendors/pop-up/${profile.vendorId}`} />
 
-          {/* Hero image */}
-          <div className="md:w-[300px] lg:w-[340px] shrink-0">
-            <div className="w-full h-[200px] rounded-2xl overflow-hidden bg-[#e8dfd5] flex items-center justify-center text-5xl font-bold text-[#998f84]">
-              {shopInitial}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Nav tabs ── */}
-        <div className="border-b border-[#ddd8d0] mb-8">
+        <div className="border-b border-[#ddd8d0] pb-1.5 mt-8">
           <nav className="flex gap-6 text-[14px] font-medium text-[#8b847c]">
             {["Schedule", "Gallery", "Reviews", "About"].map((tab) => (
-            <a
-              key={tab}
-              href={`#${tab.toLowerCase()}`}
-              className={`pb-2.5 transition-colors hover:text-[#1f1f1f] ${
-                tab === "Schedule"
-                  ? "border-b-2 border-[#1f1f1f] text-[#1f1f1f] font-semibold"
-                  : ""
-              }`}
-            >
-              {tab}
-            </a>
-          ))}
+              <a
+                key={tab}
+                href={`#${tab.toLowerCase()}`}
+                className="pb-2.5 transition-colors hover:text-[#1f1f1f]"
+              >
+                {tab}
+              </a>
+            ))}
           </nav>
         </div>
 
-        {/* ── Schedule + Request form ── */}
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* Schedule */}
-          <div className="flex-1" id="schedule">
-            <h2 className="text-[28px] font-bold text-[#1f1f1f] tracking-tight">Schedule</h2>
-            <p className="text-[14px] text-[#8b847c] mt-1 mb-6">Where and when these blooms appear</p>
-
-            <div className="flex flex-col gap-3">
-              {mockUpcomingEvents.map((event, idx) => (
-                <div key={idx} className="flex gap-4 items-stretch group">
-
-                  {/* Date block */}
-                  <div className="flex flex-col items-center justify-center min-w-[60px] bg-white border border-[#e8e3dc] rounded-2xl shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] group-hover:border-[#d24b46] transition-all duration-200">
-                    <span className="text-[10px] font-bold text-[#d24b46] tracking-widest uppercase">{event.date.month}</span>
-                    <span className="text-[24px] font-black text-[#1f1f1f] leading-none">{event.date.day}</span>
-                  </div>
-
-                  {/* Event card */}
-                  <div className="flex-1 bg-white border border-[#e8e3dc] rounded-2xl px-4 py-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.1)] group-hover:border-[#c5bfb7] transition-all duration-200">
-
-                    {/* Title + time row */}
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[13px] font-bold text-[#1f1f1f] tracking-wide uppercase">{event.title}</p>
-                      <span className="text-[11px] font-semibold text-white bg-[#2f5d3a] px-2.5 py-0.5 rounded-full">
-                        {event.time}
+        <div className="space-y-14 pt-8">
+          <section id="schedule" className="scroll-mt-20">
+            <h2 className="text-[28px] font-bold tracking-tight text-[#1f1f1f]">Schedule</h2>
+            <p className="mb-2 mt-1 text-[14px] text-[#8b847c]">Where and when these blooms appear</p>
+            <PopUpProfileScheduleEditor />
+            <div className="mt-5 flex flex-col gap-3">
+              {profile.schedules.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-[#d8d0c7] bg-white px-4 py-5 text-sm text-[#7a746e]">
+                  No upcoming schedules yet.
+                </p>
+              ) : (
+                profile.schedules.map((event) => (
+                  <div key={event.id} className="rounded-2xl border border-[#e8e3dc] bg-white px-4 py-3.5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-[13px] font-bold uppercase tracking-wide text-[#1f1f1f]">
+                        {formatDate(event.scheduledDate)}
+                      </p>
+                      <span className="rounded-full bg-[#2f5d3a] px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                        {(event.startTime ? new Date(event.startTime).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" }) : "TBD")}
+                        {event.endTime
+                          ? ` - ${new Date(event.endTime).toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}`
+                          : ""}
                       </span>
                     </div>
-
-                    {/* Location */}
                     <div className="flex items-start gap-1.5">
                       <Icon icon="mdi:map-marker-outline" width={13} height={13} color="#d24b46" className="mt-0.5 shrink-0" />
-                      <p className="text-[12px] text-[#6f6a65] leading-relaxed">{event.location}</p>
-                    </div>
-
-                    {/* Hours note */}
-                    <div className="flex items-start gap-1.5 mt-1">
-                      <Icon icon="mdi:clock-outline" width={13} height={13} color="#8b847c" className="mt-0.5 shrink-0" />
-                      <p className="text-[12px] text-[#8b847c] leading-relaxed">Open {event.time}, or until stocks last.</p>
-                    </div>
-
-                    {/* Status badge */}
-                    <div className="mt-2.5">
-                      <span className="text-[11px] font-semibold text-[#2f5d3a] bg-[#eef4f0] border border-[#cce0d4] px-2 py-0.5 rounded-full">
-                        {event.status}
-                      </span>
+                      <p className="text-[12px] leading-relaxed text-[#6f6a65]">{event.location}</p>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </div>
-
-          {/* Request form */}
-          <div className="lg:w-[260px] shrink-0">
-            <div className="bg-white border border-[#e8e3dc] rounded-3xl p-6 sticky top-6 shadow-[0_4px_20px_rgba(0,0,0,0.07)]">
-
-              {/* Form header */}
-              <div className="flex flex-col items-center mb-5">
-                <div className="w-9 h-9 rounded-full bg-[#eef4f0] border border-[#cce0d4] flex items-center justify-center mb-3">
-                  <Icon icon="mdi:map-marker-plus-outline" width={18} height={18} color="#2f5d3a" />
-                </div>
-                <h3 className="text-[12px] font-bold text-[#1f1f1f] tracking-widest uppercase text-center">
-                  Pop Up Location Request
-                </h3>
-                <p className="text-[11px] text-[#8b847c] text-center mt-1">
-                  Tell us where you'd like to see us next
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3.5">
-                {[
-                  { label: "City / Municipality", type: "text", icon: "mdi:city-variant-outline" },
-                  { label: "Barangay", type: "text", icon: "mdi:home-group" },
-                  { label: "Landmark", type: "text", icon: "mdi:flag-outline" },
-                  { label: "Preferred Date", type: "date", icon: "mdi:calendar-outline" },
-                ].map(({ label, type, icon }) => (
-                  <div key={label}>
-                    <label className="flex items-center gap-1.5 text-[12px] font-semibold text-[#4c4742] mb-1.5">
-                      <Icon icon={icon} width={13} height={13} color="#8b847c" />
-                      {label}
-                    </label>
-                    <input
-                      type={type}
-                      className="w-full border border-[#d6d0c8] rounded-xl px-3 py-2 text-[13px] bg-[#faf8f5] text-[#1f1f1f] focus:outline-none focus:border-[#2f5d3a] focus:bg-white transition-all placeholder:text-[#c5bfb7]"
-                    />
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  className="w-full mt-1 bg-[#d24b46] hover:bg-[#b83d39] active:scale-[0.98] text-white font-bold text-[12px] tracking-widest uppercase py-3 rounded-full transition-all shadow-[0_4px_12px_rgba(210,75,70,0.3)] hover:shadow-[0_6px_16px_rgba(210,75,70,0.4)]"
-                >
-                  Submit Request
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Gallery ── */}
-        <section id="gallery" className="mt-14">
-          <h2 className="text-[28px] font-bold text-[#1f1f1f] tracking-tight">Gallery</h2>
-          <p className="text-[14px] text-[#8b847c] mt-1 mb-6">Handcrafted, ready-to-go bouquets for any occasion.</p>
-          {products.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d8d0c7] px-5 py-7 text-sm text-[#7a746e]">
-              No bouquets published yet.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map((product) => {
-                const imageUrls = (product.product_images ?? [])
-                  .slice()
-                  .sort((a, b) => a.display_order - b.display_order)
-                  .map((img) => img.image_url)
-                  .filter((url) => typeof url === "string" && url.trim().length > 0)
-                const primaryImageUrl = imageUrls[0] ?? product.product_image_url
-                return (
-                  <article key={product.id} className="overflow-hidden rounded-2xl border border-[#ece5dd] bg-[#faf8f5] shadow-[0_4px_18px_rgba(0,0,0,0.05)]">
-                    <div className="relative h-44 w-full bg-[#e8dfd5]">
-                      {primaryImageUrl ? (
-                        <ProductCardImageCarousel
-                          imageUrls={imageUrls.length > 0 ? imageUrls : [primaryImageUrl]}
-                          productName={product.product_name}
-                          imageClassName="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-[#998f84]">
-                          {shopInitial}
-                        </div>
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-[#262321]">Most recent location requests</h3>
+              <div className="mt-3 space-y-2">
+                {recentLocationRequests.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed border-[#d8d0c7] bg-white px-4 py-3 text-xs text-[#7a746e]">
+                    No location requests yet.
+                  </p>
+                ) : (
+                  recentLocationRequests.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-[#e8e3dc] bg-white px-3 py-2 text-sm text-[#4c4742]"
+                    >
+                      <p>{item.location}</p>
+                      <p className="text-xs text-[#8b847c]">
+                        {item.requestedDate
+                          ? new Date(item.requestedDate).toLocaleDateString("en-PH", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : item.createdAt
+                            ? new Date(item.createdAt).toLocaleString("en-PH", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })
+                            : "Recently"}
+                      </p>
+                      {(item.requestedStartTime || item.requestedEndTime) && (
+                        <p className="text-xs text-[#8b847c]">
+                          {item.requestedStartTime?.slice(0, 5) || "--:--"} -{" "}
+                          {item.requestedEndTime?.slice(0, 5) || "--:--"}
+                        </p>
                       )}
                     </div>
-                    <div className="space-y-1 px-4 pb-4 pt-3">
-                      <h3 className="line-clamp-1 text-[16px] font-semibold text-[#2a2724]">{product.product_name}</h3>
-                      <p className="text-[15px] font-semibold text-[#2a2724]">{formatPeso(Number(product.price) || 0)}</p>
-                      <p className="line-clamp-2 text-[13px] text-[#80786f]">
-                        {product.description?.trim() || "Freshly arranged bouquet made with seasonal blooms."}
-                      </p>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section id="gallery" className="scroll-mt-20">
+            <h2 className="text-[28px] font-bold tracking-tight text-[#1f1f1f]">Gallery</h2>
+            <p className="mb-6 mt-1 text-[14px] text-[#8b847c]">
+              Upload pop-up photos, then edit the caption, location, and event from the photo itself.
+            </p>
+            <PopUpGalleryManager vendorId={profile.vendorId} initialPhotos={galleryPhotos} />
+          </section>
+
+          <section id="reviews" className="scroll-mt-20">
+            <h2 className="text-[28px] font-bold tracking-tight text-[#1f1f1f]">Reviews</h2>
+            <VendorProfileEditor initialReviews={profile.reviews} />
+            <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
+              {profile.reviews.length === 0 ? (
+                <p className="md:col-span-3 rounded-2xl border border-dashed border-[#d8d0c7] bg-white px-4 py-5 text-sm text-[#7a746e]">
+                  No reviews yet.
+                </p>
+              ) : (
+                profile.reviews.map((review) => (
+                  <article key={review.id} className="rounded-2xl border border-[#ece5dd] bg-white px-5 py-4">
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-sm font-bold text-[#2f5d3a]">
+                        {review.customerName.trim().charAt(0).toUpperCase() || "C"}
+                      </div>
+                      <p className="text-[14px] font-semibold text-[#2a2724]">{review.customerName}</p>
+                    </div>
+                    <p className="leading-relaxed text-[13px] text-[#4c4742]">{review.comment}</p>
+                    <div className="mt-3 flex items-center justify-between text-[13px]">
+                      <span className="text-[#f5ad2e]">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+                      <span className="text-[#8b847c]">{formatDate(review.reviewDate)}</span>
                     </div>
                   </article>
-                )
-              })}
+                ))
+              )}
             </div>
-          )}
-        </section>
+          </section>
 
-        {/* ── Reviews ── */}
-        <section id="reviews" className="mt-14">
-          <h2 className="text-[28px] font-bold text-[#1f1f1f] tracking-tight">Reviews</h2>
-          <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {mockReviews.map((review) => (
-              <article key={review.id} className="rounded-2xl border border-[#ece5dd] bg-white px-5 py-4">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-sm font-bold text-[#2f5d3a]">
-                    {review.name[0]}
-                  </div>
-                  <p className="text-[14px] font-semibold text-[#2a2724]">{review.name}</p>
-                </div>
-                <p className="text-[13px] text-[#4c4742] leading-relaxed">{review.comment}</p>
-                <div className="mt-3 flex items-center justify-between text-[13px]">
-                  <span className="text-[#f5ad2e]">{"★".repeat(review.rating)}</span>
-                  <span className="text-[#8b847c]">{review.daysAgo} days ago</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ── About ── */}
-        <section id="about" className="mt-14 mb-16">
-          <h2 className="text-[28px] font-bold text-[#1f1f1f] tracking-tight">About</h2>
-          <div className="mt-4 rounded-2xl border border-[#ece5dd] bg-white px-6 py-5">
-            <p className="text-[14px] leading-7 text-[#4c4742]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et odio eros. Vivamus vitae
-              elementum justo. Mauris volutpat suscipit ante, in hendrerit mauris tincidunt vitae.
-            </p>
-          </div>
-        </section>
-
-      </div>
-    </div>
-  )
+          <section id="about" className="mb-16 scroll-mt-20">
+            <h2 className="text-[28px] font-bold tracking-tight text-[#1f1f1f]">About</h2>
+            <div className="mt-4 rounded-2xl border border-[#ece5dd] bg-white px-6 py-5">
+              <p className="leading-7 text-[14px] text-[#4c4742]">{profile.aboutText}</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  );
 }

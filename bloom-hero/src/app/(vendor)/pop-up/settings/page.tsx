@@ -5,11 +5,11 @@ import { PopUpSettings } from "@/app/(vendor)/_components/settings/pop-up-settin
 
 export default function PopUpSettingsPage() {
   return (
-    <main className="flex h-screen bg-[#fbf7f4]" style={{ fontFamily: "'Quicksand', sans-serif" }}>
-      <div className="lg:p-6">
+    <main className="flex min-h-screen bg-[#fbf7f4]" style={{ fontFamily: "'Quicksand', sans-serif" }}>
+      <div className="p-4 sm:p-6 lg:p-8">
         <VendorDashboardSidebarCard activeTab="settings" vendorType="pop-up" />
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6 lg:px-8 lg:pb-10 lg:pt-8">
         <PopUpSettings />
       </div>
     </main>
