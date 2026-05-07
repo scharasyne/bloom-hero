@@ -60,7 +60,7 @@ export default async function CustomerPayOrderPage({
 					</p>
 					<div className="mt-4 flex gap-3">
 						<a
-							href="/orders?tab=to-pay"
+							href="/orders?tab=to-ship"
 							className="rounded-full bg-[#d24b46] px-5 py-2 text-sm font-semibold text-white"
 						>
 							Back to Orders

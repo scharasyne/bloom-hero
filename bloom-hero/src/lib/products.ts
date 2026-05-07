@@ -13,6 +13,7 @@ export type ProductDetailRow = {
   price: number;
   description?: string | null;
   created_at?: string;
+  stocks?: number | null;
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
@@ -28,6 +29,7 @@ export type ProductReviewRow = {
   rating: number;
   comment: string | null;
   reviewDate: string;
+  status?: "pending" | "approved" | "rejected" | null;
 };
 
 type ProductCategoryRow = { product_id: string; category: { category_name: string } | null };
@@ -36,7 +38,7 @@ export async function getProductById(id: string) {
   const supabase = await createSupabaseServerClient();
 
   // Try to include product_images relation if it exists
-  const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, product_images(image_url, display_order)";
+  const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, stocks, product_images(image_url, display_order)";
   const { data: productRowsWithImages, error: productsError } = await supabase
     .from("products")
     .select(selectWithImages)
@@ -49,7 +51,7 @@ export async function getProductById(id: string) {
     // Attempt fallback without images relation
     const { data: productRowsNoImages, error: fallbackError } = await supabase
       .from("products")
-      .select("id, vendor_id, product_name, product_image_url, price, description, created_at")
+      .select("id, vendor_id, product_name, product_image_url, price, description, created_at, stocks")
       .eq("id", id)
       .limit(1)
       .maybeSingle();
@@ -125,22 +127,23 @@ export async function getProductById(id: string) {
   return { data: result, error: null };
 }
 
-export async function getProductReviewsByVendorId(vendorId: string) {
+export async function getProductReviewsByProductId(productId: string) {
   const supabase = await createSupabaseServerClient();
 
-  if (!vendorId || vendorId.trim() === "") {
-    console.warn("getProductReviewsByVendorId: vendorId is empty or missing");
+  if (!productId || productId.trim() === "") {
+    console.warn("getProductReviewsByProductId: productId is empty or missing");
     return { data: [] as ProductReviewRow[], error: null };
   }
 
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
-    .select("id, customer_id, rating, comment, review_date")
-    .eq("vendor_id", vendorId)
+    .select("id, customer_id, rating, comment, review_date, status")
+    .eq("product_id", productId)
+    .or("status.is.null,status.neq.rejected")
     .order("review_date", { ascending: false });
 
   if (reviewError) {
-    console.error("getProductReviewsByVendorId Supabase error:", reviewError.message || JSON.stringify(reviewError));
+    console.error("getProductReviewsByProductId Supabase error:", reviewError.message || JSON.stringify(reviewError));
     return { data: [] as ProductReviewRow[], error: reviewError };
   }
 
@@ -172,6 +175,7 @@ export async function getProductReviewsByVendorId(vendorId: string) {
     rating: Number(review.rating) || 0,
     comment: review.comment ?? null,
     reviewDate: review.review_date,
+    status: (review as { status?: ProductReviewRow["status"] }).status ?? null,
   }));
 
   return { data: reviews, error: null };

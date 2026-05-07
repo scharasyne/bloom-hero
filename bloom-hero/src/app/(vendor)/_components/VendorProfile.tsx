@@ -3,11 +3,21 @@ import { redirect } from "next/navigation"
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
-import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor"
+import {
+  VendorReviewsSection,
+  type VendorOrderDetails,
+  type VendorReviewCard,
+} from "./VendorReviewsSection"
 import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader"
 import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions"
 
 type vendorType = 'market' | 'pop-up';
+
+type VendorProfileRow = {
+  id: string
+  shop_name: string
+  vendor_type: string | null
+}
 
 type ProductRow = {
   id: string
@@ -24,15 +34,7 @@ type ReviewRow = {
   rating: number
   comment: string | null
   review_date: string | null
-}
-
-type VendorProfileRow = {
-  id: string
-  shop_name: string
-  vendor_type: string | null
-  location?: string | null
-  phone_number?: string | null
-  schedule?: string | null
+  order_id: string | null
 }
 
 function formatPeso(value: number) {
@@ -155,8 +157,9 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
 
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
-    .select("id, customer_id, rating, comment, review_date")
+    .select("id, customer_id, rating, comment, review_date, order_id")
     .eq("vendor_id", vendor.id)
+    .or("status.is.null,status.neq.rejected")
     .order("review_date", { ascending: false })
     .limit(3)
 
@@ -175,14 +178,68 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
     (reviewerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
   )
 
-  const editableReviews = reviews.map((review) => ({
+  const reviewCards: VendorReviewCard[] = reviews.map((review) => ({
     id: review.id,
-    customerId: review.customer_id,
     customerName: reviewerMap.get(review.customer_id) ?? "Customer",
     rating: review.rating,
-    comment: review.comment?.trim() || "",
+    comment: review.comment,
     reviewDate: review.review_date,
+    orderId: review.order_id,
   }))
+
+  const orderIds = Array.from(new Set(reviews.map((review) => review.order_id).filter(Boolean))) as string[]
+  let orderDetailsById: Record<string, VendorOrderDetails> = {}
+
+  if (orderIds.length > 0) {
+    const { data: orderRows, error: orderError } = await supabase
+      .from("orders")
+      .select(
+        "id, status, order_date, total_amount, customer_id, order_items(quantity, subtotal, products(product_name, product_image_url))"
+      )
+      .in("id", orderIds)
+      .eq("vendor_id", vendor.id)
+
+    if (orderError) {
+      throw new Error(orderError.message)
+    }
+
+    const orderList = orderRows ?? []
+    const customerIds = Array.from(
+      new Set(orderList.map((order: any) => order.customer_id).filter(Boolean))
+    ) as string[]
+
+    const { data: customerRows } = customerIds.length
+      ? await supabase.from("users").select("id, name, email").in("id", customerIds)
+      : { data: [] }
+
+    const customerMap = new Map(
+      (customerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
+    )
+
+    orderDetailsById = orderList.reduce((acc: Record<string, VendorOrderDetails>, order: any) => {
+      const orderItems = Array.isArray(order.order_items) ? order.order_items : []
+      const items = orderItems.map((item: any) => {
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return {
+          productName: product?.product_name ?? "Product",
+          quantity: Number(item.quantity) || 0,
+          subtotal: Number(item.subtotal) || 0,
+          imageUrl: product?.product_image_url ?? null,
+        }
+      })
+
+      acc[order.id] = {
+        id: order.id,
+        status: order.status ?? "unknown",
+        orderDate: order.order_date ? new Date(order.order_date).toLocaleString() : "",
+        totalAmount: Number(order.total_amount) || 0,
+        customerName: order.customer_id ? customerMap.get(order.customer_id) ?? "Customer" : null,
+        items,
+      }
+
+      return acc
+    }, {})
+  }
 
   return (
     // <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
@@ -222,10 +279,6 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
             </nav>
           </div>
         </div>
-
-        <VendorProfileEditor
-          initialReviews={editableReviews}
-        />
 
         {/* Bouquets */}
         <section id="bouquets" className="mt-10 scroll-mt-20">
@@ -310,82 +363,10 @@ export default async function VendorProfilePage({ type }: { type: vendorType }) 
         </section>
 
         {/* Reviews */}
-        <section id="reviews" className="mt-14 scroll-mt-20">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-[#262321]">
-                Reviews
-              </h2>
-              <p className="mt-1 text-sm text-[#8d867d]">
-                What customers are saying about this shop.
-              </p>
-            </div>
-            <span className="hidden text-xs text-[#8b847c] sm:inline">
-              Showing {reviews.length} recent reviews
-            </span>
-          </div>
-
-          {reviews.length === 0 ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-[#d8d0c7] bg-[#fbf8f4] px-5 py-7 text-sm text-[#7a746e]">
-              <p className="font-medium text-[#4a453f]">No reviews yet.</p>
-              <p className="mt-1">Customer feedback will appear here once reviews are submitted.</p>
-            </div>
-          ) : (
-            <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-              {reviews.map((review) => {
-                const reviewerName = reviewerMap.get(review.customer_id) ?? "Customer"
-                const reviewerInitial = reviewerName.trim().charAt(0).toUpperCase() || "C"
-                const reviewDate = review.review_date
-                  ? new Date(review.review_date)
-                  : null
-
-                return (
-                  <article
-                    key={review.id}
-                    className="flex h-full flex-col rounded-2xl border border-[#ece5dd] bg-[#fbf9f6] px-5 py-5 shadow-[0_6px_20px_rgba(15,23,42,0.05)]"
-                  >
-                    <div className="mb-3 flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9e7da] text-xs font-semibold text-[#2f5d3a]">
-                        {reviewerInitial}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#2a2724]">
-                          {reviewerName}
-                        </h3>
-                        <p className="text-[11px] text-[#9a9289]">
-                          {reviewDate
-                            ? reviewDate.toLocaleDateString("en-PH", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })
-                            : "Recently"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="flex-1 text-sm leading-relaxed text-[#4c4742]">
-                      {review.comment?.trim() || "Customer left a rating."}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between text-xs">
-                      <span className="text-[#f5ad2e]">
-                        {"★".repeat(review.rating)}
-                        {"☆".repeat(5 - review.rating)}
-                      </span>
-                      <button
-                        type="button"
-                        className="text-[#8b847c] underline-offset-2 hover:underline"
-                      >
-                        View details
-                      </button>
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-          )}
-        </section>
+        <VendorReviewsSection
+          reviews={reviewCards}
+          orderDetailsById={orderDetailsById}
+        />
 
         {/* About */}
         <section id="about" className="mt-14 scroll-mt-20">

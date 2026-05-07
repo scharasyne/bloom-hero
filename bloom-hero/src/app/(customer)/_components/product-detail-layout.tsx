@@ -112,8 +112,8 @@ function Headline({ product, reviewCount, reviews }: { product: ProductDetailRow
   const revs = reviews ?? [];
   const averageRating = revs.length > 0
     ? revs.reduce((sum, review) => sum + review.rating, 0) / revs.length
-    : (product?.average_rating ?? 0);
-  const safeRating = Math.max(0, Math.min(5, Math.round(averageRating)));
+    : null;
+  const safeRating = Math.max(0, Math.min(5, Math.round(averageRating ?? 0)));
 
   return (
     <div className="flex flex-col gap-[12px]">
@@ -130,7 +130,7 @@ function Headline({ product, reviewCount, reviews }: { product: ProductDetailRow
             ))}
           </div>
           <span className="text-[16px] font-semibold text-[#1f1f1f]">
-            {averageRating ? Number(averageRating).toFixed(1) : "—"}
+            {averageRating !== null ? Number(averageRating).toFixed(1) : "—"}
           </span>
         </div>
         <span className="text-[16px] text-[#6b6b6b]">({reviewCount} {reviewCount === 1 ? "review" : "reviews"})</span>
@@ -143,18 +143,14 @@ function Headline({ product, reviewCount, reviews }: { product: ProductDetailRow
   );
 }
 
-function Tags() {
+function Tags({ categories }: { categories: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <span className="rounded-full bg-[#f3eee8] px-3 py-1 text-[14px] text-[#4d4a46]">
-        Fresh
-      </span>
-      <span className="rounded-full bg-[#f3eee8] px-3 py-1 text-[14px] text-[#4d4a46]">
-        Handmade
-      </span>
-      <span className="rounded-full bg-[#f3eee8] px-3 py-1 text-[14px] text-[#4d4a46]">
-        For delivery
-      </span>
+      {(categories.length > 0 ? categories : ["Uncategorized"]).map((category) => (
+        <span key={category} className="rounded-full bg-[#f3eee8] px-3 py-1 text-[14px] text-[#4d4a46]">
+          {category}
+        </span>
+      ))}
     </div>
   );
 }
@@ -166,7 +162,7 @@ function PriceStock({ product }: { product: ProductDetailRow | null }) {
       <div className="bg-[#2f5d3a] flex gap-[6px] items-center px-[12px] py-[6px] rounded-[999px]">
         <Icon icon="mdi:check" className="size-[18px] text-white shrink-0" />
         <span className="font-medium text-[14px] text-white whitespace-nowrap">
-          In Stock ({product?.sold_count ?? 0} available)
+          In Stock ({product?.stocks ?? 0} available)
         </span>
       </div>
     </div>
@@ -245,10 +241,12 @@ function Cta({ onAddToCart, onBuyNow, addingLoading, buyingLoading }: { onAddToC
 }
 
 function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading, reviews }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean; reviews?: ProductReviewRow[] }) {
+  const categories = product?.categories ?? [];
+
   return (
     <div className="flex max-w-[560px] flex-col gap-[32px]">
       <Headline product={product} reviewCount={reviewCount} reviews={reviews} />
-      <Tags />
+      <Tags categories={categories} />
       <PriceStock product={product} />
       <p className="text-[16px] leading-7 text-[#3a3733]">
         {product?.description ?? "No description available for this product."}
@@ -275,6 +273,7 @@ type ReviewCardProps = {
   review: string;
   rating: number;
   date: string;
+  approved?: boolean;
 };
 
 function Stars({ rating }: { rating: number }) {
@@ -291,7 +290,7 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function ReviewCard({ name, review, rating, date }: ReviewCardProps) {
+function ReviewCard({ name, review, rating, date, approved = false }: ReviewCardProps) {
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -306,7 +305,16 @@ function ReviewCard({ name, review, rating, date }: ReviewCardProps) {
           {initials || "C"}
         </div>
         <div className="flex flex-col">
-          <p className="text-[16px] font-bold text-[#1f1f1f]">{name}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[16px] font-bold text-[#1f1f1f]">{name}</p>
+            {approved ? (
+              <Icon
+                icon="mdi:check-decagram"
+                className="size-[16px] text-[#2e7d5b]"
+                aria-label="Approved review"
+              />
+            ) : null}
+          </div>
           <Stars rating={rating} />
         </div>
       </div>
@@ -363,6 +371,7 @@ function ReviewsSection({ reviews }: { reviews: ProductReviewRow[] }) {
               review={review.comment ?? ""}
               rating={review.rating}
               date={formatReviewDate(review.reviewDate)}
+              approved={review.status === "approved"}
             />
           ))}
         </div>
