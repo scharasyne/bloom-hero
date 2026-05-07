@@ -80,7 +80,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
     return (
       <div className="flex flex-col gap-3 w-full sm:w-auto">
         {/* FIX 7: Countdown left-aligned, actions right-aligned — no more floating center */}
-        <PaymentCountdown orderDate={order.orderDate} />
+        {hasReceipt ? null : <PaymentCountdown orderDate={order.orderDate} />}
         <div className="flex items-center gap-2.5 justify-end flex-wrap">
           <div className="flex items-baseline gap-1.5">
             <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Amount Due</span>
@@ -132,7 +132,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
           <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-5 py-2 text-xs font-semibold text-blue-700">
-          Vendor is preparing your order
+          Awaiting vendor confirmation
         </span>
       </div>
     );
@@ -206,7 +206,9 @@ export function OrderCard({ order, activeTab }: { order: OrderGroup; activeTab: 
   const badge =
     activeTab === "to-pay" && order.receiptProofUrl
       ? { ...STATUS_BADGE[activeTab], label: "Pending Confirmation" }
-      : STATUS_BADGE[activeTab];
+      : activeTab === "to-ship" && order.status === "confirmed"
+        ? { ...STATUS_BADGE[activeTab], label: "Confirmed" }
+        : STATUS_BADGE[activeTab];
 
   return (
     <section className="rounded-2xl bg-white border border-[#e6e2dd] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">

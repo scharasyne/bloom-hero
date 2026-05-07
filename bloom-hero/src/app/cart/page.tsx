@@ -301,10 +301,6 @@ export default function CartPage() {
           total_amount: vendorTotal,
         };
 
-        if (selectedPaymentMethod === "cod") {
-          updatePayload.payment_confirmed_at = new Date().toISOString();
-        }
-
         // If there are unselected items in this vendor's order, move them to a new
         // pending order before checking out so they remain in the cart.
         const unselectedItemsForVendor = cartItems.filter(
