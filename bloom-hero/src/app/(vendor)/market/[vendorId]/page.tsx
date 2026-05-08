@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-
-import CustomerVendorProfile from "../../_components/CustomerVendorProfile";
+import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
 import { getVendorProducts, getVendorProfile } from "@/lib/vendors/vendor-actions";
 
 export const metadata: Metadata = {
@@ -23,7 +22,8 @@ export default async function MarketVendorPage({ params }: MarketVendorPageProps
   ]);
 
   if (!vendor) {
-    redirect("/customer/dashboard");
+    // redirect("/customer/dashboard");
+    redirect("/search?scope=vendors");
   }
 
   return (

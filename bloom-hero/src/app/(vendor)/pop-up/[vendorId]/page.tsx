@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import CustomerVendorProfile from "../../_components/CustomerVendorProfile";
-import CustomerVendorSchedulePanel from "../../_components/CustomerVendorSchedulePanel";
+import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
+import CustomerVendorSchedulePanel from "@/app/(vendor)/_components/CustomerVendorSchedulePanel";
 import {
+  getPopUpGalleryPhotosByVendor,
   getVendorProfile,
   getVendorProducts,
+  getVendorReviews,
   getPopUpSchedule,
 } from "@/lib/vendors/vendor-actions";
 
@@ -24,14 +26,24 @@ export default async function PopUpVendorPage({
 }: PopUpVendorPageProps) {
   const { vendorId } = await params;
 
-  const [vendor, products, schedule] = await Promise.all([
+  /*
+    TO BE ADDED: what to do if its not a popup vendor
+    OR: check if there are already previous checks that'll render role checking here 
+    redundant or useless
+  */
+
+  const [vendor, products, schedule, galleryPhotos, reviews] = await Promise.all([
     getVendorProfile(vendorId),
     getVendorProducts(vendorId),
     getPopUpSchedule(vendorId),
+    getPopUpGalleryPhotosByVendor(vendorId),
+    getVendorReviews(vendorId),
   ]);
 
+  
   if (!vendor) {
-    redirect("/customer/dashboard");
+    // redirect("/customer/dashboard");
+    redirect("/search?scope=vendors");
   }
 
   return (
@@ -42,6 +54,8 @@ export default async function PopUpVendorPage({
             vendorId={vendor.id}
             vendor={vendor}
             products={products}
+            reviews={reviews}
+            galleryPhotos={galleryPhotos}
             vendorType="pop-up"
           />
         </div>
