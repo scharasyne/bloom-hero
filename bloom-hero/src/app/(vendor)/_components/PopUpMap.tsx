@@ -27,6 +27,7 @@ function parseDate(value: string | null | undefined) {
 export default function PopUpMap({ initialVendors }: PopUpMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
+  const mapInitTokenRef = useRef(0);
   const [activeVendor, setActiveVendor] = useState<PopUpMapVendor | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -80,14 +81,17 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    const container = mapRef.current as HTMLDivElement & { _leaflet_id?: number };
-    if (container._leaflet_id) {
-      (mapInstanceRef.current as any)?.remove();
+    const initToken = ++mapInitTokenRef.current;
+    const existingMap = mapInstanceRef.current as any;
+    if (existingMap) {
+      existingMap.remove();
       mapInstanceRef.current = null;
     }
 
-    import("leaflet").then((L) => {
-      if (!mapRef.current) return;
+    let cancelled = false;
+
+    void import("leaflet").then((L) => {
+      if (cancelled || initToken !== mapInitTokenRef.current || !mapRef.current) return;
 
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -133,6 +137,7 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
     });
 
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         (mapInstanceRef.current as any).remove();
         mapInstanceRef.current = null;
