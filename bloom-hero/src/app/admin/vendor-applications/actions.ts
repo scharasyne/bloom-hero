@@ -5,9 +5,9 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { logActivity } from "@/app/admin/actions/activity-log";
-import { DetailLine } from "@/typess";
+import { DetailLine } from "@/types";
 import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
-import { VendorApplicationRecord } from "@/typess";
+import { VendorApplicationRecord } from "@/types";
 
 type ActionResult<T = undefined> = {
   ok: boolean;

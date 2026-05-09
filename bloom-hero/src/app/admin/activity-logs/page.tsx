@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Icon } from "@iconify/react";
-import { ActivityLogType } from "@/typess";
+import { ActivityLogType } from "@/types";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import ActivityLogCard from "@/components/admin/ActivityLogCard";
 

@@ -1,3 +1,7 @@
+/*
+      STILL HARD CODED - IMPLEMENT CHANGES TO DATABASE
+*/
+
 "use client";
 
 import { useState } from "react";

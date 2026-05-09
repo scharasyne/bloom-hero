@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { CartItem as CartItemType } from "@/typess";
+import { CartItem as CartItemType } from "@/types";
 
 const placeholderImages = [
   "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=200&h=200&fit=crop",

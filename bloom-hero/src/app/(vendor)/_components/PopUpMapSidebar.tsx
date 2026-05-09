@@ -1,7 +1,7 @@
 "use client";
 
 import { X, MapPin, Search } from "lucide-react";
-import { PopUpMapVendor } from "@/typess";
+import { PopUpMapVendor } from "@/types";
 import PopUpVendorButton from "./PopUpVendorButton";
 
 interface PopUpMapSidebarProps {

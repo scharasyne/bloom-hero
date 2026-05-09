@@ -1,6 +1,6 @@
 "use client";
 
-import { PopUpMapVendor } from "@/typess";
+import { PopUpMapVendor } from "@/types";
 
 interface PopUpVendorButtonProps {
   vendor: PopUpMapVendor;

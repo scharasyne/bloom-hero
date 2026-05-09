@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { ActivityLog, DetailLine } from "@/typess";
+import { ActivityLog, DetailLine } from "@/types";
 
 type ActivityLogRow = {
   id: string;

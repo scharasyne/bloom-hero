@@ -1,4 +1,4 @@
-import { CartItem, VendorApplication, ActivityLog } from "@/typess";
+import { CartItem, VendorApplication, ActivityLog } from "@/types";
 
 // ─── CART ITEMS ───────────────────────────────────────────
 export const mockCartItems: CartItem[] = [

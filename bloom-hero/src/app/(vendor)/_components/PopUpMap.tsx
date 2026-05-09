@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PopUpMapVendor } from "@/typess";
+import { PopUpMapVendor } from "@/types";
 import PopUpMapSidebar from "./PopUpMapSidebar";
 import PopUpVendorModal from "./PopUpVendorModal";
 

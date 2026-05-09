@@ -90,6 +90,10 @@ export function Toggle({
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  /*
+    Props must be serializable for components in the "use client" entry file. "onChange" is a function that's not a Server Action. 
+    Rename "onChange" either to "action" or have its name end with "Action" e.g. "onChangeAction" to indicate it is a Server Action.
+  */
 }) {
   return (
     <button
@@ -101,8 +105,8 @@ export function Toggle({
       }`}
     >
       <span
-        className={`pointer-events-none inline-block h-[18px] w-[18px] rounded-full bg-white shadow-sm mt-[3px] transition-transform duration-200 ${
-          checked ? "translate-x-[21px]" : "translate-x-[3px]"
+        className={`pointer-events-none inline-block h-4.5 w-4.5 rounded-full bg-white shadow-sm mt-0.75 transition-transform duration-200 ${
+          checked ? "translate-x-5.25" : "translate-x-0.75"
         }`}
       />
     </button>

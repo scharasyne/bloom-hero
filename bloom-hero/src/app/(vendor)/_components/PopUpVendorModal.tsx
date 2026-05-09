@@ -1,7 +1,7 @@
 "use client";
 
 import { X, MapPin, Calendar, User } from "lucide-react";
-import { PopUpMapVendor } from "@/typess";
+import { PopUpMapVendor } from "@/types";
 
 interface PopUpVendorModalProps {
   vendor: PopUpMapVendor;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
-import type { VendorApplicationRecord } from "@/typess";
+import type { VendorApplicationRecord } from "@/types";
 import { useVendorApplications } from "@/hooks/useVendorApplications";
 import ApplicationCard from "@/components/admin/ApplicationCard";
 import type { IssuedVendorCredentials } from "./actions";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@iconify/react";
-import { VendorApplicationRecord } from "@/typess";
+import { VendorApplicationRecord } from "@/types";
 
 type Props = {
   application: VendorApplicationRecord;

@@ -5,7 +5,7 @@ import {
   type IssuedVendorCredentials,
   rejectVendorApplication,
 } from "@/app/admin/vendor-applications/actions";
-import { VendorApplicationRecord } from "@/typess";
+import { VendorApplicationRecord } from "@/types";
 
 export function useVendorApplications() {
   const [data, setData] = useState<VendorApplicationRecord[]>([]);

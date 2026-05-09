@@ -1,7 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { ActivityLogType, DetailLine } from "@/typess";
+import { ActivityLogType, DetailLine } from "@/types";
 
 type ActivityLogInput = {
   adminUserId: string;

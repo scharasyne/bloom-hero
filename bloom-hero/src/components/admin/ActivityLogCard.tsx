@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { ActivityLog, DetailLine } from "@/typess";
+import { ActivityLog, DetailLine } from "@/types";
 
 type Props = { log: ActivityLog };
 

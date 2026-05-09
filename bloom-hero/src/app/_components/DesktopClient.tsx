@@ -3,21 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import Link from "next/link";
+// import Link from "next/link";
 import BestSellersSection from "@/components/BestSellersSection";
 import Footer from "@/components/footer";
 import SearchBar from "@/components/SearchBar";
 import PopUpMap from "@/app/(vendor)/_components/PopUpMap";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { getPopUpMapVendors } from "@/app/map/actions";
-import { mockBouquets } from "@/lib/mockData";
-import { PopUpMapVendor } from "@/typess";
+// import { mockBouquets } from "@/lib/mockData";
+import { PopUpMapVendor } from "@/types";
 
-const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
-const MAX_VISIBLE = 6;
+// const ALL_BOUQUETS = [...mockBouquets].sort((a, b) => b.sold_count - a.sold_count);
+// const MAX_VISIBLE = 6;
 
-type Category = "All" | "Bouquets" | "Plants" | "Handcrafted";
-const CATEGORIES: Category[] = ["All", "Bouquets", "Plants", "Handcrafted"];
+// type Category = "All" | "Bouquets" | "Plants" | "Handcrafted";
+// const CATEGORIES: Category[] = ["All", "Bouquets", "Plants", "Handcrafted"];
 
 function useVendorNavigation() {
   const [user, setUser] = useState<any>(null);
@@ -48,26 +48,26 @@ function Headline() {
   );
 }
 
-function DropdownPill({ label }: { label: string }) {
-  return (
-    <div className="flex gap-1.5 items-center px-2.5 py-1 cursor-pointer hover:bg-[#ede9e3] rounded-xl transition-colors">
-      <p className="font-normal text-[#1f1f1f] text-[12px] whitespace-nowrap">{label}</p>
-      <Icon icon="mdi:chevron-down" width={10} height={10} color="#1f1f1f" />
-    </div>
-  );
-}
+// function DropdownPill({ label }: { label: string }) {
+//   return (
+//     <div className="flex gap-1.5 items-center px-2.5 py-1 cursor-pointer hover:bg-[#ede9e3] rounded-xl transition-colors">
+//       <p className="font-normal text-[#1f1f1f] text-[12px] whitespace-nowrap">{label}</p>
+//       <Icon icon="mdi:chevron-down" width={10} height={10} color="#1f1f1f" />
+//     </div>
+//   );
+// }
 
-function Filters() {
-  return (
-    <div className="flex flex-wrap gap-1 items-center justify-center bg-[#f0ece6] rounded-2xl px-2 py-1.5">
-      <DropdownPill label="Price: Any" />
-      <div className="w-px h-4 bg-[#ddd8d0]" />
-      <DropdownPill label="Sort by: Best Sellers" />
-      <div className="w-px h-4 bg-[#ddd8d0]" />
-      <DropdownPill label="More Filters" />
-    </div>
-  );
-}
+// function Filters() {
+//   return (
+//     <div className="flex flex-wrap gap-1 items-center justify-center bg-[#f0ece6] rounded-2xl px-2 py-1.5">
+//       <DropdownPill label="Price: Any" />
+//       <div className="w-px h-4 bg-[#ddd8d0]" />
+//       <DropdownPill label="Sort by: Best Sellers" />
+//       <div className="w-px h-4 bg-[#ddd8d0]" />
+//       <DropdownPill label="More Filters" />
+//     </div>
+//   );
+// }
 
 function Hero() {
   const router = useRouter();
