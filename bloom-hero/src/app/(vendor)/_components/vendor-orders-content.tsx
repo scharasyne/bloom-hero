@@ -6,7 +6,7 @@ import { VendorOrdersKpis } from "@/app/(vendor)/_components/vendor-orders-kpis"
 import {
   VendorOrdersTable,
   type VendorOrderRow,
-} from "@/app/(vendor)/_components/vendor-orders-table"
+} from "@/features/vendors/components/vendor-orders-table"
 
 export type VendorOrderFilter =
   | "All"

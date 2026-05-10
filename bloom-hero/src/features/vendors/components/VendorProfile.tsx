@@ -7,7 +7,7 @@ import {
   VendorReviewsSection,
   type VendorOrderDetails,
   type VendorReviewCard,
-} from "../../../features/vendors/components/VendorReviewsSection"
+} from "./VendorReviewsSection"
 import { VendorProfileHeader } from "@/features/vendors/components/VendorProfileHeader"
 import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions"
 

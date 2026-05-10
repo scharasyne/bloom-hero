@@ -4,8 +4,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { FormEvent, useEffect, useMemo, useState } from "react"
 
-import { addVendorProductAction, getVendorApplicationStatusAction } from "@/features/vendors/actions/actions"
-import { CategoryPillSelector } from "@/app/(vendor)/_components/CategoryPillSelector"
+import { addVendorProductAction, getVendorApplicationStatusAction } from "@/app/(vendor)/_components/actions"
+import { CategoryPillSelector } from "@/features/categories/components/CategoryPillSelector"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -39,49 +39,60 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const [vendorStatus, setVendorStatus] = useState<string | null>(null)
   const [statusLoading, setStatusLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchVendorStatus() {
-      try {
-        const result = await getVendorApplicationStatusAction(type)
 
-        if (result.message) {
-          console.error("Failed to fetch vendor status:", result.message)
-          setVendorStatus(null)
-          return
-        }
+  /*
+    THIS, BELOW, IS ALREADY DONE.
+    YOU CAN FIND THE VENDOR STATUS IN /features/vendor/queries/get-current-vendor-status.ts
+  */
+  // useEffect(() => {
+  //   async function fetchVendorStatus() {
+  //     try {
+  //       const result = await getVendorApplicationStatusAction(type)
 
-        setVendorStatus(result.status ?? null)
-      } finally {
-        setStatusLoading(false)
-      }
-    }
-    fetchVendorStatus()
-  }, [type])
+  //       if (result.message) {
+  //         console.error("Failed to fetch vendor status:", result.message)
+  //         setVendorStatus(null)
+  //         return
+  //       }
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("id, category_name")
-          .order("category_name", { ascending: true })
+  //       setVendorStatus(result.status ?? null)
+  //     } finally {
+  //       setStatusLoading(false)
+  //     }
+  //   }
+  //   fetchVendorStatus()
+  // }, [type])
 
-        if (error) {
-          throw new Error(error.message)
-        }
 
-        setCategories((data ?? []) as CategoryOption[])
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Unable to load categories right now."
-        )
-      } finally {
-        setCategoriesLoading(false)
-      }
-    }
+  /*
+    THIS, BELOW, IS ALREADY DONE.
+    YOU CAN FIND THE FETCH CATEGORIES IN /features/categories/queries/fetch-categories.ts
+  */
 
-    void fetchCategories()
-  }, [supabase])
+  // useEffect(() => {
+  //   async function fetchCategories() {
+  //     try {
+  //       const { data, error } = await supabase
+  //         .from("categories")
+  //         .select("id, category_name")
+  //         .order("category_name", { ascending: true })
+
+  //       if (error) {
+  //         throw new Error(error.message)
+  //       }
+
+  //       setCategories((data ?? []) as CategoryOption[])
+  //     } catch (error) {
+  //       setErrorMessage(
+  //         error instanceof Error ? error.message : "Unable to load categories right now."
+  //       )
+  //     } finally {
+  //       setCategoriesLoading(false)
+  //     }
+  //   }
+
+  //   void fetchCategories()
+  // }, [supabase])
 
   useEffect(() => {
     return () => {

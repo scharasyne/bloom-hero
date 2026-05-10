@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { PopUpGalleryManager } from "@/app/(vendor)/_components/PopUpGalleryManager";
 import { PopUpProfileScheduleEditor } from "@/app/(vendor)/_components/PopUpProfileScheduleEditor";
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
-import { VendorProfileHeader } from "@/app/(vendor)/_components/VendorProfileHeader";
+import { VendorProfileHeader } from "@/features/vendors/components/VendorProfileHeader";
 import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor";
 import { getPopupGalleryPhotos } from "@/lib/services/popup-gallery";
 import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions";

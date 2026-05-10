@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
-import { signInWithPasswordAction } from "@/app/(auth)/login/actions"
+import { signInWithPasswordAction } from "@/features/auth/actions/actions"
 
 export function LoginForm({
   className,

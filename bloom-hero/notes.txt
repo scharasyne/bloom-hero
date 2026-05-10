@@ -1,1 +1,28 @@
 if input-group is missing: npx shadcn@latest add input-group
+
+
+to pull supabase locally, not affect production:
+1. open docker
+2. npx supabase start 
+3. npx supabase login
+4. npx supabase link --project-ref [project-ref here, remove the brackets]
+5. npx supabase db pull
+6. if it doesn't work: npx supabase db dump --db-url "postgresql://postgres.[project-ref]:[db-password]@aws-1-ap-south-1.pooler.supabase.com:5432/postgres" -f supabase/migrations/20260510000100_remote_schema.sql
+7. npx supabase db reset
+
+if it says: "The remote database's migration history does not match local files in supabase\migrations directory."
+1. mkdir supabase\migrations_backup
+2. move supabase\migrations\*.sql supabase\migrations_backup\
+3. npx supabase db pull
+
+Run npx supabase db reset only if you already have valid migration files locally and want to rebuild your local database from them.
+
+npx supabase db pull --schema storage: for getting the storage
+npx supabase db pull --schema auth: for getting the auth 
+npx supabase start - to start the local supabase
+
+NEXT_PUBLIC_SUPABASE_URL = the one in APIs -> project url
+NEXT_PUBLIC_SUPABASE_ANON_KEY= the one in auth keys: publishable
+SUPABASE_SERVICE_ROLE_KEY= the one in auth keys: secret
+
+studio - like a local supabase: http://127.0.0.1:54323 

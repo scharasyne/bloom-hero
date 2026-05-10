@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import EditProductModalTrigger from "@/features/vendors/components/EditProductModalTrigger"
+import EditProductModalTrigger from "@/app/(vendor)/_components/EditProductModalTrigger"
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { Button } from "@/components/ui/button"
