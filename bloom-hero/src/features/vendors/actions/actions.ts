@@ -1,7 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
+// import {}
 type VendorType = "registered" | "unregistered";
 
 type ActionResult = {

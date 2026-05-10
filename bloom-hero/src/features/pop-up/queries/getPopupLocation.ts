@@ -1,17 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-export type PopUpLocationRow = {
-  id: string;
-  location: string;
-  scheduled_date: string;
-  start_time: string | null;
-  end_time: string | null;
-  latitude: number | string | null;
-  longitude: number | string | null;
-  vendors: {
-    shop_name: string | null;
-  } | null;
-};
+import { PopUpLocationRow } from "../types";
 
 export async function getPopupLocationsWithVendor() {
   const supabase = await createSupabaseServerClient();
