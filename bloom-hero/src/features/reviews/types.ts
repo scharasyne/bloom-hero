@@ -34,6 +34,18 @@ export type ReviewOrder = {
   }>;
 };
 
+
+export type ProductReviewRow = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+  reviewDate: string;
+  status?: "pending" | "approved" | "rejected" | null;
+};
+
+
 /** Source: `src/app/(customer)/review/actions.ts` */
 export type ReviewPageData = {
   order: ReviewOrder;

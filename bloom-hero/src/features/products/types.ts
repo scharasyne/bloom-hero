@@ -23,16 +23,6 @@ export type ProductDetailRow = {
   sold_count?: number;
 };
 
-export type ProductReviewRow = {
-  id: string;
-  customerId: string;
-  customerName: string;
-  rating: number;
-  comment: string | null;
-  reviewDate: string;
-  status?: "pending" | "approved" | "rejected" | null;
-};
-
 export type ProductImage = {
   id: string;
   product_id: string;

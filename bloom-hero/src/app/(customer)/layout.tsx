@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/require-role";
+import { requireRole } from "@/features/auth/utils/require-role";
 import { getSession } from "@/features/auth/queries/getSession";
 import NavBar from "@/components/navbar";
 

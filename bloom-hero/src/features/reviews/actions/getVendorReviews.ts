@@ -1,5 +1,13 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
+export interface VendorReview {
+  id: string;
+  name: string;
+  comment: string;
+  rating: number;
+  daysAgo: number;
+}
+
 export async function getVendorReviews(vendorId: string): Promise<VendorReview[]> {
   const supabase = await createSupabaseServerClient();
   const { data: reviewRows, error: reviewError } = await supabase

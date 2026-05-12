@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { Icon } from "@iconify/react";
-import type { ProductReviewRow } from "@/features/products/types";
+import { ProductReviewRow } from "../types";
 
 type ReviewCardProps = {
   name: string;
