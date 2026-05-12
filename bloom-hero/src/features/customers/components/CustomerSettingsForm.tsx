@@ -1,12 +1,12 @@
+// Source: `src/app/(customer)/settings/CustomerSettingsForm.tsx`
+
 "use client";
 
 import { useState } from "react";
-import {
-  saveCustomerSettings,
-  updateCustomerEmail,
-  updateCustomerPassword,
-  uploadCustomerPhoto,
-} from "@/app/(customer)/settings/actions";
+import { saveCustomerSettings } from "@/features/customers/actions/saveCustomerSettings";
+import { updateCustomerEmail } from "@/features/customers/actions/updateCustomerEmail";
+import { updateCustomerPassword } from "@/features/customers/actions/updateCustomerPassword";
+import { uploadCustomerPhoto } from "@/features/customers/actions/uploadCustomerPhoto";
 
 type NotificationPreferences = {
   order_updates: boolean;

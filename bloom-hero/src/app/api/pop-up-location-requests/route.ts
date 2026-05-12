@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { submitPopUpLocationRequest } from "@/lib/vendors/vendor-actions";
+import { submitPopUpLocationRequest } from "@/features/pop-up/actions/submitPopupLocationRequest";
 
 export async function POST(request: Request) {
   try {

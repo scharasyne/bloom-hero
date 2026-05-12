@@ -1,7 +1,9 @@
+// Source: `src/app/(customer)/_components/PaymentCountdown.tsx`
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { paymentCountdown } from "../orders/_lib/utils";
+import { paymentCountdown } from "@/features/orders/utils";
 
 function IconClock({ className = "" }: { className?: string }) {
   return (

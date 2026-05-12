@@ -2,13 +2,11 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
 import CustomerVendorSchedulePanel from "@/app/(vendor)/_components/CustomerVendorSchedulePanel";
-import {
-  getPopUpGalleryPhotosByVendor,
-  getVendorProfile,
-  getVendorProducts,
-  getVendorReviews,
-  getPopUpSchedule,
-} from "@/lib/vendors/vendor-actions";
+import { getPopUpGalleryPhotosByVendor } from "@/features/pop-up/queries/getPopupGalleryPhotosByVendor";
+import { getPopUpSchedule } from "@/features/pop-up/queries/getPopupSchedule";
+import { getVendorProfile } from "@/features/vendors/queries/getVendorProfile";
+import { getVendorProducts } from "@/features/products/queries/getVendorProducts";
+import { getVendorReviews } from "@/features/reviews/queries/getVendorReviews";
 
 export const metadata: Metadata = {
   title: "Pop-up Vendor",

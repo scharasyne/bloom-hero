@@ -1,8 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import Footer from "@/components/footer";
-import { ProfileForm } from "../_components/profile-form";
-import { LinkedVendorCredentialsBox } from "../_components/LinkedVendorCredentialsBox";
+import { ProfileForm } from "@/features/customers/components/ProfileForm";
+import { LinkedVendorCredentialsBox } from "@/features/customers/components/LinkedVendorCredentialsBox";
 
 type LinkedVendorCredentials = {
   vendor_user_id: string;

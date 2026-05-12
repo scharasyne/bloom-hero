@@ -2,12 +2,10 @@ import { redirect } from "next/navigation";
 
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import PopUpScheduleClient from "@/app/(vendor)/_components/PopUpScheduleClient";
-import {
-  createPopUpSchedule,
-  getPopUpSchedule,
-  getRecentPopUpLocationRequests,
-  getRequestedLocationRanking,
-} from "@/lib/vendors/vendor-actions";
+import { createPopUpSchedule } from "@/features/pop-up/actions/createPopupSchedule";
+import { getPopUpSchedule } from "@/features/pop-up/queries/getPopupSchedule";
+import { getRecentPopUpLocationRequests } from "@/features/pop-up/queries/getRecentPopupLocationRequests";
+import { getRequestedLocationRanking } from "@/features/pop-up/queries/getTopRequestedLocation";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 export default async function PopUpDashboardPage() {

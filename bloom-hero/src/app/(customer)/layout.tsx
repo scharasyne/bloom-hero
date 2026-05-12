@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/auth/require-role";
-import { getSession } from "@/lib/auth/getSession";
+import { getSession } from "@/features/auth/queries/getSession";
 import NavBar from "@/components/navbar";
 
 export default async function CustomerLayout({ children }: { children: React.ReactNode }) {

@@ -1,11 +1,14 @@
 ﻿import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import Footer from "@/components/footer";
-import { OrderCard } from "../_components/order-card";
-import { TABS } from "./_lib/constants";
-import { groupOrders } from "./_lib/utils";
-import type { OrderItemRow } from "./_lib/types";
-import { TAB_STATUS_MAP, EMPTY_STATE } from "./_lib/constants";
-import type { TabKey } from "./_lib/constants";
+import { OrderCard } from "@/features/orders/components/OrderCard";
+import {
+  TABS,
+  TAB_STATUS_MAP,
+  EMPTY_STATE,
+  type TabKey,
+} from "@/features/orders/constants";
+import { groupOrders } from "@/features/orders/utils";
+import type { OrderItemRow } from "@/features/orders/types";
 
 function IconPackage({ className = "" }: { className?: string }) {
   return (

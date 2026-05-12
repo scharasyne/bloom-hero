@@ -2,10 +2,8 @@
 
 import { useState, useTransition } from "react";
 
-import {
-  type VendorReviewData,
-  updateVendorReviewByOwner,
-} from "@/lib/vendors/reviews/actions";
+import { type VendorReviewData } from "@/features/reviews/types";
+import { updateVendorReviewByOwner } from "@/features/reviews/actions/update-vendor-review";
 
 type Props = {
   initialReviews: VendorReviewData[];

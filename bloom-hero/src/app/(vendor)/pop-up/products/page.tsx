@@ -1,4 +1,4 @@
-import VendorListProductPage from "@/app/(vendor)/_components/ListProduct";
+import VendorListProductPage from "@/features/products/components/ListProduct";
 // import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 
 export default function PopupProductPage(){

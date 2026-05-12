@@ -1,6 +1,6 @@
 import Footer from "@/components/footer";
-import { ReviewForm } from "../_components/ReviewForm";
-import { loadReviewPage } from "./actions";
+import { ReviewForm } from "@/features/reviews/components/ReviewForm";
+import { loadReviewPage } from "@/features/reviews/queries/loadReviewPage";
 
 export const dynamic = "force-dynamic";
 

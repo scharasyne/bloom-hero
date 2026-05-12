@@ -1,4 +1,4 @@
-// Cut from the top of your page.tsx
+// Source: `src/app/(customer)/orders/_lib/types.ts`
 
 export type OrderItemRow = {
   order_id: string;

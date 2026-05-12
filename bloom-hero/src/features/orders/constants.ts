@@ -1,3 +1,11 @@
+// Source: `src/app/(customer)/orders/_lib/constants.ts`
+
+/*
+  —————————————————— IS THIS EVEN NEEDED? ——————————————————
+              REMOVE IF NOT A DEPENDENCY OF ANYTHING
+*/
+
+
 export type TabKey = "to-pay" | "to-ship" | "to-receive" | "completed";
 
 export const TABS: { key: TabKey; label: string }[] = [

@@ -1,7 +1,9 @@
+// Source: `src/app/(customer)/_components/profile-form.tsx`
+
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCustomerProfile } from "../profile/actions";
+import { updateCustomerProfile } from "@/features/users/actions/updateCustomerProfile";
 
 export function ProfileForm({
   defaultName,

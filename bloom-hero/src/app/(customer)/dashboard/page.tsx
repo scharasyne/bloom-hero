@@ -1,9 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { getUserNameById } from "@/lib/services/users";
+import { getUserNameById } from "@/features/users/queries/getUserName";
 
 export default async function CustomerDashboardPage() {
+  /*
+  —————————————————— CHECK THIS ——————————————————
+    IF THERE'S AN ALREADY EXISTING CALL FOR THIS, 
+    JUST USE IT.
+  */
   const supabase = await createSupabaseServerClient();
   const {
     data: { session },

@@ -6,10 +6,10 @@ import { PopUpProfileScheduleEditor } from "@/app/(vendor)/_components/PopUpProf
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import { VendorProfileHeader } from "@/features/vendors/components/VendorProfileHeader";
 import { VendorProfileEditor } from "@/app/(vendor)/_components/VendorProfileEditor";
-import { getPopupGalleryPhotos } from "@/lib/services/popup-gallery";
-import { getVendorCommonProfileByOwner } from "@/lib/vendors/common/actions";
-import { getPopUpVendorProfileData } from "@/lib/vendors/pop-up/actions";
-import { getRecentPopUpLocationRequests } from "@/lib/vendors/vendor-actions";
+import { getPopupGalleryPhotos } from "@/features/pop-up/queries/getPopupGalleryPhotos";
+import { getVendorCommonProfileByOwner } from "@/features/vendors/queries/getVendorCommonProfile";
+import { getPopUpVendorProfileData } from "@/features/pop-up/queries/getPopUpVendorProfileData";
+import { getRecentPopUpLocationRequests } from "@/features/pop-up/queries/getRecentPopupLocationRequests";
 
 function formatDate(value: string | null) {
   if (!value) return "Recently";

@@ -85,6 +85,29 @@ export type CreatePopUpScheduleInput = {
   landmark?: string | null;
 };
 
+export type PopUpProfileSchedule = {
+  id: string;
+  location: string;
+  scheduledDate: string;
+  startTime: string | null;
+  endTime: string | null;
+};
+
+export type PopUpProfileReview = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  rating: number;
+  comment: string;
+  reviewDate: string | null;
+};
+
+export type PopUpVendorProfileData = {
+  vendorId: string;
+  schedules: PopUpProfileSchedule[];
+  reviews: PopUpProfileReview[];
+  aboutText: string;
+};
 
 /*
   ——————————————————————————— SUPABASE ? ———————————————————————————

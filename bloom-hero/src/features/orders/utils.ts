@@ -1,4 +1,6 @@
-// Cut formatPeso, friendlyDate, and the groupOrders logic from page.tsx
+// Source: `src/app/(customer)/orders/_lib/utils.ts`
+
+import type { OrderItemRow, OrderGroup } from "@/features/orders/types";
 
 export function formatPeso(n: number) {
   return `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
@@ -34,9 +36,6 @@ export function paymentCountdown(orderDate: string): { label: string; expired: b
   return { label: `Pay within ${h}h ${m}m or order will be cancelled`, expired: false };
 }
 
-import type { OrderItemRow, OrderGroup } from "./types";
-
-// Cut from inside page.tsx — the for loop that builds ordersMap
 export function groupOrders(rows: OrderItemRow[]): OrderGroup[] {
   const ordersMap = new Map<string, OrderGroup>();
 

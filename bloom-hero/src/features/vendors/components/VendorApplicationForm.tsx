@@ -1,16 +1,16 @@
+// Source: `src/app/(customer)/vendor-application/VendorApplicationForm.tsx`
+
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  getVendorApplicationDraftForCurrentUser,
-  saveVendorApplicationDraft,
-  submitVendorApplication,
-  uploadVendorApplicationDocument,
-} from "./actions";
+import { getVendorApplicationDraftForCurrentUser } from "../actions/getVendorApplicationDraftForCurrentUser";
+import { saveVendorApplicationDraft } from "../actions/saveVendorApplicationDraft";
+import { submitVendorApplication } from "../actions/submitVendorApplication";
+import { uploadVendorApplicationDocument } from "../actions/uploadVendorApplicationDocument";
 import { Upload, CheckCircle2, Info, Check } from "lucide-react";
 import { Icon } from "@iconify/react";
-import { digitsOnly } from "@/lib/utils/phone";
+import { digitsOnly } from "@/features/vendors/utils/phone";
 import { normalizeEmail, isValidEmail } from "@/lib/utils/email";
 
 type Step = 1 | 2 | 3;

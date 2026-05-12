@@ -1,3 +1,5 @@
+// Source: `src/app/(customer)/_components/LinkedVendorCredentialsBox.tsx`
+
 "use client";
 
 import { useState } from "react";

@@ -1,7 +1,8 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getProductById, getProductReviewsByProductId } from "@/lib/products";
-import { ProductDetailLayout } from "@/app/(customer)/_components/product-detail-layout";
+import { getProductById } from "@/features/products/queries/getProductById";
+import { getProductReviewsByProductId } from "@/features/reviews/queries/getProductReviewsByProductId";
+import { ProductDetailLayout } from "@/features/products/components/ProductDetailLayout";
 
 type Props = {
   params: any; // params may be a Promise<{ id: string }>

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
-import { getVendorProducts, getVendorProfile } from "@/lib/vendors/vendor-actions";
+import { getVendorProducts } from "@/features/products/queries/getVendorProducts";
+import { getVendorProfile } from "@/features/vendors/queries/getVendorProfile";
 
 export const metadata: Metadata = {
   title: "Market Vendor",

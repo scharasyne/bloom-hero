@@ -1,8 +1,17 @@
-﻿import type { OrderGroup } from "../orders/_lib/types";
-import { STATUS_BADGE } from "../orders/_lib/constants";
-import type { TabKey } from "../orders/_lib/constants";
-import { formatPeso, friendlyDate } from "../orders/_lib/utils";
-import { PaymentCountdown } from "./PaymentCountdown";
+﻿// Source: `src/app/(customer)/_components/order-card.tsx`
+
+/*
+  —————————————————— CHECK THIS ——————————————————
+  This component is a bit messy and could use some cleanup.
+  It's a bit of a mess and could use some cleanup.
+  It's a bit of a mess and could use some cleanup.
+*/
+
+import type { OrderGroup } from "@/features/orders/types";
+import { STATUS_BADGE } from "@/features/orders/constants";
+import type { TabKey } from "@/features/orders/constants";
+import { formatPeso, friendlyDate } from "@/features/orders/utils";
+import { PaymentCountdown } from "@/features/orders/components/PaymentCountdown";
 
 function IconStorefront({ className = "" }: { className?: string }) {
   return (

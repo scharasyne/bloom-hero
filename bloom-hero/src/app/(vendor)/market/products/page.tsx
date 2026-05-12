@@ -1,4 +1,4 @@
-import VendorListProductPage from "@/app/(vendor)/_components/ListProduct";
+import VendorListProductPage from "@/features/products/components/ListProduct";
 
 export default function MarketProductPage(){
   return(

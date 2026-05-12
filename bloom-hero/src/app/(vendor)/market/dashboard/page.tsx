@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
 import { VendorMarketDashboardContent } from "@/app/(vendor)/_components/VendorMarketDashboardContent";
-import { getVendorStatusByOwner } from "@/lib/vendors/common/actions";
+import { getVendorStatusByOwner } from "@/features/vendors/queries/getVendorStatus";
 
 type VendorStatus = "pending" | "approved" | "rejected";
 

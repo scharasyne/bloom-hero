@@ -1,4 +1,4 @@
-import VendorProfilePage from "@/app/(vendor)/_components/VendorProfile";
+import VendorProfilePage from "@/features/vendors/components/VendorProfile";
 
 export default function MarketProfilePage(){
   return(

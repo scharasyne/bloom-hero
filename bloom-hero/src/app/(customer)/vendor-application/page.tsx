@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getUserBasicProfileById } from "@/features/users/queries/getUserBasicProfile";
 import { redirect } from "next/navigation";
-import VendorApplicationForm from "../_components/VendorApplicationForm";
+import VendorApplicationForm from "@/features/vendors/components/VendorApplicationForm";
 
 export default async function VendorApplicationPage() {
   const supabase = await createSupabaseServerClient();
@@ -12,11 +13,7 @@ export default async function VendorApplicationPage() {
     redirect("/login");
   }
 
-  const { data: userProfile } = await supabase
-    .from("users")
-    .select("email, contact_number")
-    .eq("id", session.user.id)
-    .maybeSingle();
+  const userProfile = await getUserBasicProfileById(session.user.id);
 
   return (
     <main className="min-h-screen bg-primary">

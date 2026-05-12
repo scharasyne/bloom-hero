@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
+import { fetchCategories } from "@/features/categories/queries/fetch-categories"
 
 type vendorType = 'market' | 'pop-up';
 
@@ -61,16 +62,8 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("id, category_name")
-          .order("category_name", { ascending: true })
-
-        if (error) {
-          throw new Error(error.message)
-        }
-
-        setCategories((data ?? []) as CategoryOption[])
+        const data = await fetchCategories()
+        setCategories(data as CategoryOption[])
       } catch (error) {
         setErrorMessage(
           error instanceof Error ? error.message : "Unable to load categories right now."

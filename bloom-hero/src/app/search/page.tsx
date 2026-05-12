@@ -28,7 +28,7 @@ import SearchBar from "@/components/SearchBar";
 import SearchFilters from "@/components/SearchFilters";
 import SkeletonCard from "@/components/SkeletonCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { addToCart as addToCartAction } from "@/app/(customer)/_actions/product-actions";
+import { addToCart as addToCartAction } from "@/features/orders/actions/addToCart";
 
 type SearchScope = "all" | "flowers" | "vendors";
 

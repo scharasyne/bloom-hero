@@ -1,6 +1,7 @@
 "use server";
 
-import { getPopupLocationsWithVendor, PopUpLocationRow } from "@/lib/services/popup-locations";
+import { getPopupLocationsWithVendor } from "@/features/pop-up/queries/getPopupLocation";
+import type { PopUpLocationRow } from "@/features/pop-up/types";
 import { PopUpMapVendor } from "@/types";
 
 function formatShortDate(value: string | null) {

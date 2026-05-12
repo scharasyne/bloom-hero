@@ -1,8 +1,10 @@
+// Source: `src/app/(customer)/review/ReviewForm.tsx`
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { submitCustomerReview } from "./actions";
+import { submitCustomerReview } from "@/features/reviews/actions/submitCustomerReview";
 
 type ReviewFormProps = {
   orderId: string;
@@ -99,4 +101,3 @@ export function ReviewForm({ orderId, vendorId, productId, existingReview }: Rev
     </form>
   );
 }
-

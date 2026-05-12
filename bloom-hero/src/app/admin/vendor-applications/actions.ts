@@ -6,7 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { logActivity } from "@/app/admin/actions/activity-log";
 import { DetailLine } from "@/types";
-import { listSubmittedVendorApplications } from "@/lib/services/vendor-applications";
+import { listSubmittedVendorApplications } from "@/features/vendors/queries/listSubmittedVendorApplications";
 import { VendorApplicationRecord } from "@/types";
 
 type ActionResult<T = undefined> = {

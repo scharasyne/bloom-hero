@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import CustomerSettingsForm from "@/app/(customer)/settings/CustomerSettingsForm";
-import { getCustomerSettingsByUserId } from "@/lib/services/customers";
-import { getUserBasicProfileById } from "@/lib/services/users";
+import CustomerSettingsForm from "@/features/customers/components/CustomerSettingsForm";
+import { getCustomerSettingsByUserId } from "@/features/customers/queries/getCustomerSetting";
+import { getUserBasicProfileById } from "@/features/users/queries/getUserBasicProfile";
 
 export default async function CustomerSettingsPage() {
   const supabase = await createSupabaseServerClient();

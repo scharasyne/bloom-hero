@@ -1,5 +1,5 @@
 import { Quicksand } from "next/font/google";
-import { getSession } from "@/lib/auth/getSession";
+import { getSession } from "@/features/auth/queries/getSession";
 import NavBar from "@/components/navbar";
 import "./globals.css";
 

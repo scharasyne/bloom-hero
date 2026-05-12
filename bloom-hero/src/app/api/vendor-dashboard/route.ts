@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getVendorDashboardData } from "@/lib/vendors/dashboard/actions";
+import { getVendorDashboardData } from "@/features/vendors/queries/getVendorDashboardData";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
