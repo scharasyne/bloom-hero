@@ -1,7 +1,9 @@
+// Origin: src/lib/auth/getSession.ts
+
 import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { getVendorProfileByOwnerId } from "@/lib/services/vendors";
+import { getVendorProfileByOwnerId } from "@/features/vendors/queries/getVendorProfileByOwnerId";
 
 export const getSession = cache(async () => {
   const supabase = await createSupabaseServerClient();
@@ -40,37 +42,3 @@ export const getSession = cache(async () => {
     },
   };
 });
-
-
-
-
-
-
-// import { cache } from "react";
-
-// import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-// export const getSession = cache(async () => {
-//   const supabase = await createSupabaseServerClient();
-
-//   const {
-//     data: { user },
-//     error,
-//   } = await supabase.auth.getUser();
-
-//   if (error || !user) {
-//     return { user: null, profile: null };
-//   }
-
-//   console.log(user.role);
-
-//   return {
-//     user,
-//     profile: {
-//       role: user.app_metadata?.role ?? "customer",
-//       vendor_type: user.app_metadata?.vendor_type ?? null,
-//       name: user.user_metadata?.name ?? null,
-//       vendor_shop_name: user.user_metadata?.vendor_shop_name ?? null,
-//     },
-//   };
-// });

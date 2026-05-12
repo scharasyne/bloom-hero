@@ -59,3 +59,40 @@ export type PopUpLocationRow = {
     shop_name: string | null;
   } | null;
 };
+
+export type RequestedLocationRank = {
+  location: string;
+  count: number;
+};
+
+export type RecentPopUpLocationRequest = {
+  id: string;
+  location: string;
+  createdAt: string | null;
+  requestedDate: string | null;
+  requestedStartTime: string | null;
+  requestedEndTime: string | null;
+};
+
+export type CreatePopUpScheduleInput = {
+  vendorId: string;
+  location: string;
+  scheduledDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  landmark?: string | null;
+};
+
+
+/*
+  ——————————————————————————— SUPABASE ? ———————————————————————————
+*/
+
+type SupabaseLikeError = {
+  message?: string;
+  details?: string | null;
+  hint?: string | null;
+  code?: string;
+};

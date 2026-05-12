@@ -1,40 +1,7 @@
-// import { redirect } from "next/navigation";
-
-// import { getSession } from "@/lib/auth/getSession";
-
-// type AppRole = "admin" | "vendor" | "customer";
-// type vendorRole = "pop-up" | "market";
-// type combinedRole = AppRole | vendorRole;
-
-// export async function requireRole(allowedRoles: combinedRole[]) {
-//   const session = await getSession();
-
-//   if (!session.user) {
-//     redirect("/login");
-//   }
-
-//   let role = session.profile?.role as AppRole | vendorRole | null | undefined;
-  
-//   if(role === "vendor"){
-//     const vendorType = session.profile?.vendor_type;
-//     if(vendorType === "pop-up")
-//       role = "pop-up";
-//     else if (vendorType === "market") role = "market";
-//   }
-
-//   if (!role) {
-//     redirect("/");
-//   }
-
-//   if (!allowedRoles.includes(role)) {
-//     redirect("/");
-//   }
-
-//   return;
-// }
+// Origin: src/lib/auth/require-role.ts
 
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/getSession";
+import { getSession } from "@/features/auth/queries/getSession";
 
 type AppRole = "admin" | "vendor" | "customer";
 type VendorRole = "pop-up" | "market";
