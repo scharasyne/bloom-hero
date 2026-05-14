@@ -1,9 +1,5 @@
-import VendorListProductPage from "@/features/products/components/ListProduct";
+﻿import { redirect } from "next/navigation";
 
-export default function MarketProductPage(){
-  return(
-    <div>
-      <VendorListProductPage type="market"/>
-    </div>    
-  )
+export default function LegacyVendorRouteRedirect() {
+  redirect("/vendor/products");
 }

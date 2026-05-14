@@ -15,7 +15,6 @@ export async function getPopUpVendorProfileData(): Promise<PopUpVendorProfileDat
     .from("vendors")
     .select("id")
     .eq("owner_id", user.id)
-    .eq("vendor_type", "pop-up")
     .maybeSingle<{ id: string }>();
 
   if (vendorError || !vendor) {

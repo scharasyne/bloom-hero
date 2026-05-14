@@ -17,7 +17,7 @@ type BestSellerFlowerRow = {
   product_image_url: string | null;
   price: number;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
   sold_count: number | null;
   categories?: string[];
@@ -120,7 +120,7 @@ export default function BestSellersSection() {
                 price={Number(flower.price) || 0}
                 shop={flower.shop_name ?? "Untitled shop"}
                 distance=""
-                category={flower.categories?.[0] ?? flower.vendor_type ?? "Best Seller"}
+                category={flower.categories?.[0] ?? flower.business_type ?? "Best Seller"}
                 rating={typeof flower.average_rating === "number" ? flower.average_rating : undefined}
                 sold={typeof flower.sold_count === "number" ? flower.sold_count : undefined}
               />

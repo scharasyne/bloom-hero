@@ -6,6 +6,15 @@ export type ProductImageRow = {
   display_order: number;
 };
 
+export type Product = {
+  id: string;
+  product_name: string;
+  product_image_url: string | null;
+  description: string | null;
+  price: number;
+  product_images?: ProductImageRow[] | null;
+};
+
 export type ProductDetailRow = {
   id: string;
   vendor_id: string;
@@ -18,7 +27,7 @@ export type ProductDetailRow = {
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
-  vendor_type?: string | null;
+  business_type?: string | null;
   average_rating?: number | null;
   sold_count?: number;
 };
@@ -42,7 +51,7 @@ export type BestSellerFlowerRow = {
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
-  vendor_type?: string | null;
+  business_type?: string | null;
   average_rating?: number | null;
   sold_count: number;
 };
@@ -50,7 +59,7 @@ export type BestSellerFlowerRow = {
 export type BestSellerVendorRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
   sold_count: number;
 };

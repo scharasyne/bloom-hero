@@ -1,16 +1,16 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-// import {}
-type VendorType = "registered" | "unregistered";
+import { canManageCatalog } from "../utils/catalogAccess";
+import { normalizeBusinessType } from "../utils/normalizeBusinessType";
 
-type ActionResult = {
+type ActionResultWithMessage = {
   ok: boolean;
   message?: string;
   redirectTo?: string;
 };
 
-export async function getVendorApplicationStatusAction(type: VendorType) {
+export async function getVendorApplicationStatusAction() {
   const supabase = await createSupabaseServerClient();
 
   const {
@@ -26,7 +26,6 @@ export async function getVendorApplicationStatusAction(type: VendorType) {
     .from("vendors")
     .select("status")
     .eq("owner_id", user.id)
-    .eq("business_type", type)
     .maybeSingle();
 
   if (error) {
@@ -36,7 +35,7 @@ export async function getVendorApplicationStatusAction(type: VendorType) {
   return { status: (data as { status?: string | null } | null)?.status ?? null };
 }
 
-export async function addVendorProductAction(type: VendorType, formData: FormData): Promise<ActionResult> {
+export async function addVendorProductAction(formData: FormData): Promise<ActionResultWithMessage> {
   const supabase = await createSupabaseServerClient();
 
   try {
@@ -86,16 +85,19 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
 
     const { data: vendor, error: vendorError } = await supabase
       .from("vendors")
-      .select("id, status")
+      .select("id, status, business_type")
       .eq("owner_id", user.id)
-      .eq("vendor_type", type)
-      .maybeSingle();
+      .maybeSingle<{ id: string; status?: string | null; business_type: "registered" | "unregistered" }>();
 
     if (vendorError || !vendor) {
       return { ok: false, message: "Vendor profile not found for this account." };
     }
 
-    if ((vendor as { status?: string | null }).status === "pending") {
+    if (!canManageCatalog(normalizeBusinessType(vendor.business_type) ?? "unregistered")) {
+      return { ok: false, message: "Only registered businesses can list products." };
+    }
+
+    if (vendor.status === "pending") {
       return {
         ok: false,
         message: "Your vendor application is still pending. You cannot add products yet.",
@@ -214,7 +216,7 @@ export async function addVendorProductAction(type: VendorType, formData: FormDat
       console.warn("Warning: Some product images could not be saved to database:", imagesInsertError.message);
     }
 
-    return { ok: true, redirectTo: `/${type}/products` };
+    return { ok: true, redirectTo: "/vendor/products" };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to add product right now.";
     return { ok: false, message };

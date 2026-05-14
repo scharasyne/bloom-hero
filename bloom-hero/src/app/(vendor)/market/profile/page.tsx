@@ -1,7 +1,5 @@
-import VendorProfilePage from "@/features/vendors/components/VendorProfile";
+﻿import { redirect } from "next/navigation";
 
-export default function MarketProfilePage(){
-  return(
-    <VendorProfilePage type="market"/>
-  )
-};
+export default function LegacyVendorRouteRedirect() {
+  redirect("/vendor/profile");
+}

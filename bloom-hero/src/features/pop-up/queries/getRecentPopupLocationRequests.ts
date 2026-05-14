@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
-// import { RecentPopupLocationRequest } from "../types"
+import { RecentPopUpLocationRequest } from "../types"
 
 export async function getRecentPopUpLocationRequests(
   vendorId: string,

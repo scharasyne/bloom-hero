@@ -3,9 +3,10 @@
 import { useState } from "react";
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 import { Star } from "lucide-react";
-import PopUpLocationRequest from "./PopUpLocationRequest";
-
-type VendorType = "market" | "pop-up";
+import PopUpLocationRequest from "@/features/pop-up/components/PopUpLocationRequest";
+import type { BusinessType } from "@/features/vendors/types";
+import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
+import { formatBusinessTypeLabel } from "@/features/vendors/utils/normalizeBusinessType";
 
 interface Product {
   id: string;
@@ -39,7 +40,7 @@ interface CustomerVendorProfileProps {
   vendor: Vendor;
   products: Product[];
   reviews?: Review[];
-  vendorType: VendorType;
+  businessType: BusinessType;
   galleryPhotos?: {
     id: string;
     image_url: string;
@@ -54,9 +55,10 @@ export default function CustomerVendorProfile({
   vendor,
   products,
   reviews = [],
-  vendorType,
+  businessType,
   galleryPhotos = [],
 }: CustomerVendorProfileProps) {
+  const canListProducts = canManageCatalog(businessType);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
   const [selectedGalleryPhotoId, setSelectedGalleryPhotoId] = useState<string | null>(null);
@@ -142,19 +144,17 @@ export default function CustomerVendorProfile({
               </div>
             </div>
 
-            {vendorType === "pop-up" && (
-              <button
-                onClick={() => setShowLocationModal(true)}
-                className="inline-flex h-10 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f]"
-              >
-                Request location
-              </button>
-            )}
+            <button
+              onClick={() => setShowLocationModal(true)}
+              className="inline-flex h-10 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f]"
+            >
+              Request location
+            </button>
           </div>
 
           <div className="mt-6 border-t border-[#ece4dc] pt-3">
             <nav className="flex flex-wrap gap-4 text-sm text-[#8b847c]">
-              {vendorType === "market" ? (
+              {canListProducts ? (
                 <a
                   href="#bouquets"
                   className="border-b-2 border-[#2f5d3a] pb-1 font-medium text-[#2f5d3a]"
@@ -162,16 +162,12 @@ export default function CustomerVendorProfile({
                   Bouquets
                 </a>
               ) : null}
-              {vendorType === "pop-up" ? (
-                <>
-                  <a
-                    href="#gallery"
-                    className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
-                  >
-                    Gallery
-                  </a>
-                </>
-              ) : null}
+              <a
+                href="#gallery"
+                className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
+              >
+                Gallery
+              </a>
               <a
                 href="#reviews"
                 className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
@@ -188,8 +184,7 @@ export default function CustomerVendorProfile({
           </div>
         </div>
 
-        {vendorType === "pop-up" ? (
-          <section id="gallery" className="mt-8 scroll-mt-20">
+        <section id="gallery" className="mt-8 scroll-mt-20">
             <h2 className="text-lg font-semibold tracking-tight text-[#262321]">Gallery</h2>
             {galleryPhotos.length === 0 ? (
               <p className="mt-1 text-sm text-[#8d867d]">No gallery photos yet.</p>
@@ -225,10 +220,9 @@ export default function CustomerVendorProfile({
               </div>
             )}
           </section>
-        ) : null}
 
         {/* Bouquets */}
-        {vendorType === "market" ? (
+        {canListProducts ? (
           <section id="bouquets" className="mt-10 scroll-mt-20">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-[#262321]">

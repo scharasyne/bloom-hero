@@ -1,10 +1,5 @@
-import VendorListProductPage from "@/features/products/components/ListProduct";
-// import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card";
+﻿import { redirect } from "next/navigation";
 
-export default function PopupProductPage(){
-  return(
-    <div className="p-4 sm:p-6 lg:p-8">
-      <VendorListProductPage type="pop-up"/>
-    </div>      
-  )
+export default function LegacyVendorRouteRedirect() {
+  redirect("/vendor/products");
 }

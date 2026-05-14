@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
-import CustomerVendorSchedulePanel from "@/app/(vendor)/_components/CustomerVendorSchedulePanel";
+import CustomerVendorProfile from "@/features/vendors/components/CustomerVendorProfile";
+import CustomerVendorSchedulePanel from "@/features/pop-up/components/CustomerVendorSchedulePanel";
 import { getPopUpGalleryPhotosByVendor } from "@/features/pop-up/queries/getPopupGalleryPhotosByVendor";
 import { getPopUpSchedule } from "@/features/pop-up/queries/getPopupSchedule";
 import { getVendorProfile } from "@/features/vendors/queries/getVendorProfile";
 import { getVendorProducts } from "@/features/products/queries/getVendorProducts";
-import { getVendorReviews } from "@/features/reviews/queries/getVendorReviews";
+import { getVendorReviews } from "@/features/reviews/actions/getVendorReviews";
 
 export const metadata: Metadata = {
   title: "Pop-up Vendor",
@@ -54,7 +54,7 @@ export default async function PopUpVendorPage({
             products={products}
             reviews={reviews}
             galleryPhotos={galleryPhotos}
-            vendorType="pop-up"
+            businessType={vendor.business_type ?? "unregistered"}
           />
         </div>
 

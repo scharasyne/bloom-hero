@@ -4,7 +4,7 @@
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getVendorApplicationDraftForCurrentUser } from "../actions/getVendorApplicationDraftForCurrentUser";
+import { getVendorApplicationDraftForCurrentUser } from "../queries/getVendorApplicationDraftForCurrentUser";
 import { saveVendorApplicationDraft } from "../actions/saveVendorApplicationDraft";
 import { submitVendorApplication } from "../actions/submitVendorApplication";
 import { uploadVendorApplicationDocument } from "../actions/uploadVendorApplicationDocument";
@@ -13,8 +13,10 @@ import { Icon } from "@iconify/react";
 import { digitsOnly } from "@/features/vendors/utils/phone";
 import { normalizeEmail, isValidEmail } from "@/lib/utils/email";
 
+import type { BusinessType } from "@/features/vendors/types";
+import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
+
 type Step = 1 | 2 | 3;
-type VendorType = "market" | "pop-up";
 type VatRegistrationStatus = "vat-registered" | "non-vat-registered";
 
 type VendorApplicationFormProps = {
@@ -56,7 +58,7 @@ type VendorApplicationDraft = {
   shop_address: string | null;
   email: string | null;
   phone_number: string | null;
-  vendor_type: VendorType | null;
+  business_type: BusinessType | null;
   government_id_type: string | null;
   taxpayer_identification_number: string | null;
   vat_registration_status: VatRegistrationStatus | null;
@@ -142,8 +144,8 @@ export default function VendorApplicationForm({
   const [email, setEmail] = useState(initialEmail);
   const raw = digitsOnly(initialPhoneParts.localNumber);
   const [phoneNumber, setPhoneNumber] = useState(raw.slice(-10));
-  const [vendorType, setVendorType] = useState<VendorType>("market");
-  const isPopUpVendor = vendorType === "pop-up";
+  const [businessType, setBusinessType] = useState<BusinessType>("registered");
+  const isUnregisteredBusiness = businessType === "unregistered";
 
   const [primaryBusinessDocumentType] = useState("DTI Certificate");
   const [governmentIdType, setGovernmentIdType] = useState("");
@@ -174,7 +176,8 @@ export default function VendorApplicationForm({
         const local10 = raw.replace(/^63/, "").slice(-10);
         setPhoneNumber(local10);
 
-        if (data.vendor_type === "market" || data.vendor_type === "pop-up") setVendorType(data.vendor_type);
+        const normalizedBusinessType = normalizeBusinessType(data.business_type);
+        if (normalizedBusinessType) setBusinessType(normalizedBusinessType);
 
         setGovernmentIdType(data.government_id_type ?? "");
         setTin(data.taxpayer_identification_number ?? "");
@@ -216,7 +219,7 @@ export default function VendorApplicationForm({
   function validateStepTwo() {
     if (!governmentIdType) return "Please select a Government ID Type.";
     if (!governmentIdDocumentFile && !existingGovernmentIdDocumentUrl) return "Please upload your Government ID document.";
-    if (isPopUpVendor) return "";
+    if (isUnregisteredBusiness) return "";
     if (!tin.trim()) return "Taxpayer Identification Number (TIN) is required.";
     if (!/^[0-9-]{9,15}$/.test(tin.trim())) return "TIN must be 9 to 15 characters and can only include numbers and dashes.";
     if (!vatRegistrationStatus) return "Please select your VAT registration status.";
@@ -246,7 +249,7 @@ export default function VendorApplicationForm({
         shopAddress,
         email,
         phoneNumber,
-        vendorType,
+        businessType,
         governmentIdType,
         tin,
         vatRegistrationStatus,
@@ -277,11 +280,11 @@ export default function VendorApplicationForm({
         governmentIdDocumentUrl = await uploadDocument(governmentIdDocumentFile, "government-id");
         setExistingGovernmentIdDocumentUrl(governmentIdDocumentUrl);
       }
-      if (!isPopUpVendor && primaryBusinessDocumentFile) {
+      if (!isUnregisteredBusiness && primaryBusinessDocumentFile) {
         primaryBusinessDocumentUrl = await uploadDocument(primaryBusinessDocumentFile, "primary-business-document");
         setExistingPrimaryBusinessDocumentUrl(primaryBusinessDocumentUrl);
       }
-      if (!isPopUpVendor && birCertificateFile) {
+      if (!isUnregisteredBusiness && birCertificateFile) {
         birCertificateUrl = await uploadDocument(birCertificateFile, "bir-certificate");
         setExistingBirCertificateUrl(birCertificateUrl);
       }
@@ -291,7 +294,7 @@ export default function VendorApplicationForm({
         shopAddress,
         email,
         phoneNumber,
-        vendorType,
+        businessType,
         governmentIdType,
         tin,
         vatRegistrationStatus,
@@ -419,36 +422,7 @@ export default function VendorApplicationForm({
                 </FormField>
               </div>
 
-              {/* Shop Type */}
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-[#2D2926]">Shop Type *</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {(["market", "pop-up"] as VendorType[]).map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setVendorType(type)}
-                      className={`relative rounded-xl border-2 p-4 text-left transition-all ${
-                        vendorType === type
-                          ? "border-[#D24B46] bg-[#D24B46]/5"
-                          : "border-[#E8E4DE] bg-white hover:border-[#D24B46]/40"
-                      }`}
-                    >
-                      {vendorType === type && (
-                        <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#D24B46] text-white">
-                          <Check size={11} strokeWidth={3} />
-                        </span>
-                      )}
-                      <p className="pr-6 text-sm font-bold capitalize text-[#2D2926]">
-                        {type === "market" ? "Market" : "Pop-Up"}
-                      </p>
-                      <p className="mt-0.5 text-xs text-[#6D6863]">
-                        {type === "market" ? "Permanent storefront" : "Occasional seller"}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <BusinessTypePicker businessType={businessType} onChange={setBusinessType} />
             </div>
           </div>
         )}
@@ -464,8 +438,8 @@ export default function VendorApplicationForm({
             <div className="flex items-start gap-3 rounded-xl border border-[#D24B46]/15 bg-[#D24B46]/5 p-4 text-sm text-[#2D2926]">
               <Info className="mt-0.5 shrink-0 text-[#D24B46]" size={16} />
               <p className="leading-relaxed">
-                {isPopUpVendor
-                  ? "For pop-up applications, only a valid government ID is required at this stage."
+                {isUnregisteredBusiness
+                  ? "Unregistered businesses only need a valid government ID at this stage."
                   : "Accurate details ensure smooth payouts and compliance with local tax regulations."}
               </p>
             </div>
@@ -502,7 +476,7 @@ export default function VendorApplicationForm({
               </div>
 
               {/* Market-only fields */}
-              {!isPopUpVendor && (
+              {!isUnregisteredBusiness && (
                 <div className="space-y-6 border-t border-[#E8E4DE] pt-6">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <FormField label="Primary Business Document *">
@@ -685,5 +659,46 @@ export default function VendorApplicationForm({
         .input-style[readonly] { background-color: #F0EDEA; color: #A39E96; cursor: not-allowed; }
       `}</style>
     </section>
+  );
+}
+
+const BUSINESS_TYPE_OPTIONS: Array<{ value: BusinessType; title: string; description: string }> = [
+  { value: "registered", title: "Registered", description: "Can list products and receive orders" },
+  { value: "unregistered", title: "Unregistered", description: "Pop-up schedule and requests only" },
+];
+
+function BusinessTypePicker({
+  businessType,
+  onChange,
+}: {
+  businessType: BusinessType;
+  onChange: (value: BusinessType) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-semibold text-[#2D2926]">Business registration *</label>
+      <div className="grid grid-cols-2 gap-3">
+        {BUSINESS_TYPE_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={`relative rounded-xl border-2 p-4 text-left transition-all ${
+              businessType === option.value
+                ? "border-[#D24B46] bg-[#D24B46]/5"
+                : "border-[#E8E4DE] bg-white hover:border-[#D24B46]/40"
+            }`}
+          >
+            {businessType === option.value && (
+              <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#D24B46] text-white">
+                <Check size={11} strokeWidth={3} />
+              </span>
+            )}
+            <p className="pr-6 text-sm font-bold text-[#2D2926]">{option.title}</p>
+            <p className="mt-0.5 text-xs text-[#6D6863]">{option.description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

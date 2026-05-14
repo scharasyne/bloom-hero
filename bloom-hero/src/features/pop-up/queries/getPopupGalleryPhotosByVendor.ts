@@ -1,6 +1,13 @@
-/*
-        FIND OUT THE DIFFERENCE OF THIS AND THE OTHER ONE
-*/
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+
+export type PopUpGalleryPhoto = {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  location: string | null;
+  event_name: string | null;
+};
+
 export async function getPopUpGalleryPhotosByVendor(
   vendorId: string
 ): Promise<PopUpGalleryPhoto[]> {

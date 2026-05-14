@@ -40,7 +40,6 @@ export async function updateVendorCommonProfileByOwner(input: {
     .select("id")
     .eq("id", input.vendorId)
     .eq("owner_id", user.id)
-    .eq("business_type", input.businessType)
     .maybeSingle<{ id: string }>();
 
   if (vendorError || !vendor) {

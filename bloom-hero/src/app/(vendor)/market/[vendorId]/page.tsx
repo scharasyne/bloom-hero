@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import CustomerVendorProfile from "@/app/(vendor)/_components/CustomerVendorProfile";
+import CustomerVendorProfile from "@/features/vendors/components/CustomerVendorProfile";
 import { getVendorProducts } from "@/features/products/queries/getVendorProducts";
 import { getVendorProfile } from "@/features/vendors/queries/getVendorProfile";
 
@@ -33,7 +33,7 @@ export default async function MarketVendorPage({ params }: MarketVendorPageProps
         vendorId={vendor.id}
         vendor={vendor}
         products={products}
-        vendorType="market"
+        businessType={vendor.business_type ?? "registered"}
       />
     </main>
   );

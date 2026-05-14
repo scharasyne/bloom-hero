@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { VendorApplicationRecord } from "@/types";
+import { formatBusinessTypeLabel } from "@/features/vendors/utils/normalizeBusinessType";
 
 type Props = {
   application: VendorApplicationRecord;
@@ -42,10 +43,8 @@ function DocBadge({ label, passed }: { label: string; passed: boolean }) {
   );
 }
 
-function formatVendorType(value: VendorApplicationRecord["vendor_type"]) {
-  if (value === "market") return "Market Stall";
-  if (value === "pop-up") return "Pop-up Vendor";
-  return "Unknown";
+function formatBusinessType(value: VendorApplicationRecord["business_type"]) {
+  return formatBusinessTypeLabel(value);
 }
 
 function formatTiming(value: VendorApplicationRecord["business_submission_timing"]) {
@@ -67,7 +66,7 @@ export default function ApplicationCard({ application, onApprove, onReject, isSe
     shop_address,
     email,
     phone_number,
-    vendor_type,
+    business_type,
     business_submission_timing,
     primary_business_document_type,
     primary_business_document_url,
@@ -85,7 +84,7 @@ export default function ApplicationCard({ application, onApprove, onReject, isSe
 
   const referenceDate = submitted_at ?? created_at;
   const ageChip = getAgeChip(referenceDate);
-  const isPopUpVendor = vendor_type === "pop-up";
+  const isUnregisteredBusiness = business_type === "unregistered";
   const hasDocuments = Boolean(primary_business_document_url || government_id_document_url || bir_certificate_url);
 
   const formattedDate = new Date(referenceDate).toLocaleDateString("en-PH", {
@@ -98,7 +97,7 @@ export default function ApplicationCard({ application, onApprove, onReject, isSe
     {
       label: primary_business_document_type ?? "Primary Business Document",
       url: primary_business_document_url,
-      required: !isPopUpVendor,
+      required: !isUnregisteredBusiness,
     },
     {
       label: government_id_type ?? "Government ID",
@@ -108,7 +107,7 @@ export default function ApplicationCard({ application, onApprove, onReject, isSe
     {
       label: "BIR Certificate",
       url: bir_certificate_url,
-      required: !isPopUpVendor,
+      required: !isUnregisteredBusiness,
     },
   ];
 
@@ -146,7 +145,7 @@ export default function ApplicationCard({ application, onApprove, onReject, isSe
           <div className="flex flex-col gap-0.5">
             <p className="font-semibold text-[24px] text-[#2c2a28] leading-8">{shop_name ?? "Untitled application"}</p>
             <p className="text-[#7a746e] text-[16px] leading-6">
-              {formatVendorType(vendor_type)} • Submitted {formattedDate}
+              {formatBusinessType(business_type)} • Submitted {formattedDate}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getVendorProfileByOwnerId } from "./getVendorProfileByOwnerId";
+import type { BusinessType } from "../types";
 
-export async function getVendorTypeByOwnerId(ownerId: string) {
+export async function getBusinessTypeByOwnerId(ownerId: string) {
   const vendor = await getVendorProfileByOwnerId(ownerId);
-  return vendor?.vendor_type as VendorLegacyType | null | undefined;
+  return vendor?.business_type as BusinessType | null | undefined;
 }

@@ -72,13 +72,11 @@ export default function ForgotPassword() {
         if (role === "vendor") {
             const { data: vendorData } = await supabase
                 .from("vendors")
-                .select("vendor_type")
+                .select("id")
                 .eq("owner_id", user.id)
                 .maybeSingle();
 
-            return vendorData?.vendor_type === "pop-up"
-                ? "/pop-up/dashboard"
-                : "/market/dashboard";
+            return vendorData ? "/vendor/dashboard" : "/";
         }
 
         return "/";

@@ -2,10 +2,9 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import type { VendorCommonProfile, BusinessType } from "../types";
+import { normalizeBusinessType } from "../utils/normalizeBusinessType";
 
-export async function getVendorCommonProfileByOwner(
-  businessType: BusinessType
-): Promise<VendorCommonProfile | null> {
+export async function getVendorCommonProfileByOwner(): Promise<VendorCommonProfile | null> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -15,9 +14,8 @@ export async function getVendorCommonProfileByOwner(
 
   const { data: vendor, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, shop_name, vendor_type, location_text, phone_number, opens_at, closes_at, about")
+    .select("id, shop_name, business_type, location_text, phone_number, opens_at, closes_at, about")
     .eq("owner_id", user.id)
-    .eq("business_type", businessType)
     .maybeSingle<{
       id: string;
       shop_name: string | null;
@@ -48,13 +46,11 @@ export async function getVendorCommonProfileByOwner(
   const scheduleLabel =
     scheduleStart && scheduleEnd
       ? `${scheduleStart.slice(0, 5)} - ${scheduleEnd.slice(0, 5)}`
-      : businessType === "pop-up" //not sure what to do with this
-        ? "See schedule tab"
-        : "Set schedule in profile";
+      : "See schedule tab";
 
   return {
     vendorId: vendor.id,
-    businessType: vendor.business_type,
+    businessType: normalizeBusinessType(vendor.business_type) ?? "unregistered",
     shopName: vendor.shop_name?.trim() || "Vendor Shop",
     location: vendor.location_text?.trim() || "",
     phoneNumber: vendor.phone_number?.trim() || "",

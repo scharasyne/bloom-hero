@@ -4,13 +4,11 @@ import { FormEvent, useEffect, useMemo, useState } from "react"
 import { Icon } from "@iconify/react/dist/iconify.js"
 import { Modal } from "@/components/Modal"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
-import {
-  addPopupGalleryPhoto,
-  deletePopupGalleryPhoto,
-  PopupGalleryPhoto,
-  updatePopupGalleryPhoto,
-  uploadPopupGalleryImage,
-} from "@/lib/services/popup-gallery"
+import { addPopupGalleryPhoto } from "@/features/pop-up/actions/addPopupGalleryPhoto"
+import { deletePopupGalleryPhoto } from "@/features/pop-up/actions/deletePopupGalleryPhoto"
+import { updatePopupGalleryPhoto } from "@/features/pop-up/actions/updatePopupGalleryPhoto"
+import { uploadPopupGalleryImage } from "@/features/pop-up/actions/uploadGalleryImage"
+import { PopupGalleryPhoto } from "@/features/pop-up/types"
 
 type PopUpGalleryManagerProps = {
   vendorId: string

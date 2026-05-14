@@ -1,9 +1,5 @@
-import VendorAddProductPage from "@/app/(vendor)/_components/AddProduct";
+﻿import { redirect } from "next/navigation";
 
-export default function PopupAddProduct(){
-    return(
-        <div className="p-4 sm:p-6 lg:p-8">
-            <VendorAddProductPage type="pop-up" />
-        </div>
-    )
-};
+export default function LegacyVendorRouteRedirect() {
+  redirect("/vendor/add-product");
+}

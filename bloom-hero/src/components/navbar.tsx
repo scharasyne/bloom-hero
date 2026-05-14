@@ -20,7 +20,7 @@ type SessionData =
         role?: string;
         name?: string | null;
         email?: string | null;
-        vendor_type?: string | null;
+        business_type?: string | null;
         vendor_shop_name?: string | null;
         username?: string | null; //newly added for nav bar enhancement, allows displaying username in nav bar if available
       };
@@ -61,7 +61,7 @@ export default function NavBar({
   
   const user = session?.user || null;
   const role = session?.profile?.role;
-  const vendor_type = session?.profile?.vendor_type;
+  const business_type = session?.profile?.business_type;
   const vendor_name = session?.profile?.vendor_shop_name;
 
   const displayName =

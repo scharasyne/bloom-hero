@@ -56,20 +56,20 @@ export async function getProductById(id: string) {
 
   // Vendor metadata
   let shop_name: string | null = null;
-  let vendor_type: string | null = null;
+  let business_type: string | null = null;
   let average_rating: number | null = null;
 
   if (product.vendor_id) {
     const { data: vendorRows } = await supabase
       .from("vendors")
-      .select("shop_name, vendor_type, average_rating")
+      .select("shop_name, business_type, average_rating")
       .eq("id", product.vendor_id)
       .limit(1)
       .maybeSingle();
 
     if (vendorRows) {
       shop_name = vendorRows.shop_name ?? null;
-      vendor_type = vendorRows.vendor_type ?? null;
+      business_type = vendorRows.business_type ?? null;
       average_rating = vendorRows.average_rating ?? null;
     }
   }
@@ -90,7 +90,7 @@ export async function getProductById(id: string) {
     ...product,
     categories,
     shop_name,
-    vendor_type,
+    business_type,
     average_rating,
     sold_count,
   };

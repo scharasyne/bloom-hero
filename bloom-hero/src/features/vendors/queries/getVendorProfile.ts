@@ -6,7 +6,7 @@ export async function getVendorProfile(vendorId: string): Promise<Vendor | null>
 
   const { data, error } = await supabase
     .from("vendors")
-    .select("id, shop_name, about, location_text, phone_number, opens_at, closes_at")
+    .select("id, shop_name, business_type, about, location_text, phone_number, opens_at, closes_at")
     .eq("id", vendorId)
     .maybeSingle();
 

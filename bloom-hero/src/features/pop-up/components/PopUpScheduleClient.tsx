@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Icon } from "@iconify/react";
 import { X } from "lucide-react";
-import type { RecentPopUpLocationRequest, RequestedLocationRank } from "@/lib/vendors/vendor-actions";
+import type { RecentPopUpLocationRequest, RequestedLocationRank } from "@/features/pop-up/types";
 import type { LeafletMouseEvent, Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
 
 type UpcomingPopUp = {

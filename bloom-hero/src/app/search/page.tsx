@@ -58,7 +58,7 @@ type SearchFlowerRow = {
 type SearchVendorRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
 };
 
@@ -115,10 +115,8 @@ function mapPriceFilter(value: string) {
 function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
   const rating =
     typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
-  const vendorTypePath =
-    vendor.vendor_type === "market" || vendor.vendor_type === "pop-up" ? vendor.vendor_type : null;
-  const profileHref = vendorTypePath
-    ? `/vendors/${vendorTypePath}/${vendor.id}`
+  const profileHref = vendor.id
+    ? `/vendors/${vendor.id}`
     : `/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`;
 
   return (
@@ -126,7 +124,7 @@ function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
       <div className="flex items-start justify-between gap-3 px-5 py-5">
         <div className="flex flex-col gap-2">
           <span className="inline-flex w-fit rounded-full bg-[#f3eee8] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a7a7a]">
-            {vendor.vendor_type ?? "Vendor"}
+            {vendor.business_type ?? "Vendor"}
           </span>
           <h3 className="text-[20px] font-semibold leading-tight text-[#1f1f1f]">
             {vendor.shop_name ?? "Untitled vendor"}

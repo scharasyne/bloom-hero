@@ -53,7 +53,7 @@ function VendorCard({
   onUnsuspend: (id: string) => void;
 }) {
   const isSuspended = vendor.status === "suspended";
-  const isMarket = vendor.vendorType === "market";
+  const isRegistered = vendor.businessType === "registered";
 
   return (
     <div className="bg-white rounded-[16px] w-full border border-[#e6e2dd] shadow-[0px_6px_24px_0px_rgba(0,0,0,0.06)] flex flex-col gap-[14px] p-[20px]">
@@ -74,7 +74,7 @@ function VendorCard({
           {/* Store icon */}
           <div className="size-[44px] rounded-[12px] bg-[#f3f2f0] flex items-center justify-center shrink-0">
             <Icon
-              icon={isMarket ? "mdi:store-outline" : "mdi:calendar-star-outline"}
+              icon={isRegistered ? "mdi:store-outline" : "mdi:calendar-star-outline"}
               width={22} height={22}
               className="text-[#7a746e]"
             />
@@ -84,7 +84,7 @@ function VendorCard({
           <div>
             <p className="font-semibold text-[18px] text-[#2c2a28] leading-[24px]">{vendor.storeName}</p>
             <p className="text-[13px] text-[#7a746e] mt-[2px]">
-              {isMarket ? "Market stall" : "Pop-up vendor"}
+              {isRegistered ? "Registered business" : "Unregistered business"}
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ function VendorCard({
 
 // ── Page ───────────────────────────────────────────────────
 export default function VendorsPage() {
-  const { data: vendors, isLoading, error, refresh } = useVendors();
+  const { data: vendors, isLoading, error, reload } = useVendors();
   const [activeFilter, setActiveFilter] = useState<VendorStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -211,7 +211,7 @@ export default function VendorsPage() {
       return;
     }
 
-    await refresh();
+    await reload();
     setIsMutating(false);
   };
 
@@ -226,7 +226,7 @@ export default function VendorsPage() {
       return;
     }
 
-    await refresh();
+    await reload();
     setIsMutating(false);
   };
 
@@ -251,7 +251,7 @@ export default function VendorsPage() {
     }
 
     setSelectedIds(new Set());
-    await refresh();
+    await reload();
     setIsMutating(false);
   };
 
@@ -270,7 +270,7 @@ export default function VendorsPage() {
     }
 
     setSelectedIds(new Set());
-    await refresh();
+    await reload();
     setIsMutating(false);
   };
 

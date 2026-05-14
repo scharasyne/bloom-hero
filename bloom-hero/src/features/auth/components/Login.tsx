@@ -100,22 +100,17 @@ export default function Login() {
     } else if (role === "vendor") {
       const { data: vendorData, error: vendorError } = await supabase
         .from("vendors")
-        .select("vendor_type")
+        .select("id")
         .eq("owner_id", user.id)
         .single();
 
-      // Only allow login if vendor record exists
       if (vendorError || !vendorData) {
         setStatus("Your account is not registered as a vendor. Please contact support or sign up as a vendor.");
         setIsSubmitting(false);
         return;
       }
 
-      if (vendorData.vendor_type === "market") {
-        router.push("/market/dashboard");
-      } else {
-        router.push("/pop-up/dashboard");
-      }
+      router.push("/vendor/dashboard");
     } else if (role === "customer") {
       // router.push("/customer/dashboard"); // For testing purposes, redirect to home page instead of customer dashboard
       router.push("/");

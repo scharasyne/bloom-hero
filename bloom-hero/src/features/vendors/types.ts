@@ -1,6 +1,4 @@
 export type BusinessType = "registered" | "unregistered";
-type VendorType = "market" | "pop-up";
-type VatRegistrationStatus = "vat-registered" | "non-vat-registered";
 
 export type VendorCommonProfile = {
   vendorId: string;
@@ -17,13 +15,11 @@ export type VendorCommonProfile = {
 
 export type ActionResult = { ok: boolean; error?: string };
 export type VendorStatus = "pending" | "approved" | "rejected";
-export type VendorLegacyType = "market" | "pop-up";
 export type VendorProfileByOwnerRow = {
-  vendor_type: VendorLegacyType | null;
+  business_type: BusinessType | null;
   shop_name: string | null;
 };
 
-export type VendorApplicationType = VendorLegacyType;
 export type VendorApplicationVatStatus = "vat-registered" | "non-vat-registered";
 export type VendorApplicationStepOneInput = {
   shopName: string;
@@ -32,7 +28,7 @@ export type VendorApplicationStepOneInput = {
   phoneNumber: string;
 };
 export type VendorApplicationStepTwoInput = {
-  vendorType: VendorApplicationType;
+  businessType: BusinessType;
   governmentIdType: string;
   tin: string;
   vatRegistrationStatus: VendorApplicationVatStatus | "";
@@ -46,10 +42,10 @@ export type VendorApplicationDraftRow = {
   shop_address: string | null;
   email: string | null;
   phone_number: string | null;
-  vendor_type: VendorType | null;
+  business_type: BusinessType | null;
   government_id_type: string | null;
   taxpayer_identification_number: string | null;
-  vat_registration_status: VatRegistrationStatus | null;
+  vat_registration_status: VendorApplicationVatStatus | null;
   primary_business_document_url: string | null;
   government_id_document_url: string | null;
   bir_certificate_url: string | null;
@@ -57,3 +53,8 @@ export type VendorApplicationDraftRow = {
 };
 
 export const PHONE_PATTERN = /^\+63\d{9}$/;
+
+export type CustomerVendorApplicationPageData = {
+  initialEmail: string;
+  initialPhoneNumber: string;
+};

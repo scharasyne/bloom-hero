@@ -1,7 +1,7 @@
 import {
   VendorOrdersStatusPill,
   type VendorOrderStatus,
-} from "@/app/(vendor)/_components/vendor-orders-status-pill"
+} from "@/features/orders/components/VendorOrdersStatusPill"
 
 export type VendorOrderRow = {
   id: string

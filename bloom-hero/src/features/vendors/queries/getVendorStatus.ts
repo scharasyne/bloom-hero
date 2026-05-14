@@ -1,11 +1,9 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import type { VendorStatus, BusinessType } from "../types";
+import type { VendorStatus } from "../types";
 
-export async function getVendorStatusByOwner(
-  businessType: BusinessType
-): Promise<VendorStatus | null> {
+export async function getVendorStatusByOwner(): Promise<VendorStatus | null> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -16,7 +14,6 @@ export async function getVendorStatusByOwner(
     .from("vendors")
     .select("status")
     .eq("owner_id", user.id)
-    .eq("business_type", businessType)
     .maybeSingle<{ status: VendorStatus }>();
 
   if (error) return null;

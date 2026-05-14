@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 import BestSellersSection from "@/components/BestSellersSection";
 import Footer from "@/components/footer";
 import SearchBar from "@/components/SearchBar";
-import PopUpMap from "@/app/(vendor)/_components/PopUpMap";
+import PopUpMap from "@/features/pop-up/components/PopUpMap";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { getPopUpMapVendors } from "@/app/map/actions";
 // import { mockBouquets } from "@/lib/mockData";

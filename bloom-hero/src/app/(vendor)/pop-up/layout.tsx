@@ -5,6 +5,6 @@ export default async function PopUpVendorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireRole(["pop-up"]);
+  await requireRole(["vendor"]);
   return <>{children}</>;
 }

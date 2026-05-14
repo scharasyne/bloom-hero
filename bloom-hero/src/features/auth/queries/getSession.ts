@@ -4,6 +4,8 @@ import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { getVendorProfileByOwnerId } from "@/features/vendors/queries/getVendorProfileByOwnerId";
+import type { BusinessType } from "@/features/vendors/types";
+import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
 
 export const getSession = cache(async () => {
   const supabase = await createSupabaseServerClient();
@@ -22,12 +24,12 @@ export const getSession = cache(async () => {
 
   const role = row?.role as string | undefined;
 
-  let vendor_type: "market" | "pop-up" | null = null;
+  let business_type: BusinessType | null = null;
   let vendor_shop_name: string | null = null;
 
   if (role === "vendor") {
     const vendor = await getVendorProfileByOwnerId(user.id);
-    vendor_type = (vendor?.vendor_type as "market" | "pop-up" | null) ?? null;
+    business_type = normalizeBusinessType(vendor?.business_type) ?? "unregistered";
     vendor_shop_name = vendor?.shop_name ?? null;
   }
 
@@ -37,7 +39,7 @@ export const getSession = cache(async () => {
       role: row?.role as string | undefined,
       name: row?.name ?? null,
       email: row?.email ?? null,
-      vendor_type,
+      business_type,
       vendor_shop_name,
     },
   };

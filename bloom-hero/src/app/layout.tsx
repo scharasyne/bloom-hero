@@ -17,7 +17,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>
-        {/* <NavBar session={session} /> */}
+        <NavBar session={session} />
         {children}
       </body>
     </html>

@@ -86,7 +86,7 @@ export async function approveVendorApplication(
 
   const { data: application, error: applicationError } = await supabase
     .from("vendor_applications")
-    .select("id, owner_id, shop_name, email, phone_number, vendor_type, submission_status")
+    .select("id, owner_id, shop_name, email, phone_number, business_type, submission_status")
     .eq("id", applicationId)
     .maybeSingle<{
       id: string;
@@ -94,7 +94,7 @@ export async function approveVendorApplication(
       shop_name: string | null;
       email: string | null;
       phone_number: string | null;
-      vendor_type: "market" | "pop-up" | null;
+      business_type: "registered" | "unregistered" | null;
       submission_status: string | null;
     }>();
 
@@ -175,7 +175,7 @@ export async function approveVendorApplication(
   }
 
   const vendorUserId = createdUser.user.id;
-  const vendorType = application.vendor_type ?? "market";
+  const businessType = application.business_type ?? "registered";
   const issuedAt = new Date().toISOString();
   const vendorLabel = application.shop_name?.trim() || "Vendor Application";
 
@@ -208,7 +208,7 @@ export async function approveVendorApplication(
       {
         owner_id: vendorUserId,
         shop_name: application.shop_name?.trim() || "Vendor Shop",
-        vendor_type: vendorType,
+        business_type: businessType,
         status: "approved",
       },
       { onConflict: "owner_id" }
@@ -272,7 +272,7 @@ export async function approveVendorApplication(
       targetName: vendorLabel,
       details: [
         { type: "info", text: `Business email: ${businessEmail}` },
-        { type: "info", text: `Vendor type: ${vendorType}` },
+        { type: "info", text: `Business type: ${businessType}` },
         { type: "info", text: `Vendor user created: ${vendorUserId}` },
       ] satisfies DetailLine[],
       tags: ["vendor-management", "approved"],
@@ -280,7 +280,7 @@ export async function approveVendorApplication(
       metadata: {
         application_id: application.id,
         vendor_user_id: vendorUserId,
-        vendor_type: vendorType,
+        business_type: businessType,
       },
     }).catch((error) => {
       console.error("Failed to write approval activity log:", error);

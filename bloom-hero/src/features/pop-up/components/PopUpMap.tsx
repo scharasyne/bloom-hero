@@ -78,30 +78,39 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
   };
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    const container = mapRef.current;
+    if (!container) return;
 
-    const container = mapRef.current as HTMLDivElement & { _leaflet_id?: number };
-    if (container._leaflet_id) {
-      (mapInstanceRef.current as any)?.remove();
-      mapInstanceRef.current = null;
-    }
+    let cancelled = false;
 
-    import("leaflet").then((L) => {
-      if (!mapRef.current) return;
+    void import("leaflet").then((L) => {
+      if (cancelled || !mapRef.current) return;
 
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      const target = mapRef.current as HTMLDivElement & { _leaflet_id?: number };
+      if (target._leaflet_id) {
+        (mapInstanceRef.current as { remove: () => void } | null)?.remove();
+        mapInstanceRef.current = null;
+      }
+
+      delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const map = L.map(mapRef.current, {
-        center: [10.3203, 123.9012],
-        zoom: 14,
-        zoomControl: true,
-        attributionControl: true,
-      });
+      let map: ReturnType<typeof L.map>;
+      try {
+        map = L.map(target, {
+          center: [10.3203, 123.9012],
+          zoom: 14,
+          zoomControl: true,
+          attributionControl: true,
+        });
+      } catch (error) {
+        console.error("Failed to initialize pop-up map:", error);
+        return;
+      }
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -129,12 +138,19 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
         marker.on("click", () => handleVendorSelect(vendor));
       });
 
+      if (cancelled) {
+        map.remove();
+        return;
+      }
+
       mapInstanceRef.current = map;
     });
 
     return () => {
-      if (mapInstanceRef.current) {
-        (mapInstanceRef.current as any).remove();
+      cancelled = true;
+      const map = mapInstanceRef.current as { remove: () => void } | null;
+      if (map) {
+        map.remove();
         mapInstanceRef.current = null;
       }
     };

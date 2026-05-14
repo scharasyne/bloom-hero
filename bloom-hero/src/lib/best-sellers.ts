@@ -18,7 +18,7 @@ export type BestSellerFlowerRow = {
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
-  vendor_type?: string | null;
+  business_type?: string | null;
   average_rating?: number | null;
   sold_count: number;
 };
@@ -26,7 +26,7 @@ export type BestSellerFlowerRow = {
 export type BestSellerVendorRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
   sold_count: number;
 };
@@ -50,7 +50,7 @@ type ProductCategoryRow = {
 type VendorMetaRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
 };
 
@@ -182,7 +182,7 @@ export async function getFlowerBestSellers(
   if (vendorIds.length > 0) {
     const { data: vendorRows } = await supabase
       .from("vendors")
-      .select("id, shop_name, vendor_type, average_rating")
+      .select("id, shop_name, business_type, average_rating")
       .in("id", vendorIds);
 
     for (const vendor of (vendorRows ?? []) as VendorMetaRow[]) {
@@ -201,7 +201,7 @@ export async function getFlowerBestSellers(
         ...product,
         categories: categoriesByProductId.get(product.id) ?? [],
         shop_name: vendor?.shop_name ?? null,
-        vendor_type: vendor?.vendor_type ?? null,
+        business_type: vendor?.business_type ?? null,
         average_rating: averageRating,
         sold_count: soldCount,
       } satisfies BestSellerFlowerRow;
@@ -259,7 +259,7 @@ export async function getVendorBestSellers(
     soldCountByVendorId.set(vendorId, currentCount + (Number(row.quantity) || 0));
   }
 
-  let vendorQuery = supabase.from("vendors").select("id, shop_name, vendor_type, average_rating");
+  let vendorQuery = supabase.from("vendors").select("id, shop_name, business_type, average_rating");
   if (query) {
     vendorQuery = vendorQuery.ilike("shop_name", `%${query}%`);
   }

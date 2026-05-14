@@ -1,6 +1,8 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
+import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
 import type {
   MarketKPIItem,
   MarketLowStockProduct,
@@ -8,8 +10,6 @@ import type {
   MarketTrendPoint,
   MarketUpcomingOrder,
 } from "@/lib/mockData";
-
-type VendorType = "market" | "pop-up";
 
 export type VendorDashboardData = {
   kpis: MarketKPIItem[];
@@ -42,9 +42,13 @@ function formatCurrency(value: number) {
   return `₱${value.toLocaleString("en-PH", { maximumFractionDigits: 0 })}`;
 }
 
-export async function getVendorDashboardData(
-  vendorType: VendorType
-): Promise<{ ok: true; data: VendorDashboardData } | { ok: false; error: string }> {
+function toDateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+export async function getVendorDashboardData(): Promise<
+  { ok: true; data: VendorDashboardData } | { ok: false; error: string }
+> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -55,14 +59,17 @@ export async function getVendorDashboardData(
 
   const { data: vendor, error: vendorError } = await supabase
     .from("vendors")
-    .select("id")
+    .select("id, business_type")
     .eq("owner_id", user.id)
-    .eq("vendor_type", vendorType)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{ id: string; business_type: "registered" | "unregistered" }>();
 
   if (vendorError || !vendor) return { ok: false, error: "Vendor profile not found." };
+  const businessType = normalizeBusinessType(vendor.business_type) ?? "unregistered";
+  if (!canManageCatalog(businessType)) {
+    return { ok: false, error: "Order insights are available for registered businesses only." };
+  }
 
-  const routePrefix = vendorType === "market" ? "/market" : "/pop-up";
+  const routePrefix = "/vendor";
   const today = startOfDay(new Date());
   const currentStart = addDays(today, -6);
   const currentEnd = addDays(today, 1);
@@ -217,45 +224,74 @@ export async function getVendorDashboardData(
         hour: "numeric",
         minute: "2-digit",
       }),
-      href: `${routePrefix}/orders/${entry.order.id}`,
     };
   });
 
-  const upcomingOrders: MarketUpcomingOrder[] = recentOrdersList
-    .map((entry) => ({
-      id: entry.id,
-      customerName: entry.customerName,
-      item: entry.item,
-      amount: entry.amount,
-      date: entry.date,
-      href: entry.href,
-    }))
-    .slice(0, 3);
+  const upcomingStart = today;
+  const upcomingEnd = addDays(today, 5);
+  const { data: upcomingRows } = await supabase
+    .from("orders")
+    .select("order_date, status")
+    .eq("vendor_id", vendor.id)
+    .gte("order_date", upcomingStart.toISOString())
+    .lt("order_date", upcomingEnd.toISOString())
+    .neq("status", "cancelled");
+
+  const upcomingMap = new Map<string, number>();
+  for (const row of upcomingRows ?? []) {
+    const key = toDateKey(new Date(row.order_date));
+    upcomingMap.set(key, (upcomingMap.get(key) ?? 0) + 1);
+  }
+
+  const upcomingOrders: MarketUpcomingOrder[] = Array.from({ length: 5 }).map((_, index) => {
+    const day = addDays(today, index);
+    const key = toDateKey(day);
+    return {
+      date: String(day.getDate()).padStart(2, "0"),
+      day: day.toLocaleDateString("en-PH", { weekday: "short" }),
+      count: upcomingMap.get(key) ?? 0,
+      isToday: index === 0,
+    };
+  });
 
   const kpis: MarketKPIItem[] = [
     {
       label: "Orders",
-      value: currentOrderCount,
-      change: ordersChangePct,
-      positive: (ordersChangePct ?? 0) >= 0,
+      value: currentOrderCount.toString(),
+      change:
+        ordersChangePct === null
+          ? "—"
+          : `${ordersChangePct >= 0 ? "+" : ""}${ordersChangePct.toFixed(1)}%`,
+      positive: ordersChangePct === null ? true : ordersChangePct >= 0,
+      icon: "mdi:shopping-outline",
+      href: `${routePrefix}/orders`,
     },
     {
       label: "Revenue",
-      value: currentRevenue,
-      change: revenueChangePct,
-      positive: (revenueChangePct ?? 0) >= 0,
+      value: formatCurrency(currentRevenue),
+      change:
+        revenueChangePct === null
+          ? "—"
+          : `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}%`,
+      positive: revenueChangePct === null ? true : revenueChangePct >= 0,
+      icon: "mdi:cash-multiple",
+      href: `${routePrefix}/orders`,
     },
     {
       label: "Pending",
-      value: pendingFulfilment,
-      change: null,
-      positive: true,
+      value: pendingFulfilment.toString(),
+      change: "",
+      positive: false,
+      icon: "mdi:clock-alert-outline",
+      href: `${routePrefix}/orders`,
     },
     {
       label: "Low stock",
-      value: lowStockProducts.length,
-      change: null,
+      value: lowStockProducts.length.toString(),
+      change: "",
       positive: false,
+      icon: "mdi:package-variant-closed",
+      href: `${routePrefix}/products`,
     },
   ];
 

@@ -8,7 +8,7 @@ import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { CategoryPillSelector } from "@/app/(vendor)/_components/CategoryPillSelector"
+import { CategoryPillSelector } from "@/features/categories/components/CategoryPillSelector"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
 
 type ProductImageRow = {

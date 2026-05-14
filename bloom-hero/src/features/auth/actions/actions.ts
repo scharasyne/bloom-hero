@@ -1,9 +1,10 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { ensureCustomerByUserId } from "@/lib/services/customers";
-import { getUserRoleById, upsertUserAsCustomer } from "@/lib/services/users";
-import { getVendorTypeByOwnerId } from "@/lib/services/vendors";
+import { ensureCustomerByUserId } from "@/features/customers/actions/ensureCustomer";
+import { getUserRoleById } from "@/features/users/queries/getUserRole";
+import { upsertUserAsCustomer } from "@/features/users/actions/upsertUserAsCustomer";
+import { getVendorProfileByOwnerId } from "@/features/vendors/queries/getVendorProfileByOwnerId";
 
 export async function signInWithPasswordAction(email: string, password: string) {
   const supabase = await createSupabaseServerClient();
@@ -33,14 +34,14 @@ export async function resolvePostLoginDestination() {
 
   if (role === "admin") return { ok: true as const, path: "/admin/dashboard" };
   if (role === "vendor") {
-    const vendorType = await getVendorTypeByOwnerId(user.id);
-    if (!vendorType) {
+    const vendor = await getVendorProfileByOwnerId(user.id);
+    if (!vendor) {
       return {
         ok: false as const,
         message: "Your account is not registered as a vendor. Please contact support or sign up as a vendor.",
       };
     }
-    return { ok: true as const, path: vendorType === "market" ? "/market/dashboard" : "/pop-up/dashboard" };
+    return { ok: true as const, path: "/vendor/dashboard" };
   }
 
   return { ok: true as const, path: "/" };

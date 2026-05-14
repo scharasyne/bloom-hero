@@ -17,7 +17,7 @@ export interface CartItem {
 export type VendorType = "stall" | "popup";
 export type ApplicationStatus = "pending" | "approved" | "rejected";
 
-export type VendorApplicationVendorType = "market" | "pop-up";
+export type VendorApplicationBusinessType = "registered" | "unregistered";
 export type VendorApplicationSubmissionStatus = "draft" | "submitted";
 
 export interface VendorApplicationRecord {
@@ -27,7 +27,7 @@ export interface VendorApplicationRecord {
   shop_address: string | null;
   email: string | null;
   phone_number: string | null;
-  vendor_type: VendorApplicationVendorType | null;
+  business_type: VendorApplicationBusinessType | null;
   business_submission_timing: "now" | "later" | null;
   primary_business_document_type: string | null;
   primary_business_document_url: string | null;

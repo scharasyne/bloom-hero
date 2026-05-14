@@ -1,4 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { RequestedLocationRank } from "../types";
+import { buildLocationRanking } from "../utils/buildLocationRanking";
+import { describeSupabaseError } from "../utils/supabaseError";
 
 export async function getRequestedLocationRanking(
   vendorId: string

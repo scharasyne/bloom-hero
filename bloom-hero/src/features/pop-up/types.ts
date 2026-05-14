@@ -85,6 +85,16 @@ export type CreatePopUpScheduleInput = {
   landmark?: string | null;
 };
 
+export type PopUpSchedule = {
+  id: string;
+  location: string;
+  scheduled_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
 export type PopUpProfileSchedule = {
   id: string;
   location: string;
@@ -113,7 +123,7 @@ export type PopUpVendorProfileData = {
   ——————————————————————————— SUPABASE ? ———————————————————————————
 */
 
-type SupabaseLikeError = {
+export type SupabaseLikeError = {
   message?: string;
   details?: string | null;
   hint?: string | null;

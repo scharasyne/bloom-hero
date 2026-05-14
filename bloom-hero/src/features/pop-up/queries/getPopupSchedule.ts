@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { PopUpSchedule } from "../types";
 
 export async function getPopUpSchedule(vendorId: string): Promise<PopUpSchedule[]> {
   const supabase = await createSupabaseServerClient();

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import type { BusinessType } from "@/features/vendors/types";
 
 export type VendorStatus = "active" | "suspended";
-export type VendorType = "market" | "pop-up";
 
 export type VendorRecord = {
   id: string;
   storeName: string;
   ownerName: string;
-  vendorType: VendorType;
+  businessType: BusinessType;
   status: VendorStatus;
   location: string;
   joinedAt: string;
@@ -19,7 +19,7 @@ export type VendorRecord = {
 type VendorRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: VendorType;
+  business_type: BusinessType;
   status: string | null;
   suspended_at: string | null;
   created_at: string;
@@ -40,7 +40,7 @@ function mapVendor(row: VendorRow): VendorRecord {
     id: row.id,
     storeName: row.shop_name?.trim() || "Vendor Shop",
     ownerName: row.owner?.name?.trim() || "Vendor Owner",
-    vendorType: row.vendor_type,
+    businessType: row.business_type,
     status: normalizeStatus(row.suspended_at),
     location: "Location unavailable",
     joinedAt: new Date(row.created_at).toLocaleDateString("en-PH", {
@@ -65,7 +65,7 @@ export function useVendors() {
     try {
       const { data: rows, error: fetchError } = await supabase
         .from("vendors")
-        .select("id, shop_name, vendor_type, status, suspended_at, created_at, owner:users!vendors_owner_id_fkey(name, email)")
+        .select("id, shop_name, business_type, status, suspended_at, created_at, owner:users!vendors_owner_id_fkey(name, email)")
         .order("created_at", { ascending: false });
 
       if (fetchError) {
@@ -87,5 +87,5 @@ export function useVendors() {
     void loadVendors();
   }, []);
 
-  return { data, isLoading, error, refresh: loadVendors };
+  return { data, isLoading, error, reload: loadVendors };
 }

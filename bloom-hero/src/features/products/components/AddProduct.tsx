@@ -1,18 +1,18 @@
+// Source: `src/app/(vendor)/_components/AddProduct.tsx`
+
 "use client"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 
-import { addVendorProductAction, getVendorApplicationStatusAction } from "@/app/(vendor)/_components/actions"
+import { addVendorProductAction, getVendorApplicationStatusAction } from "@/features/vendors/actions/actions"
 import { CategoryPillSelector } from "@/features/categories/components/CategoryPillSelector"
+import { fetchCategories } from "@/features/categories/queries/fetch-categories"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client"
-
-type vendorType = 'market' | 'pop-up';
 
 type CategoryOption = {
   id: string
@@ -20,13 +20,12 @@ type CategoryOption = {
 }
 
 interface ImagePreview {
-  file: File;
-  previewUrl: string;
+  file: File
+  previewUrl: string
 }
 
-export default function VendorAddProductPage({ type }: { type: vendorType }) {
+export default function VendorAddProductPage() {
   const router = useRouter()
-  const supabase = useMemo(() => createSupabaseBrowserClient(), [])
 
   const [price, setPrice] = useState("0")
   const [stock, setStock] = useState("0")
@@ -39,60 +38,42 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
   const [vendorStatus, setVendorStatus] = useState<string | null>(null)
   const [statusLoading, setStatusLoading] = useState(true)
 
+  useEffect(() => {
+    async function loadVendorStatus() {
+      try {
+        const result = await getVendorApplicationStatusAction()
 
-  /*
-    THIS, BELOW, IS ALREADY DONE.
-    YOU CAN FIND THE VENDOR STATUS IN /features/vendor/queries/get-current-vendor-status.ts
-  */
-  // useEffect(() => {
-  //   async function fetchVendorStatus() {
-  //     try {
-  //       const result = await getVendorApplicationStatusAction(type)
+        if (result.message) {
+          console.error("Failed to fetch vendor status:", result.message)
+          setVendorStatus(null)
+          return
+        }
 
-  //       if (result.message) {
-  //         console.error("Failed to fetch vendor status:", result.message)
-  //         setVendorStatus(null)
-  //         return
-  //       }
+        setVendorStatus(result.status ?? null)
+      } finally {
+        setStatusLoading(false)
+      }
+    }
 
-  //       setVendorStatus(result.status ?? null)
-  //     } finally {
-  //       setStatusLoading(false)
-  //     }
-  //   }
-  //   fetchVendorStatus()
-  // }, [type])
+    void loadVendorStatus()
+  }, [])
 
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const data = await fetchCategories()
+        setCategories(data as CategoryOption[])
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to load categories right now."
+        )
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
 
-  /*
-    THIS, BELOW, IS ALREADY DONE.
-    YOU CAN FIND THE FETCH CATEGORIES IN /features/categories/queries/fetch-categories.ts
-  */
-
-  // useEffect(() => {
-  //   async function fetchCategories() {
-  //     try {
-  //       const { data, error } = await supabase
-  //         .from("categories")
-  //         .select("id, category_name")
-  //         .order("category_name", { ascending: true })
-
-  //       if (error) {
-  //         throw new Error(error.message)
-  //       }
-
-  //       setCategories((data ?? []) as CategoryOption[])
-  //     } catch (error) {
-  //       setErrorMessage(
-  //         error instanceof Error ? error.message : "Unable to load categories right now."
-  //       )
-  //     } finally {
-  //       setCategoriesLoading(false)
-  //     }
-  //   }
-
-  //   void fetchCategories()
-  // }, [supabase])
+    void loadCategories()
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -121,7 +102,7 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
     try {
       const formData = new FormData(event.currentTarget)
 
-      const result = await addVendorProductAction(type, formData)
+      const result = await addVendorProductAction(formData)
 
       if (!result.ok) {
         setErrorMessage(result.message ?? "Unable to add product right now.")
@@ -148,7 +129,7 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
         </div>
 
         <Link
-          href={`/${type}/products`}
+          href="/vendor/products"
           className="text-sm text-muted-foreground underline underline-offset-4"
         >
           Back to Product List
@@ -190,13 +171,11 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
                   return
                 }
 
-                // Create previews for new files
                 const newPreviews: ImagePreview[] = files.map((file) => ({
                   file,
                   previewUrl: URL.createObjectURL(file),
                 }))
 
-                // Revoke old URLs and set new previews
                 imagePreviews.forEach((preview) => {
                   URL.revokeObjectURL(preview.previewUrl)
                 })
@@ -339,9 +318,9 @@ export default function VendorAddProductPage({ type }: { type: vendorType }) {
                 ? "Unavailable while pending"
                 : categoriesLoading
                   ? "Loading categories..."
-                : isSubmitting
-                  ? "Adding..."
-                  : "Add Product"}
+                  : isSubmitting
+                    ? "Adding..."
+                    : "Add Product"}
             </Button>
           </div>
         </form>

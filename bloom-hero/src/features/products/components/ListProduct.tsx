@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import EditProductModalTrigger from "@/app/(vendor)/_components/EditProductModalTrigger"
-import { VendorDashboardSidebarCard } from "@/app/(vendor)/_components/vendor-dashboard-sidebar-card"
+import EditProductModalTrigger from "@/features/products/components/EditProductModalTrigger"
+import { VendorDashboardSidebarCard } from "@/features/vendors/components/VendorDashboardSidebarCard"
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
-
-type vendorType = 'market' | 'pop-up';
+import { getVendorCommonProfileByOwner } from "@/features/vendors/queries/getVendorCommonProfile"
+import { VendorCatalogBlockedPanel } from "@/features/vendors/components/VendorCatalogBlockedPanel"
+import { canManageCatalog } from "@/features/vendors/utils/catalogAccess"
 
 type ProductRow = {
   id: string
@@ -28,8 +29,29 @@ function formatPeso(value: number) {
   }).format(value)
 }
 
-export default async function VendorListProductPage({ type }: { type: vendorType }) {
+export default async function VendorListProductPage() {
   const supabase = await createSupabaseServerClient()
+  const commonProfile = await getVendorCommonProfileByOwner()
+  if (!commonProfile) redirect("/login")
+  if (!canManageCatalog(commonProfile.businessType)) {
+    return (
+      <main className="flex">
+        <div className="lg:p-6">
+          <VendorDashboardSidebarCard activeTab="products" businessType={commonProfile.businessType} />
+        </div>
+        <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold tracking-tight text-[#1e1c1a]">Product List</h1>
+            <p className="mt-0.5 text-sm text-slate-400">Manage your product inventory and sales.</p>
+          </div>
+          <VendorCatalogBlockedPanel
+            title="Register your business!"
+            description="Product listings and inventory unlock after you register your business with BloomHero."
+          />
+        </div>
+      </main>
+    )
+  }
 
   const {
     data: { user },
@@ -39,16 +61,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
     redirect("/login")
   }
 
-  const { data: vendor, error: vendorError } = await supabase
-    .from("vendors")
-    .select("id")
-    .eq("owner_id", user.id)
-    .eq("vendor_type", type)
-    .maybeSingle()
-
-  if (vendorError || !vendor) {
-    throw new Error(vendorError?.message || "Vendor profile not found.")
-  }
+  const vendor = { id: commonProfile.vendorId }
 
   let productsData: ProductRow[] | null = null
   let productsError: Error | null = null
@@ -93,8 +106,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
   return (
     <main className = "flex">
       <div className="lg:p-6">
-        {/* <VendorDashboardSidebarCard activeTab="products" vendorType="pop-up" /> */}
-        <VendorDashboardSidebarCard activeTab="products" vendorType={type} />
+        <VendorDashboardSidebarCard activeTab="products" businessType={commonProfile.businessType} />
       </div>
       <div className = "w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
         <div>
@@ -107,7 +119,7 @@ export default async function VendorListProductPage({ type }: { type: vendorType
             </div>
 
             <Button asChild className="rounded-xl bg-[#2f5d3a] px-5 text-sm font-semibold text-white shadow-none hover:bg-[#26492f] transition-colors">
-              <Link href={`/${type}/add-product`}>+ Add Product</Link>
+              <Link href="/vendor/add-product">+ Add Product</Link>
             </Button>
           </div>
 

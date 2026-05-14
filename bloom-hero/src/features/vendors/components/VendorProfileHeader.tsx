@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Modal } from "@/components/Modal";
 
 import type { VendorCommonProfile } from "../types";
-import { updateVendorCommonProfileByOwner } from "../actions/update-current-vendor-profile";
+import { updateVendorCommonProfileByOwner } from "../actions/updateVendorCommonProfile";
 
 type Props = {
   profile: VendorCommonProfile;

@@ -24,7 +24,7 @@ export function validateVendorApplicationStepOne(
 export function validateVendorApplicationStepTwo(input: VendorApplicationStepTwoInput) {
   if (!input.governmentIdType) return "Please select a Government ID Type.";
   if (!input.governmentIdDocumentUrl) return "Please upload your Government ID document.";
-  if (input.vendorType === "pop-up") return null;
+  if (input.businessType === "unregistered") return null;
   if (!input.tin.trim()) return "Taxpayer Identification Number (TIN) is required.";
   if (!/^[0-9-]{9,15}$/.test(input.tin.trim())) {
     return "TIN must be 9 to 15 characters and can only include numbers and dashes.";

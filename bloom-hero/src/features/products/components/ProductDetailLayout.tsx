@@ -5,7 +5,8 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import { ProductDetailRow, ProductReviewRow } from "@/features/products/types";
+import { ProductDetailRow } from "@/features/products/types";
+import type { ProductReviewRow } from "@/features/reviews/types";
 import { addToCart } from "@/features/orders/actions/addToCart";
 import { ProductDetailReviewsSection } from "@/features/reviews/components/ProductDetailReviewsSection";
 

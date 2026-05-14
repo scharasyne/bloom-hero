@@ -5,6 +5,6 @@ export default async function MarketVendorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireRole(["market"]);
+  await requireRole(["vendor"]);
   return <>{children}</>;
 }

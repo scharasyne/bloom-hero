@@ -24,7 +24,7 @@ type FlowerSearchRow = {
   product_images?: ProductImageRow[] | null;
   categories?: string[];
   shop_name?: string | null;
-  vendor_type?: string | null;
+  business_type?: string | null;
   average_rating?: number | null;
   sold_count?: number;
 };
@@ -32,7 +32,7 @@ type FlowerSearchRow = {
 type VendorSearchRow = {
   id: string;
   shop_name: string | null;
-  vendor_type: string | null;
+  business_type: string | null;
   average_rating: number | null;
 };
 
@@ -186,7 +186,7 @@ async function fetchFlowerResults(
 
   const { data: vendors, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, shop_name, vendor_type")
+    .select("id, shop_name, business_type")
     .in("id", vendorIds);
 
   const { data: reviewRows, error: reviewError } = await supabase
@@ -217,7 +217,7 @@ async function fetchFlowerResults(
         return {
           ...flower,
           shop_name: vendor?.shop_name ?? null,
-          vendor_type: vendor?.vendor_type ?? null,
+          business_type: vendor?.business_type ?? null,
           average_rating: averageRating,
         };
       }),
@@ -243,7 +243,7 @@ async function fetchVendorResults(
     return { data: rankedResult.data as VendorSearchRow[], error: null };
   }
 
-  let builder = supabase.from("vendors").select("id, shop_name, vendor_type, average_rating");
+  let builder = supabase.from("vendors").select("id, shop_name, business_type, average_rating");
 
   if (query) {
     builder = builder.ilike("shop_name", `%${query}%`);
