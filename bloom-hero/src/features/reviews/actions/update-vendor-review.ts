@@ -45,7 +45,6 @@ export async function updateVendorReviewByOwner(input: {
     return { ok: false, error: error.message };
   }
 
-  revalidatePath(`/market/profile`);
-  revalidatePath(`/pop-up/profile`);
+  revalidatePath("/vendor/profile");
   return { ok: true };
 }

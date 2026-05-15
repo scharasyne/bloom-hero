@@ -18,6 +18,10 @@ export async function requireRole(allowedRoles: AppRole[]) {
     return session;
   }
 
+  if (appRole === "admin") {
+    redirect("/admin/dashboard");
+  }
+
   if (appRole === "vendor") {
     redirect("/vendor/dashboard");
   }

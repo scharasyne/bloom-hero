@@ -4,19 +4,19 @@ import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
 import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
 import type {
-  MarketKPIItem,
-  MarketLowStockProduct,
-  MarketRecentOrder,
-  MarketTrendPoint,
-  MarketUpcomingOrder,
+  VendorDashboardKPIItem,
+  VendorDashboardLowStockProduct,
+  VendorDashboardRecentOrder,
+  VendorDashboardTrendPoint,
+  VendorDashboardUpcomingOrder,
 } from "@/lib/mockData";
 
 export type VendorDashboardData = {
-  kpis: MarketKPIItem[];
-  recentOrders: MarketRecentOrder[];
-  lowStock: MarketLowStockProduct[];
-  upcomingOrders: MarketUpcomingOrder[];
-  revenueTrend: MarketTrendPoint[];
+  kpis: VendorDashboardKPIItem[];
+  recentOrders: VendorDashboardRecentOrder[];
+  lowStock: VendorDashboardLowStockProduct[];
+  upcomingOrders: VendorDashboardUpcomingOrder[];
+  revenueTrend: VendorDashboardTrendPoint[];
   revenueSummary: {
     total: number;
     changePct: number | null;
@@ -117,7 +117,7 @@ export async function getVendorDashboardData(): Promise<
       : null;
 
   const pendingFulfilment = pendingCount ?? 0;
-  const trendPoints: MarketTrendPoint[] = Array.from({ length: 7 }).map((_, index) => {
+  const trendPoints: VendorDashboardTrendPoint[] = Array.from({ length: 7 }).map((_, index) => {
     const day = addDays(currentStart, index);
     const dayStart = startOfDay(day);
     const dayEnd = addDays(dayStart, 1);
@@ -137,7 +137,7 @@ export async function getVendorDashboardData(): Promise<
     .lte("stocks", 3)
     .order("stocks", { ascending: true });
 
-  const lowStockProducts: MarketLowStockProduct[] = (lowStockRows ?? []).map((row) => ({
+  const lowStockProducts: VendorDashboardLowStockProduct[] = (lowStockRows ?? []).map((row) => ({
     id: row.id,
     name: row.product_name,
     stock: row.stocks,
@@ -202,13 +202,13 @@ export async function getVendorDashboardData(): Promise<
     (customerRows ?? []).map((row) => [row.id, row.name || row.email || "Customer"])
   );
 
-  const statusMap = (status: string): MarketRecentOrder["status"] => {
+  const statusMap = (status: string): VendorDashboardRecentOrder["status"] => {
     if (status === "completed") return "Completed";
     if (status === "cancelled") return "Cancelled";
     return "Pending";
   };
 
-  const recentOrdersList: MarketRecentOrder[] = recentOrdersData.map((entry) => {
+  const recentOrdersList: VendorDashboardRecentOrder[] = recentOrdersData.map((entry) => {
     const firstItem = entry.itemNames[0] ?? "Order";
     const extraCount = Math.max(entry.itemNames.length - 1, 0);
     const itemLabel = extraCount > 0 ? `${firstItem} +${extraCount} more` : firstItem;
@@ -243,7 +243,7 @@ export async function getVendorDashboardData(): Promise<
     upcomingMap.set(key, (upcomingMap.get(key) ?? 0) + 1);
   }
 
-  const upcomingOrders: MarketUpcomingOrder[] = Array.from({ length: 5 }).map((_, index) => {
+  const upcomingOrders: VendorDashboardUpcomingOrder[] = Array.from({ length: 5 }).map((_, index) => {
     const day = addDays(today, index);
     const key = toDateKey(day);
     return {
@@ -254,7 +254,7 @@ export async function getVendorDashboardData(): Promise<
     };
   });
 
-  const kpis: MarketKPIItem[] = [
+  const kpis: VendorDashboardKPIItem[] = [
     {
       label: "Orders",
       value: currentOrderCount.toString(),

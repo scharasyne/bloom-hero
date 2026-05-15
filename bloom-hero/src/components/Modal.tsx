@@ -19,7 +19,7 @@ export function Modal({ isOpen, onCloseAction, children }: ModalProps) {
       onClick={onCloseAction} // click backdrop to close
     >
       <div
-        className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
+        className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl"
         onClick={e => e.stopPropagation()} // prevent close when clicking inside
       >
         <button onClick={onCloseAction} className="float-right text-gray-400 hover:text-gray-600">

@@ -14,7 +14,6 @@ export interface CartItem {
 }
 
 // VENDOR APPLICATIONS
-export type VendorType = "stall" | "popup";
 export type ApplicationStatus = "pending" | "approved" | "rejected";
 
 export type VendorApplicationBusinessType = "registered" | "unregistered";
@@ -42,11 +41,12 @@ export interface VendorApplicationRecord {
   updated_at: string;
 }
 
+/** @deprecated Legacy mock shape — prefer VendorApplicationRecord */
 export interface VendorApplication {
   id: string;
   vendorName: string;
-  ownerName: string; 
-  type: VendorType;
+  ownerName: string;
+  businessType: VendorApplicationBusinessType;
   dateApplied: string; // ISO date string e.g. "2026-03-06"
   email: string;
   phone: string;

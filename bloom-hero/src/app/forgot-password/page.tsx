@@ -66,7 +66,7 @@ export default function ForgotPassword() {
         const role = roleData?.role as string | undefined;
 
         if (role === "admin") {
-            return "/admin/vendor-applications";
+            return "/admin/dashboard";
         }
 
         if (role === "vendor") {

@@ -29,6 +29,7 @@ import SearchFilters from "@/components/SearchFilters";
 import SkeletonCard from "@/components/SkeletonCard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { addToCart as addToCartAction } from "@/features/orders/actions/addToCart";
+import { publicVendorProfilePath } from "@/features/vendors/utils/publicVendorPaths";
 
 type SearchScope = "all" | "flowers" | "vendors";
 
@@ -50,7 +51,6 @@ type SearchFlowerRow = {
   categories?: string[];
   rating?: number | null;
   sold_count?: number | null;
-  vendor_type?: string | null;
   average_rating?: number | null;
   product_images?: ProductImageRow[] | null;
 };
@@ -116,7 +116,7 @@ function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
   const rating =
     typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
   const profileHref = vendor.id
-    ? `/vendors/${vendor.id}`
+    ? publicVendorProfilePath(vendor.id)
     : `/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`;
 
   return (

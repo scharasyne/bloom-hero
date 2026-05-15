@@ -7,15 +7,11 @@ import { getPopUpSchedule } from "@/features/pop-up/queries/getPopupSchedule";
 import { getRecentPopUpLocationRequests } from "@/features/pop-up/queries/getRecentPopupLocationRequests";
 import { getRequestedLocationRanking } from "@/features/pop-up/queries/getTopRequestedLocation";
 import { getVendorCommonProfileByOwner } from "@/features/vendors/queries/getVendorCommonProfile";
-import { getPopUpVendorIdByOwner } from "@/features/vendors/queries/getPopUpVendorIdByOwner";
 
 export default async function VendorSchedulePage() {
-  const vendorResult = await getPopUpVendorIdByOwner();
-  if (vendorResult.status === "unauthenticated") redirect("/login");
-  if (vendorResult.status === "not-found") redirect("/customer/dashboard");
   const commonProfile = await getVendorCommonProfileByOwner();
   if (!commonProfile) redirect("/login");
-  const vendorId = vendorResult.vendorId;
+  const vendorId = commonProfile.vendorId;
 
   const [ranking, upcoming, recentRequests] = await Promise.all([
     getRequestedLocationRanking(vendorId),

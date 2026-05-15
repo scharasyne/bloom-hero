@@ -4,6 +4,7 @@
 @import "tailwindcss";
 
 @theme {
+  --app-navbar-height: 4.5rem;
   --font-quicksand: "Quicksand", sans-serif;
   --animate-fade-in: fade-in 0.3s ease-out both;
 

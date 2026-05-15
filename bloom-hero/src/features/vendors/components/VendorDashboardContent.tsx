@@ -1,16 +1,14 @@
-// Source: src/app/(vendor)/_components/VendorMarketDashboardContent.tsx
-
 "use client";
 
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type {
-  MarketKPIItem,
-  MarketLowStockProduct,
-  MarketRecentOrder,
-  MarketTrendPoint,
-  MarketUpcomingOrder,
+  VendorDashboardKPIItem,
+  VendorDashboardLowStockProduct,
+  VendorDashboardRecentOrder,
+  VendorDashboardTrendPoint,
+  VendorDashboardUpcomingOrder,
 } from "@/lib/mockData";
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
@@ -52,8 +50,8 @@ function SparkLine({ data }: { data: number[] }) {
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
 
-function StatusPill({ status }: { status: MarketRecentOrder["status"] }) {
-  const map: Record<MarketRecentOrder["status"], { dot: string; text: string; bg: string }> = {
+function StatusPill({ status }: { status: VendorDashboardRecentOrder["status"] }) {
+  const map: Record<VendorDashboardRecentOrder["status"], { dot: string; text: string; bg: string }> = {
     Pending:   { dot: "bg-amber-400",   text: "text-amber-700",   bg: "bg-amber-50"   },
     Completed: { dot: "bg-emerald-400", text: "text-emerald-700", bg: "bg-emerald-50" },
     Cancelled: { dot: "bg-rose-400",    text: "text-rose-600",    bg: "bg-rose-50"    },
@@ -92,16 +90,12 @@ function Divider() {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export function VendorMarketDashboardContent() {
-  return <VendorDashboardContent />;
-}
-
 export function VendorDashboardContent() {
-  const [kpis, setKpis] = useState<MarketKPIItem[]>([]);
-  const [recentOrders, setRecentOrders] = useState<MarketRecentOrder[]>([]);
-  const [lowStock, setLowStock] = useState<MarketLowStockProduct[]>([]);
-  const [upcomingOrders, setUpcomingOrders] = useState<MarketUpcomingOrder[]>([]);
-  const [revenueTrend, setRevenueTrend] = useState<MarketTrendPoint[]>([]);
+  const [kpis, setKpis] = useState<VendorDashboardKPIItem[]>([]);
+  const [recentOrders, setRecentOrders] = useState<VendorDashboardRecentOrder[]>([]);
+  const [lowStock, setLowStock] = useState<VendorDashboardLowStockProduct[]>([]);
+  const [upcomingOrders, setUpcomingOrders] = useState<VendorDashboardUpcomingOrder[]>([]);
+  const [revenueTrend, setRevenueTrend] = useState<VendorDashboardTrendPoint[]>([]);
   const [revenueSummary, setRevenueSummary] = useState<{
     total: number;
     changePct: number | null;
@@ -119,11 +113,11 @@ export function VendorDashboardContent() {
         ok: boolean;
         error?: string;
         data?: {
-          kpis: MarketKPIItem[];
-          recentOrders: MarketRecentOrder[];
-          lowStock: MarketLowStockProduct[];
-          upcomingOrders: MarketUpcomingOrder[];
-          revenueTrend: MarketTrendPoint[];
+          kpis: VendorDashboardKPIItem[];
+          recentOrders: VendorDashboardRecentOrder[];
+          lowStock: VendorDashboardLowStockProduct[];
+          upcomingOrders: VendorDashboardUpcomingOrder[];
+          revenueTrend: VendorDashboardTrendPoint[];
           revenueSummary: { total: number; changePct: number | null; positive: boolean };
         };
       };

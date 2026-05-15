@@ -1,6 +1,6 @@
 import { Quicksand } from "next/font/google";
 import { getSession } from "@/features/auth/queries/getSession";
-import NavBar from "@/components/navbar";
+import NavBarShell from "@/components/NavBarShell";
 import "./globals.css";
 
 const quicksand = Quicksand({
@@ -17,7 +17,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>
-        <NavBar session={session} />
+        <NavBarShell session={session} />
         {children}
       </body>
     </html>

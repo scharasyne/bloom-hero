@@ -18,7 +18,7 @@ export async function getPopUpVendorProfileData(): Promise<PopUpVendorProfileDat
     .maybeSingle<{ id: string }>();
 
   if (vendorError || !vendor) {
-    throw new Error(vendorError?.message || "Pop-up vendor profile not found.");
+    throw new Error(vendorError?.message || "Vendor profile not found.");
   }
 
   const { data: scheduleRows, error: scheduleError } = await supabase

@@ -10,6 +10,7 @@ import { getPopupGalleryPhotos } from "@/features/pop-up/queries/getPopupGallery
 import { getVendorCommonProfileByOwner } from "@/features/vendors/queries/getVendorCommonProfile";
 import { getPopUpVendorProfileData } from "@/features/pop-up/queries/getPopUpVendorProfileData";
 import { getRecentPopUpLocationRequests } from "@/features/pop-up/queries/getRecentPopupLocationRequests";
+import { publicVendorProfilePath } from "@/features/vendors/utils/publicVendorPaths";
 
 function formatDate(value: string | null) {
   if (!value) return "Recently";
@@ -38,7 +39,10 @@ export default async function VendorProfilePage() {
       </div>
 
       <section className="w-full px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-6 lg:px-8 lg:pb-10 lg:pt-8">
-        <VendorProfileHeader profile={commonProfile} previewHref={`/vendors/${profile.vendorId}`} />
+        <VendorProfileHeader
+          profile={commonProfile}
+          previewHref={publicVendorProfilePath(profile.vendorId)}
+        />
 
         <div className="border-b border-[#ddd8d0] pb-1.5 mt-8">
           <nav className="flex gap-6 text-[14px] font-medium text-[#8b847c]">

@@ -73,8 +73,7 @@ export async function uploadOrderReceiptProof(formData: FormData) {
 
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
-    revalidatePath("/market/orders");
-    revalidatePath("/pop-up/orders");
+    revalidatePath("/vendor/orders");
     redirect("/orders?tab=to-ship&success=Receipt+uploaded");
   } catch (error) {
     unstable_rethrow(error);

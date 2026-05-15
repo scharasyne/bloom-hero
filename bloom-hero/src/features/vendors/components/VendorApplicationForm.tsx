@@ -475,7 +475,7 @@ export default function VendorApplicationForm({
                 />
               </div>
 
-              {/* Market-only fields */}
+              {/* Registered-business fields */}
               {!isUnregisteredBusiness && (
                 <div className="space-y-6 border-t border-[#E8E4DE] pt-6">
                   <div className="grid gap-5 sm:grid-cols-2">

@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type VendorType = "market" | "pop-up";
+import type { BusinessType } from "@/features/vendors/types";
 
 // ─── SectionCard ─────────────────────────────────────────────────────────────
 
@@ -212,10 +212,8 @@ export function Btn({
 }
 
 // ─── DangerSection ────────────────────────────────────────────────────────────
-// vendorType controls the copy ("store" vs "profile")
-
-export function DangerSection({ vendorType }: { vendorType: VendorType }) {
-  const label = vendorType === "market" ? "store" : "profile";
+export function DangerSection({ businessType }: { businessType: BusinessType }) {
+  const label = businessType === "registered" ? "store" : "profile";
 
   return (
     <div className="bg-white border-[1.5px] border-[rgba(192,57,43,0.2)] rounded-2xl overflow-hidden shadow-sm mb-4">
@@ -245,11 +243,9 @@ export function DangerSection({ vendorType }: { vendorType: VendorType }) {
 }
 
 // ─── AccountTab ───────────────────────────────────────────────────────────────
-// Identical between market and pop-up, lives here to avoid duplication
-
 import { useState } from "react";
 
-export function AccountTab({ vendorType }: { vendorType: VendorType }) {
+export function AccountTab({ businessType }: { businessType: BusinessType }) {
   const [twoFactor, setTwoFactor]     = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
   const [compactView, setCompactView] = useState(false);
@@ -313,7 +309,7 @@ export function AccountTab({ vendorType }: { vendorType: VendorType }) {
         </SettingRow>
       </SectionCard>
 
-      <DangerSection vendorType={vendorType} />
+      <DangerSection businessType={businessType} />
     </div>
   );
 }

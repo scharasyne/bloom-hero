@@ -238,7 +238,7 @@ export function PopUpSettings() {
     appearance:    <AppearanceTab />,
     schedule:      <ScheduleTab />,
     notifications: <NotificationsTab />,
-    account:       <AccountTab vendorType="pop-up" />,
+    account:       <AccountTab businessType="unregistered" />,
   };
 
   return (

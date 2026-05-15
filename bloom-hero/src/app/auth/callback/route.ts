@@ -1,5 +1,3 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { logAdminLogin } from "@/app/admin/actions/activity-log";
 import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -68,7 +66,7 @@ export async function GET(request: NextRequest) {
 
   let path = "/";
   if (role === "admin") {
-    path = "/admin/vendor-applications";
+    path = "/admin/dashboard";
   } else if (role === "vendor") {
     const { data: vendor } = await supabase
       .from("vendors")

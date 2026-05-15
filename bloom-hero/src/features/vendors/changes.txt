@@ -1,8 +1,0 @@
-converted VendorType to BusinessType, vendorType to businessType
-
-db query should be changed from vendor_type to business_type
-
-in get current vendor profile, i'm unsure what to do with line 51
-      : businessType === "pop-up" //not sure what to do with this
-        ? "See schedule tab"
-        : "Set schedule in profile";

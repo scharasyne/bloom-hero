@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition } from "react";
 
-import { createPopUpProfileSchedule } from "@/lib/vendors/pop-up/actions";
+import { createPopUpProfileSchedule } from "@/features/pop-up/actions/createPopUpProfileSchedule";
 
 export function PopUpProfileScheduleEditor() {
   const [location, setLocation] = useState("");

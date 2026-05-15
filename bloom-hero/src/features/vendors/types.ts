@@ -14,6 +14,26 @@ export type VendorCommonProfile = {
 };
 
 export type ActionResult = { ok: boolean; error?: string };
+
+export type VendorSuspensionAppealStatus = "pending" | "approved" | "rejected";
+
+export type VendorSuspensionState = {
+  isSuspended: boolean;
+  vendorId: string;
+  shopName: string;
+  suspensionReason: string;
+  suspendedAt: string | null;
+  pendingAppeal: {
+    id: string;
+    message: string;
+    createdAt: string;
+  } | null;
+  lastResolvedAppeal: {
+    status: VendorSuspensionAppealStatus;
+    adminResponse: string | null;
+    reviewedAt: string | null;
+  } | null;
+};
 export type VendorStatus = "pending" | "approved" | "rejected";
 export type VendorProfileByOwnerRow = {
   business_type: BusinessType | null;

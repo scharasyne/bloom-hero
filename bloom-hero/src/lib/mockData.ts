@@ -42,7 +42,7 @@ export const mockVendorApplications: VendorApplication[] = [
     id: "app-1",
     vendorName: "Bloom & Co.",
     ownerName: "Maria Santos",      
-    type: "stall",
+    businessType: "registered",
     dateApplied: "2026-03-14",
     email: "bloom@email.com",
     phone: "(+63) 912 345 6789",
@@ -54,7 +54,7 @@ export const mockVendorApplications: VendorApplication[] = [
     id: "app-2",
     vendorName: "Petal & Stem",
     ownerName: "Jake Reyes",       
-    type: "popup",
+    businessType: "unregistered",
     dateApplied: "2026-03-10",
     email: "petal@email.com",
     phone: "(+63) 998 765 4321",
@@ -66,7 +66,7 @@ export const mockVendorApplications: VendorApplication[] = [
     id: "app-3",
     vendorName: "Rose Garden",
     ownerName: "Clara Lim",        
-    type: "stall",
+    businessType: "registered",
     dateApplied: "2026-03-13",
     email: "rosegarden@email.com",
     phone: "(+63) 917 123 4567",
@@ -291,8 +291,8 @@ export const mockUpcomingEvents: UpcomingEventItem[] = [
   { title: "LOST BOOKS", time: "12 PM – 5 PM", location: "CAO Building, Osmeña Blvd.", date: { month: "FEB", day: "16" }, status: "Open" },
 ];
 
-// ─── VENDOR DASHBOARD (MARKET) ───────────────────────────
-export type MarketKPIItem = {
+// ─── VENDOR DASHBOARD ────────────────────────────────────
+export type VendorDashboardKPIItem = {
   label: string;
   value: string;
   change?: string;
@@ -301,7 +301,7 @@ export type MarketKPIItem = {
   href: string;
 };
 
-export type MarketRecentOrder = {
+export type VendorDashboardRecentOrder = {
   id: string;
   customerName: string;
   item: string;
@@ -310,32 +310,32 @@ export type MarketRecentOrder = {
   date: string;
 };
 
-export type MarketLowStockProduct = {
+export type VendorDashboardLowStockProduct = {
   id: string;
   name: string;
   stock: number;
 };
 
-export type MarketUpcomingOrder = {
+export type VendorDashboardUpcomingOrder = {
   date: string;
   day: string;
   count: number;
   isToday?: boolean;
 };
 
-export type MarketTrendPoint = {
+export type VendorDashboardTrendPoint = {
   label: string;
   value: number;
 };
 
-export const mockMarketKPIs: MarketKPIItem[] = [
-  { label: "Revenue (7 days)",   value: "₱8,420", change: "+12.3%", positive: true,  icon: "mdi:cash-multiple",          href: "/market/orders"   },
-  { label: "Orders (7 days)",    value: "54",      change: "+2%",    positive: true,  icon: "mdi:shopping-outline",       href: "/market/orders"   },
-  { label: "Pending Fulfilment", value: "6",       change: "",       positive: false, icon: "mdi:clock-alert-outline",    href: "/market/orders"   },
-  { label: "Low-Stock Products", value: "3",       change: "",       positive: false, icon: "mdi:package-variant-closed", href: "/market/products" },
+export const mockVendorDashboardKPIs: VendorDashboardKPIItem[] = [
+  { label: "Revenue (7 days)",   value: "₱8,420", change: "+12.3%", positive: true,  icon: "mdi:cash-multiple",          href: "/vendor/orders"   },
+  { label: "Orders (7 days)",    value: "54",      change: "+2%",    positive: true,  icon: "mdi:shopping-outline",       href: "/vendor/orders"   },
+  { label: "Pending Fulfilment", value: "6",       change: "",       positive: false, icon: "mdi:clock-alert-outline",    href: "/vendor/orders"   },
+  { label: "Low-Stock Products", value: "3",       change: "",       positive: false, icon: "mdi:package-variant-closed", href: "/vendor/products" },
 ];
 
-export const mockMarketRecentOrders: MarketRecentOrder[] = [
+export const mockVendorDashboardRecentOrders: VendorDashboardRecentOrder[] = [
   { id: "1", customerName: "Maria Santos",  item: "Red Rose Bouquet",     status: "Pending",   amount: "₱1,200", date: "Apr 22, 2026 · 2:00 PM"  },
   { id: "2", customerName: "Jose Reyes",    item: "Sunflower Bundle",     status: "Completed", amount: "₱850",   date: "Apr 21, 2026 · 4:30 PM"  },
   { id: "3", customerName: "Ana Cruz",      item: "White Lily Wrap",      status: "Completed", amount: "₱1,400", date: "Apr 21, 2026 · 11:00 AM" },
@@ -343,13 +343,13 @@ export const mockMarketRecentOrders: MarketRecentOrder[] = [
   { id: "5", customerName: "Carla Mendoza", item: "Tulip Arrangement",    status: "Pending",   amount: "₱1,050", date: "Apr 20, 2026 · 8:00 AM"  },
 ];
 
-export const mockMarketLowStock: MarketLowStockProduct[] = [
+export const mockVendorDashboardLowStock: VendorDashboardLowStockProduct[] = [
   { id: "1", name: "Red Rose Bouquet",  stock: 2 },
   { id: "2", name: "White Lily Wrap",   stock: 1 },
   { id: "3", name: "Tulip Arrangement", stock: 3 },
 ];
 
-export const mockMarketUpcomingOrders: MarketUpcomingOrder[] = [
+export const mockVendorDashboardUpcomingOrders: VendorDashboardUpcomingOrder[] = [
   { date: "22", day: "Wed", count: 3, isToday: true },
   { date: "23", day: "Thu", count: 2 },
   { date: "24", day: "Fri", count: 6 },
@@ -357,7 +357,7 @@ export const mockMarketUpcomingOrders: MarketUpcomingOrder[] = [
   { date: "26", day: "Sun", count: 4 },
 ];
 
-export const mockMarketRevenueTrend: MarketTrendPoint[] = [
+export const mockVendorDashboardRevenueTrend: VendorDashboardTrendPoint[] = [
   { label: "Apr 10", value: 360 },
   { label: "Apr 11", value: 390 },
   { label: "Apr 12", value: 410 },
@@ -374,27 +374,27 @@ export const mockMarketRevenueTrend: MarketTrendPoint[] = [
 
 // ── Vendors ────────────────────────────────────────────────
 export type VendorStatus = "active" | "suspended";
-export type VendorType   = "market" | "pop-up";
+export type MockVendorBusinessType = "registered" | "unregistered";
 
-export type VendorRecord = {
-  id:          string;
-  storeName:   string;
-  ownerName:   string;
-  vendorType:  VendorType;
-  status:      VendorStatus;
-  location:    string;
-  joinedAt:    string;
+export type MockVendorRecord = {
+  id: string;
+  storeName: string;
+  ownerName: string;
+  businessType: MockVendorBusinessType;
+  status: VendorStatus;
+  location: string;
+  joinedAt: string;
   totalOrders: number;
-  email:       string;
+  email: string;
 };
 
-export const mockVendors: VendorRecord[] = [
-  { id: "1", storeName: "Petal & Co.",       ownerName: "Maria Santos", vendorType: "market", status: "active",    location: "Stall 12-A, Carbon Market",   joinedAt: "Nov 3, 2024",  totalOrders: 142, email: "maria.santos@email.com"  },
-  { id: "2", storeName: "Bloom & Bud",       ownerName: "Jose Reyes",   vendorType: "market", status: "active",    location: "Stall 7-B, Carbon Market",    joinedAt: "Dec 15, 2024", totalOrders: 98,  email: "jose.reyes@email.com"    },
-  { id: "3", storeName: "Sampaguita Street", ownerName: "Ana Cruz",     vendorType: "pop-up", status: "suspended", location: "Pop-up Event · IT Park",      joinedAt: "Jan 10, 2025", totalOrders: 23,  email: "ana.cruz@email.com"      },
-  { id: "4", storeName: "Zarah's Flowers",   ownerName: "Zarah Lim",    vendorType: "market", status: "suspended", location: "Stall 3-C, Carbon Market",    joinedAt: "Oct 22, 2024", totalOrders: 67,  email: "zarah.lim@email.com"     },
-  { id: "5", storeName: "Garden Fresh",      ownerName: "Ben Tan",      vendorType: "pop-up", status: "active",    location: "Pop-up Event · Ayala Center", joinedAt: "Feb 5, 2025",  totalOrders: 51,  email: "ben.tan@email.com"       },
-  { id: "6", storeName: "The Flower Room",   ownerName: "Claire Uy",    vendorType: "market", status: "active",    location: "Stall 20-D, Carbon Market",   joinedAt: "Mar 1, 2025",  totalOrders: 38,  email: "claire.uy@email.com"     },
+export const mockVendors: MockVendorRecord[] = [
+  { id: "1", storeName: "Petal & Co.",       ownerName: "Maria Santos", businessType: "registered",   status: "active",    location: "Stall 12-A, Carbon Market",   joinedAt: "Nov 3, 2024",  totalOrders: 142, email: "maria.santos@email.com"  },
+  { id: "2", storeName: "Bloom & Bud",       ownerName: "Jose Reyes",   businessType: "registered",   status: "active",    location: "Stall 7-B, Carbon Market",    joinedAt: "Dec 15, 2024", totalOrders: 98,  email: "jose.reyes@email.com"    },
+  { id: "3", storeName: "Sampaguita Street", ownerName: "Ana Cruz",     businessType: "unregistered", status: "suspended", location: "Pop-up Event · IT Park",      joinedAt: "Jan 10, 2025", totalOrders: 23,  email: "ana.cruz@email.com"      },
+  { id: "4", storeName: "Zarah's Flowers",   ownerName: "Zarah Lim",    businessType: "registered",   status: "suspended", location: "Stall 3-C, Carbon Market",    joinedAt: "Oct 22, 2024", totalOrders: 67,  email: "zarah.lim@email.com"     },
+  { id: "5", storeName: "Garden Fresh",      ownerName: "Ben Tan",      businessType: "unregistered", status: "active",    location: "Pop-up Event · Ayala Center", joinedAt: "Feb 5, 2025",  totalOrders: 51,  email: "ben.tan@email.com"       },
+  { id: "6", storeName: "The Flower Room",   ownerName: "Claire Uy",    businessType: "registered",   status: "active",    location: "Stall 20-D, Carbon Market",   joinedAt: "Mar 1, 2025",  totalOrders: 38,  email: "claire.uy@email.com"     },
 ];
 
 // ── Reviews ────────────────────────────────────────────────

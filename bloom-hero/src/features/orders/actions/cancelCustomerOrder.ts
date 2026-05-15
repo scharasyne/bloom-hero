@@ -45,8 +45,7 @@ export async function cancelCustomerOrder(formData: FormData) {
 
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
-    revalidatePath("/market/orders");
-    revalidatePath("/pop-up/orders");
+    revalidatePath("/vendor/orders");
     redirect("/orders?tab=to-pay&success=Order+cancelled");
   } catch (error) {
     unstable_rethrow(error);
