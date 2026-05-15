@@ -43,4 +43,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-supabase/
+# Only the CLI project dir at repo root (not src/lib/supabase/*)
+/supabase/
