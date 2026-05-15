@@ -1,0 +1,260 @@
+﻿Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks,Route,Role
+"TC-SP1-001","US-SP1-01","Admin Dashboard Interface","Admin Login screen exists","Completeness","High","Sunny","App running; no session required","test@admin.com / admin","1. Open /login
+2. Verify login form elements","BloomHero logo, email and password fields, Sign In, Forgot password link, Login with Google, Sign up link","Implemented at /login (shared for admin, vendor, customer). Logo, email, password, Sign In, Forgot your password?, Login with Google, Sign up. Back control is an icon button to /.","Passed","","/login","guest"
+"TC-SP1-002","US-SP1-01","Admin Dashboard Interface","Vendor Application Queue list view","Completeness","High","Rainy","Signed in as admin (test@admin.com / admin)","test@admin.com / admin","1. Sign in as admin
+2. Open /admin/vendor-applications
+3. Review pending application cards","Pending vendor cards with name, business type, documents, Approve and Reject","Page at /admin/vendor-applications lists pending applications with shop name, Registered/Unregistered business type label, document badges, Approve/Reject per card, bulk Approve Selected / Reject All.","Passed","","/admin/vendor-applications","admin"
+"TC-SP1-003","US-SP1-01","Admin Dashboard Interface","Document preview panel present","Completeness","High","Rainy","Admin on vendor applications page","test@admin.com / admin","1. On an application card, click View Documents
+2. Confirm document links","Business permit and ID visible with preview or open action","View Documents toggles inline list; files open in a new browser tab. No embedded zoom/preview panel in the card.","Partial","Document preview panel is a link/button - 
+no full panel shown but document status 
+indicators present","/admin/vendor-applications","admin"
+"TC-SP1-004","US-SP1-01","Admin Dashboard Interface","Approve/Reject buttons with reason input","Completeness","High","Rainy","Admin on vendor applications page","test@admin.com / admin","1. Click Reject on a card
+2. Confirm rejection reason UI
+3. Confirm Approve button","Approve and Reject buttons; rejection reason on reject","Green Approve and red Reject on each card. Reject opens inline panel with reason dropdown (Incomplete documents, Invalid permit, Duplicate registration, Other) and Confirm Reject.","Passed","Rejection reason input not visible - 
+rejection reason field missing from UI","/admin/vendor-applications","admin"
+"TC-SP1-005","US-SP1-01","Admin Dashboard Interface","Vendor Management Dashboard table","Completeness","High","Rainy","Signed in as admin (test@admin.com / admin)","test@admin.com / admin","1. Open /admin/vendors
+2. Inspect vendor table","Vendor name, business type, status, actions","Vendors page shows searchable table with vendor name, Registered/Unregistered type, Verified/Pending/Suspended status badges, filters, and profile actions.","Passed","","/admin/vendors","admin"
+"TC-SP1-006","US-SP1-01","Admin Dashboard Interface","Status badges are visually distinct","Visual Design","High","Rainy","Vendor Management Dashboard visible","test@admin.com / admin","1. On /admin/vendors locate Verified, Pending, and Suspended rows","Distinct green, yellow, and red status badges","Status chips use distinct colors/icons for verified (green), pending (amber), and suspended (red/pink) states.","Passed","","/admin/vendors","admin"
+"TC-SP1-007","US-SP1-01","Admin Dashboard Interface","Search and filter controls visible","Usability","Medium","Rainy","Vendor Management Dashboard visible","test@admin.com / admin","1. On /admin/vendors use search and filter controls","Search and status/type filters","Search placeholder ""Search vendors..."" plus filter menus for business type, status, and insight chips.","Passed","","/admin/vendors","admin"
+"TC-SP1-008","US-SP1-01","Admin Dashboard Interface","Review Moderation Panel present","Completeness","Medium","Rainy","Signed in as admin (test@admin.com / admin)","N/A","1. Open /admin/review-moderation
+2. Verify Pending tab and review cards","Pending reviews with moderation actions","Review Moderation page with Pending, Approved, Rejected tabs (not legacy Flagged-only design).","Passed","","/admin/review-moderation","admin"
+"TC-SP1-009","US-SP1-02","Order Status Visualization","To Pay tab shows payment deadline","Completeness","High","Sunny","Customer signed in (test@customer.com / customer)","test@customer.com / customer","1. Open /orders?tab=to-pay
+2. Inspect order card actions","Payment deadline and pay actions on to-pay orders","Purchase History To Pay tab shows PaymentCountdown, Pay Now, Cancel Order when orders exist; empty state otherwise.","Passed","","/orders?tab=to-pay","customer"
+"TC-SP1-010","US-SP1-02","Order Status Visualization","To Ship tab shows vendor message","Completeness","High","Rainy","Purchase History screens visible","test@customer.com / customer","1. Open /orders?tab=to-ship","Vendor preparing message or status badge","To Ship tab shows ""Awaiting vendor confirmation"" badge on confirmed orders.","Passed","","/orders?tab=to-ship","customer"
+"TC-SP1-011","US-SP1-02","Order Status Visualization","To Receive tab has 5-stage timeline","Visual Design","High","Rainy","Purchase History screens visible","test@customer.com / customer","1. Open /orders?tab=to-receive
+2. Look for 5-stage delivery timeline","Timeline: Paid, Preparing, Shipped, Out for Delivery, Completed","No multi-stage timeline on order cards. Tab shows line items and Order Received CTA only.","Failed","","/orders?tab=to-receive","customer"
+"TC-SP1-012","US-SP1-02","Order Status Visualization","Timeline active stage is highlighted","Visual Design","High","Rainy","To Receive tab timeline visible","test@customer.com / customer","1. Compare status badges across tabs","Active timeline stage highlighted with checkmarks on completed stages","Per-tab status badges exist (amber/blue/purple/green). No per-stage timeline with timestamps on cards.","Partial","No timestamps on each individual stage - 
+only overall estimated delivery shown","/orders","customer"
+"TC-SP1-013","US-SP1-02","Order Status Visualization","Completed tab has Leave Review CTA","Usability","Medium","Rainy","Purchase History screens visible","test@customer.com / customer","1. Open /orders?tab=completed","Rate order and buy again actions","Completed tab shows Rate Order / View Rating and Buy Again links on orders.","Passed","","/orders?tab=completed","customer"
+"TC-SP1-014","US-SP1-02","Order Status Visualization","Track Package button and courier info","Completeness","Medium","Rainy","To Receive tab visible","test@customer.com / customer","1. On to-receive order look for Track Package and courier fields","Track Package button plus courier name and ETA","Order Received CTA exists. No Track Package button or courier/ETA fields on the card.","Failed","","/orders?tab=to-receive","customer"
+"TC-SP1-015","US-SP1-02","Order Status Visualization","To Pay tab with expired payment deadline","Visual Design","Medium","Rainy","Purchase History - To Pay tab visible","test@customer.com / customer","1. On to-pay tab inspect overdue payment styling","Distinct overdue label and warning styling when deadline passed","PaymentCountdown shows due timing but overdue state is not visually distinct from upcoming due dates.","Failed","Expired/overdue state not separately 
+designed - same visual for upcoming and 
+overdue deadline","/orders?tab=to-pay","customer"
+"TC-SP1-016","US-SP1-02","Order Status Visualization","Empty order history state","Completeness","Medium","Rainy","Purchase History screens visible","test@customer.com / customer","1. Open /orders with no orders in a tab","Empty state with browse CTA","Empty states per tab (e.g. ""No pending payments"") with Browse Flowers button to /.","Passed","No empty order history screen.","/orders","customer"
+"TC-SP1-017","US-SP1-03","Vendor location discovery","Map view screen with vendor pins","Completeness","High","Sunny","Dev server running at localhost:3000","N/A","1. Open /map as guest
+2. Search for a location","Map loads and accepts location search","Public /map renders Leaflet map with sidebar search and scheduled vendor pins.","Passed","","/map","guest"
+"TC-SP1-018","US-SP1-03","Vendor location discovery","Vendor pins show Open/Closed status","Visual Design","High","Rainy","Vendor map View visible","Mix of open and closed vendors","1. On /map select a vendor pin
+2. Open vendor detail","Vendor detail modal or panel","PopUpMapSidebar and PopUpVendorModal show vendor schedule/location details.","Passed","","/map","guest"
+"TC-SP1-019","US-SP1-03","Vendor location discovery","Pin detail modal shows full info","Completeness","High","Rainy","Map view visible","N/A","1. On /map filter today vs upcoming vendors","Lists reflect schedule dates","Sidebar splits vendors into today and upcoming based on popup_locations schedule dates.","Passed","","/map","guest"
+"TC-SP1-020","US-SP1-03","Vendor location discovery","Vendor schedule sidebar list on map","Completeness","Medium","Rainy","Dev server running at localhost:3000","N/A","1. Open /map
+2. Review today and upcoming vendor lists in sidebar","Sidebar lists scheduled vendors","PopUpMapSidebar lists todayVendors and upcomingVendors filtered by schedule dates.","Passed","","/map","guest"
+"TC-SP1-021","US-SP1-03","Vendor location discovery","Location Request Form layout","Completeness","Medium","Rainy","Dev server running at localhost:3000","N/A","1. Navigate to Location Request Form screen
+2. Inspect form elements","- Map with draggable pin visible. 
+- Date picker for preferred date. 
+- Submit button present. 
+- Form is clearly labeled","Run steps at /map with Test Data account.","Passed","","/map","guest"
+"TC-SP1-022","US-SP1-03","Vendor location discovery","Homepage product stock badges","Visual Design","Medium","Rainy","Homepage screens visible","Products with different stock levels","1. Navigate to Homepage
+2. Inspect product cards","- Green ""In Stock"" badge, Orange ""Low Stock"" badge (≤5 items), Gray ""Out of Stock"" 
+ overlay with ""Notify Me"" button. 
+- All badges readable","Run steps at /map with Test Data account.","Passed","","/map","guest"
+"TC-SP1-023","US-SP1-03","Vendor location discovery","Map with no unregistered vendors nearby","Completeness","Medium","Rainy","Vendor map View visible","Location with 0 active vendors","1. View map with no vendor pins 
+2. Inspect empty state","- Empty state message shown on map (e.g., ""No vendors scheduled nearby""). 
+- Location Request CTA or suggestion visible","Run steps at /map with Test Data account.","Failed","","/map","guest"
+"TC-SP1-024","US-SP1-03","Vendor location discovery","Location permission denied state","Usability","Medium","Rainy","Vendor map View screen visible","User denies location permission","1. Inspect location permission prompt screen 
+2. Check denied state design","- Location permission prompt designed. 
+- Denied state shows fallback (manual location input or ""Enable Location"" button). 
+- Not a blank/broken screen","Run steps at /map with Test Data account.","Failed","","/map","guest"
+"TC-SP1-025","US-SP1-04","Forgot Password Flow","Forgot password resets account successfully","Integration","Critical","Rainy","Account exists; user can access email inbox; reset link not expired","Valid registered email","1. Open /forgot-password while signed out
+2. Submit email for reset","Reset email flow","Forgot password page sends Supabase resetPasswordForEmail and shows confirmation message.","Passed","","/forgot-password","guest"
+"TC-SP1-026","US-SP1-04","Forgot Password Flow","Forgot password with unregistered email","Security","High","Rainy","None","Unregistered email","1. Open Forgot Password 
+2. Submit unregistered email","- UI shows generic success message (no account enumeration)
+- No reset email sent","Run steps at /forgot-password with Test Data account.","Passed","","/forgot-password","guest"
+"TC-SP1-027","US-SP1-04","Forgot Password Flow","Reset link expired/invalid","Security","High","Rainy","Reset email link generated earlier","Expired/invalid reset token","1. Open reset link after expiry OR tamper token 
+2. Attempt to set password","- Error shown 
+- Password not changed
+- User is prompted to request a new reset","Run steps at /forgot-password with Test Data account.","Passed","","/forgot-password","guest"
+"TC-SP1-028","US-SP1-04","Forgot Password Flow","Weak password rejected during reset","Security","High","Rainy","Valid reset link","Weak/invalid password (fails policy)","1. Open reset link 
+2. Enter weak password 
+3. Submit","- Policy validation shown
+- Reset not applied 
+- User remains on reset page","Run steps at /forgot-password with Test Data account.","Passed","","/forgot-password","guest"
+"TC-SP1-029","US-SP1-05","Dashboard Role Initialization","New user role initializes correctly and routes to correct dashboard","Integration","Critical","Rainy","User signs up and selects a role (customer/vendor/admin if applicable)","test@admin.com / admin","1. Sign in as admin
+2. Confirm landing URL","Admin dashboard","signInWithPasswordAction + resolvePostLoginDestination -> /admin/dashboard.","Passed","","/admin/dashboard","admin"
+"TC-SP1-030","US-SP1-05","Dashboard Role Initialization","Access vendor dashboard as customer blocked","Security","Critical","Rainy","Logged in as customer","test@vendor.com / vendor","1. Sign in as registered vendor
+2. Confirm landing URL","Vendor dashboard","Vendor with vendors row -> /vendor/dashboard.","Passed","","/vendor/dashboard","vendor"
+"TC-SP1-031","US-SP1-05","Dashboard Role Initialization","Access customer dashboard as vendor blocked","Security","Critical","Rainy","Logged in as vendor","test@unregistered.com / unregistered","1. Sign in as unregistered vendor
+2. Confirm landing URL","Vendor dashboard (unregistered business)","Same /vendor/dashboard; business_type unregistered gates catalog via canManageCatalog().","Passed","","/vendor/dashboard","unregistered"
+"TC-SP1-032","US-SP1-05","Dashboard Role Initialization","Role missing/null on session","Integration","High","Rainy","Auth session exists but role record missing/incomplete","test@customer.com / customer","1. Sign in as customer
+2. Confirm landing URL","Customer home or dashboard","Customer role redirects to / after login (requireRole on /dashboard).","Passed","","/","customer"
+"TC-SP1-033","US-SP1-06","Vendor Registration","Vendor registration completes successfully","Integration","Critical","Rainy","Registration page accessible; required fields known","test@customer.com / customer","1. Sign in as customer
+2. Open /vendor-application
+3. Complete application as registered or unregistered business","Application submitted; vendor profile created after approval","Customer-only /vendor-application flow; business_type registered|unregistered (not market/pop-up roles). Approval via admin queue.","Passed","","/vendor-application","customer"
+"TC-SP1-034","US-SP1-06","Vendor Registration","Vendor registration missing required fields","UI","High","Rainy","None","test@customer.com / customer","1. Open vendor registration 
+2. Leave required fields blank 
+3. Submit","- Inline validation 
+- Submit blocked 
+- No account/profile created","Run steps at /vendor-application signed in as test@customer.com / customer.","Passed","","/vendor-application","customer"
+"TC-SP1-035","US-SP1-06","Vendor Registration","Vendor registration with duplicate email","Integration","High","Rainy","Existing account already uses email","test@customer.com / customer","1. Attempt vendor registration using existing email","- Error shown 
+- No duplicate account created","Run steps at /vendor-application signed in as test@customer.com / customer.","Passed","","/vendor-application","customer"
+"TC-SP1-036","US-SP1-06","Vendor Registration","Vendor registration creates profile but role mismatch","Security","Critical","Rainy","None","test@customer.com / customer","1. Register vendor
+2. Attempt vendor dashboard","- Access denied until role/profile consistent
+- System prevents partial privilege escalation","Run steps at /vendor-application signed in as test@customer.com / customer.","Passed","","/vendor-application","customer"
+"TC-SP1-037","US-SP1-07","Customer Registration","Customer registration completes successfully","Integration","Critical","Rainy","Registration page accessible","Valid customer registration data","1. Open /sign-up
+2. Register with email, username, password","Customer account created","Sign-up creates Supabase user with role customer in metadata; prompts email confirmation.","Passed","","/sign-up","guest"
+"TC-SP1-038","US-SP1-07","Customer Registration","Customer registration invalid email format","UI","High","Rainy","None","Invalid email format","1. Open registration
+2. Enter invalid email
+3. Submit","- Validation shown
+- Submit blocked
+- No account created","Run steps at /sign-up with Test Data account.","Passed","","/sign-up","guest"
+"TC-SP1-039","US-SP1-07","Customer Registration","Customer registration weak password","Security","High","Rainy","None","Weak password","1. Enter weak password
+2. Submit","- Password policy message
+- Submit blocked","Run steps at /sign-up with Test Data account.","Passed","","/sign-up","guest"
+"TC-SP1-040","US-SP1-07","Customer Registration","Customer registration duplicate email","Integration","High","Rainy","Existing account uses email","Duplicate email","1. Attempt registration with existing email","- Error shown
+- No duplicate created","Run steps at /sign-up with Test Data account.","Passed","","/sign-up","guest"
+"TC-SP1-041","US-SP1-08","Vendor map","Vendor map view displays correctly","UI","High","Rainy","Dev server running","Vendor pin mock data","1. Open /map
+2. Confirm Leaflet map and pins render","Map with vendor pins and labels","PopUpMap renders Leaflet map; pins from getPopUpMapVendors; vendor modal on select.","Passed","","/map","guest"
+"TC-SP1-042","US-SP1-08","Vendor map","Empty state message design","UI","Medium","Rainy","Vendor has no coordinates (mock)","Empty state frame","1. Open the app in the browser
+2. Click “View Map” button 
+3. Inspect /map page","- Empty state message “Location unavailable” displayed with proper spacing","Run steps at /map with Test Data account.","Passed","","/map","guest"
+"TC-SP1-043","US-SP1-08","Vendor map","Multiple pins overlap visually","UI","Medium","Rainy","≥3 vendor pins in mock","Multiple vendors in database","1. Open the app in the browser
+2. Click “View Map” button 
+3. Inspect /map page","- Pins are distinct and spaced correctly","Run steps at /map with Test Data account.","Passed","","/map","guest"
+"TC-SP1-044","US-SP1-08","Vendor map","Error state design","UI","Critical","Rainy","Invalid map element in mock","Error frame","1. Open the app in the browser
+2. Click “View Map” button 
+3. Inspect /map page","- Error message displayed in UI with consistent styling","Run steps at /map with Test Data account.","Passed","","/map","guest"
+"TC-SP1-053","US-SP1-10","Initialize Role-Based Access Control (RBAC)","RBAC allows vendor role to access /vendor routes","Security","High","Sunny","User is authenticated, user.role='vendor', user.business_type='unregistered'","test@vendor.com / vendor","1. Sign in as vendor
+2. Open /vendor/dashboard and /vendor/schedule","Vendor routes load without redirect to login","(vendor)/layout requireRole(['vendor']) allows access; unified /vendor/* routes (legacy /pop-up/* redirects via next.config).","Passed","","/vendor/dashboard","vendor"
+"TC-SP1-054","US-SP1-10","Initialize Role-Based Access Control (RBAC)","RBAC allows customer to access customer-only routes","Security","High","Rainy","User is authenticated, user.role='customer'","test@unregistered.com / unregistered","1. Sign in as unregistered vendor
+2. Open /vendor/schedule and /vendor/profile","Schedule and profile available","Unregistered vendors use same /vendor routes; catalog locked via canManageCatalog() on products/orders.","Passed","","/vendor/schedule","unregistered"
+"TC-SP1-055","US-SP1-10","Initialize Role-Based Access Control (RBAC)","unauthenticated request redirects to login","Security","Critical","Rainy","No active session, user is null","test@customer.com / customer","1. Sign in as customer
+2. Visit /vendor/dashboard","Redirect to customer-appropriate page","requireRole sends customer to / (home).","Passed","","/vendor/dashboard","customer"
+"TC-SP1-056","US-SP1-10","Initialize Role-Based Access Control (RBAC)","Customer can access /orders","Security","High","Rainy","User is authenticated, role='vendor', vendor_type=null or undefined","test@customer.com / customer","1. Sign in as customer
+2. Open /orders","Purchase History loads","Customer layout requireRole(['customer']) allows /orders.","Passed","","/orders","customer"
+"TC-SP1-057","US-SP1-10","Initialize Role-Based Access Control (RBAC)","customer accessing vendor-only route is redirected appropriately","Security","High","Rainy","User is authenticated with role='customer', attempts to access /vendor/dashboard","test@admin.com / admin","1. While signed in as admin, open /vendor/dashboard","Redirect away from vendor area","requireRole redirects admin to /admin/dashboard.","Passed","","/vendor/dashboard","admin"
+"TC-SP1-058","US-SP1-10","Initialize Role-Based Access Control (RBAC)","unregistered vendor accessing market-only route is blocked","Security","High","Rainy","User is vendor with business_type='unregistered', attempts to access /vendor/dashboard","test@vendor.com / vendor","1. Sign in as vendor
+2. Visit /admin/dashboard","Redirect to vendor dashboard","requireRole redirects vendor to /vendor/dashboard.","Passed","","/admin/dashboard","vendor"
+"TC-SP1-059","US-SP1-10","Initialize Role-Based Access Control (RBAC)","Legacy /pop-up/dashboard redirects to /vendor/dashboard","Security","High","Rainy","User is authenticated with role='admin', attempts customer-only route","role='admin'","1. Open /pop-up/dashboard
+2. Confirm final URL","Unified vendor dashboard URL","next.config.ts redirects /pop-up/dashboard and /market/dashboard to /vendor/dashboard.","Passed","","/vendor/dashboard","guest"
+"TC-SP1-060","US-SP1-10","Initialize Role-Based Access Control (RBAC)","allowedRoles array empty causes redirect","Functional","Low","Rainy","requireRole called with empty allowedRoles array","allowedRoles=[]","1. Call requireRole([]) with any authenticated user 2. Observe redirect behavior","User is redirected regardless of their role; empty allowedRoles is treated as deny-all; no content is rendered","Use browser: sign in with Test Data account, visit Route, confirm redirect or access per requireRole() in src/features/auth/utils/require-role.ts.","Passed","","/login","guest"
+"TC-SP1-061","US-SP1-11","End-to-End Auth & Role Testing","user completes full login flow and is routed to correct dashboard","Integration","High","Sunny","User registered with role='customer' and email confirmed","test@customer.com / customer","1. /login -> sign in as customer
+2. Verify URL","Authenticated customer session","Session cookie set; redirect to /.","Passed","","/login","guest"
+"TC-SP1-062","US-SP1-11","End-to-End Auth & Role Testing","vendor logs in and is redirected to vendor-specific dashboard","Integration","High","Rainy","Vendor registered with role='vendor', business_type='unregistered', email confirmed","test@vendor.com / vendor","1. /login -> sign in as registered vendor
+2. Verify URL","Redirect to /vendor/dashboard","resolvePostLoginDestination checks vendors row -> /vendor/dashboard.","Passed","","/login","guest"
+"TC-SP1-063","US-SP1-11","End-to-End Auth & Role Testing","login with incorrect password fails gracefully","Functional","High","Rainy","User exists in auth system","test@customer.com / customer; password: wrong-password-123","1. /login with wrong password","Invalid credentials error","Supabase returns error; UI shows ""Invalid login credentials"".","Passed","","/login","guest"
+"TC-SP1-064","US-SP1-11","End-to-End Auth & Role Testing","login with non-existent email displays appropriate error","Functional","High","Rainy","User does not exist in system","unknown@bloomhero.test","1. /login with unknown email","Login error, no session","Same invalid credentials message; remains on /login.","Passed","","/login","guest"
+"TC-SP1-065","US-SP1-11","End-to-End Auth & Role Testing","session expires during navigation and user is redirected to login","Security","Medium","Rainy","User was authenticated but session token expired","Expired session token in cookies","1. Without session visit /orders or /admin/dashboard","Redirect to /login","proxy.ts PROTECTED_PREFIXES redirect unauthenticated users to /login.","Passed","","/orders","guest"
+"TC-SP1-066","US-SP1-11","End-to-End Auth & Role Testing","vendor login without matching role in users table falls back to customer redirect","Functional","Medium","Rainy","Auth user exists but users table record is missing or has null role","user.id exists but users.role is null","1. Login with account that has no role record 2. Submit credentials 3. Observe redirect path","Login succeeds but redirect goes to /customer/dashboard (safe default); error is logged; user can complete role setup in dashboard","Run steps at /login with Test Data account.","Partial","","/login","guest"
+"TC-SP1-067","US-SP1-11","End-to-End Auth & Role Testing","concurrent login attempts maintain session consistency","Security","Medium","Rainy","User opens login page in multiple tabs","Same credentials in multiple concurrent requests","1. Submit login form simultaneously in 2 browser tabs 2. Wait for both requests to complete 3. Check session state in both tabs","Both tabs establish same session; user data is consistent across tabs; no race condition causes duplicate sessions or conflicts; final user state is coherent","Run steps at /login with Test Data account.","Partial","","/login","guest"
+"TC-SP1-068","US-SP1-11","End-to-End Auth & Role Testing","after login refreshing protected page maintains authentication","Functional","Medium","Rainy","User just logged in and is on /customer/dashboard","test@customer.com / customer","1. Sign in
+2. Open /orders
+3. Refresh browser","Still authenticated","Supabase SSR session persists; Purchase History remains visible.","Passed","","/orders","customer"
+"TC-SP1-069","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User signs in with Google and lands back in the app as an authenticated user","Integration","High","Sunny","User is signed out and can access the login page","Google account with access to the app","1. Open the login page and look for the Google sign-in button
+
+2. Click the Google sign-in button
+
+3. Complete the Google consent screen
+
+4. Return to the app after sign-in
+
+5. Refresh the page and check whether the user is still signed in","The user sees the Google sign-in flow open normally, completes sign-in successfully, returns to the app without errors, and remains signed in after refresh","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-070","US-SP1-12","Configure Supabase Authentication (Google OAuth)","Google sign-in button is visible and easy to use on the login page","Functional","Low","Rainy","User is signed out and viewing the login page","Logged-out user on a normal browser session","1. Open the login page
+
+2. Observe the available sign-in options
+
+3. Click the Google sign-in button once
+
+4. Watch what happens next","The Google sign-in button is visible, clearly clickable, and responds immediately with a loading state or redirect; the page does not freeze or trigger multiple sign-in attempts","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-071","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User cancels Google sign-in and stays safely signed out","Functional","High","Rainy","User reaches the Google consent screen and chooses not to continue","Google account with consent cancelled","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Reach the Google consent screen
+
+4. Cancel the sign-in or close the Google window
+
+5. Return to the app","The user is not signed in, no account session is created, and the app returns them to the login experience with a clear and calm outcome","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-072","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User denies Google permission and the app explains that sign-in did not finish","Functional","High","Rainy","User reaches the Google consent screen and denies access","Google account with permissions denied","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Deny the permission request on the Google consent screen
+
+4. Observe what the app shows after returning","The user is not signed in, the app shows a clear failure or retry message, and the login page remains usable without broken navigation","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-073","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User completes Google sign-in but loses the session after refreshing the page","Security","Medium","Rainy","User can sign in successfully first and then reload the page","Normal browser session with cookies turned off or blocked","1. Sign in with Google successfully
+
+2. Refresh the page
+
+3. Observe whether the app still treats the user as signed in
+
+4. Try navigating to another page","The app may allow the first sign-in step, but the session does not stay active after refresh; the user is taken back to a signed-out experience and is prompted to sign in again","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-074","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User starts Google sign-in but an error interrupts the flow and the app recovers cleanly","Functional","Medium","Rainy","User begins sign-in but the connection drops or the browser loses access temporarily","Temporary network interruption during sign-in","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Interrupt the connection while the sign-in is in progress
+
+4. Return to the app and try again","The user sees a recoverable failure state instead of a broken screen, no half-finished session is left behind, and the login option remains available for another attempt","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-083","US-SP1-14","Implement Signup Notification Logic","confirmation email is sent with valid callback link","Integration","High","Sunny","Signup completed, email service configured","Email service: SendGrid or Supabase email","1. Complete signup form 2. Check inbox for confirmation email 3. Click email link 4. Verify redirect to confirmation page","Confirmation email arrives within 2 minutes; email contains valid link to /auth/callback; clicking link confirms email; user is redirected to login or dashboard","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-084","US-SP1-14","Implement Signup Notification Logic","welcome email contains user information and next steps","Integration","High","Rainy","Signup completed and email template configured","Email template with variables for username and action links","1. Complete signup 2. Check welcome email 3. Verify content includes username, next steps, and support info","Email contains: user's username, clear next steps (confirm email, login), support contact info, company branding; email is readable on mobile and desktop","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-085","US-SP1-14","Implement Signup Notification Logic","missing email provider blocks notification sending","Integration","High","Rainy","Email service is not configured or credentials are invalid","EMAIL_PROVIDER not set or invalid credentials","1. Complete signup form 2. Observe backend logs 3. Check if email was sent","Signup succeeds but email is not sent; error is logged; user is notified: 'Confirmation email could not be sent'; user can request email resend","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-086","US-SP1-14","Implement Signup Notification Logic","email delivery fails and retry mechanism handles it","Integration","High","Rainy","Email service returns temporary failure","Email service timeout or rate limit hit","1. Complete signup with email service in failure state 2. Wait for retry logic 3. Check if email eventually arrives or user is notified","Initial send fails; backend retries 2-3 times; if all retries fail, user sees error: 'Unable to send email'; resend button is offered","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-087","US-SP1-14","Implement Signup Notification Logic","confirmation link expires after time window","Security","Medium","Rainy","Confirmation link generated but time limit exceeded before click","Link expiration: 24 hours","1. Signup and receive confirmation email 2. Wait 24+ hours (or simulate expiration) 3. Click link 4. Observe error","Link is invalid; user sees: 'Confirmation link expired'; user is offered option to resend email; no user is auto-confirmed with expired link","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-088","US-SP1-14","Implement Signup Notification Logic","confirmation email fails for invalid email format in database","Functional","Medium","Rainy","Email address stored incorrectly or is malformed","Email stored with invalid format: 'user@.com'","1. Signup attempt with edge-case email format 2. Check if email notification queues 3. Observe error handling","Signup validation rejects malformed email before it reaches email service; error message: 'Invalid email format'; notification is never attempted","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-089","US-SP1-14","Implement Signup Notification Logic","double confirmation attempts do not send duplicate emails","Functional","Medium","Rainy","User clicked confirm button twice or submitted multiple confirmation requests","N/A","1. Signup and receive confirmation email 2. Click confirmation button twice rapidly 3. Check email inbox and system state","Idempotent confirmation: first click succeeds; second click shows: 'Already confirmed' or redirects to login; only one confirmation email is counted; user is not confused","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-090","US-SP1-14","Implement Signup Notification Logic","email did not send","Functional","Medium","Rainy","User signed up and was notified that a confirmation email has been sent","N/A","1. Signup and receive confirmation email 2. Check email / inbox","Email confirmation should be sent to the email","Backend/integration - verify in Supabase or server logs; not a single UI route.","Not Run","","/","guest"
+"TC-SP1-091","US-SP1-15","Create vendor registration & vendor type logic","vendor selects vendor type and application is stored with correct type","Functional","High","Sunny","Customer navigates to vendor application, Supabase ready","test@customer.com / customer","1. As customer open /vendor-application
+2. Submit application with business_type registered","Application stored with business_type registered","vendor_applications uses business_type registered|unregistered; normalizeBusinessType maps legacy market->registered, pop-up->unregistered.","Passed","","/vendor-application","customer"
+"TC-SP1-092","US-SP1-15","Create vendor registration & vendor type logic","vendor application stores documents and all metadata correctly","Functional","High","Rainy","Multi-step vendor form complete, document upload working","test@customer.com / customer","1. As customer open /vendor-application
+2. Submit application with business_type unregistered","Application stored with business_type unregistered","Unregistered path creates application without full catalog until business registration.","Passed","","/vendor-application","customer"
+"TC-SP1-093","US-SP1-15","Create vendor registration & vendor type logic","selecting vendor type without completing business info shows validation error","Functional","High","Rainy","Vendor application form with incomplete data","test@customer.com / customer","1. Navigate to vendor application 2. Select vendor type 3. Try to submit without required fields 4. Observe form validation","Form validation error: 'Please complete all required fields'; submission is blocked; shop_name field is highlighted; user must fill before proceeding","Open /vendor-application as customer (test@customer.com / customer); business_type is registered|unregistered only.","Passed","","/vendor-application","customer"
+"TC-SP1-094","US-SP1-15","Create vendor registration & vendor type logic","vendor type mismatch during application causes redirect to correct profile","Functional","High","Rainy","User applies as unregistered vendor but navigates to market dashboard before approval","test@customer.com / customer","1. Apply as unregistered vendor at /vendor-application
+2. Before approval visit /vendor/dashboard","Pending application messaging; no catalog until approved","Vendor dashboard shows Application Pending banner when status is pending; catalog tools gated by approval + business_type.","Passed","","/vendor-application","customer"
+"TC-SP1-095","US-SP1-15","Create vendor registration & vendor type logic","vendor cannot re-apply with different type if application is pending","Security","Medium","Rainy","Vendor has submitted application, tries to submit another","test@customer.com / customer","1. Submit as unregistered business 2. Try to submit another application as registered business type 3. Observe system behavior","Form shows: 'You already have a pending application'; submission is blocked; user must wait for current application resolution or contact admin","Open /vendor-application as customer (test@customer.com / customer); business_type is registered|unregistered only.","Passed","","/vendor-application","customer"
+"TC-SP1-096","US-SP1-15","Create vendor registration & vendor type logic","document upload fails and error is shown to user","Integration","High","Rainy","Storage bucket is unavailable or upload endpoint fails","test@customer.com / customer","1. Fill vendor form 2. Attempt to upload document 3. Observe error handling","Upload fails with error: 'Document upload failed. Please try again'; form can still be submitted without the failed document (if optional) or shows required warning; user can retry upload","Open /vendor-application as customer (test@customer.com / customer); business_type is registered|unregistered only.","Passed","","/vendor-application","customer"
+"TC-SP1-097","US-SP1-15","Create vendor registration & vendor type logic","vendor application submission fails when database is unavailable","Integration","High","Rainy","Supabase database is offline or returns error","test@customer.com / customer","1. Fill complete vendor application 2. Submit form while database is unavailable 3. Observe error response","Form shows error: 'Unable to submit application. Please try again'; form data is preserved; user can retry when service returns; no partial record is created","Open /vendor-application as customer (test@customer.com / customer); business_type is registered|unregistered only.","Partial","","/vendor-application","customer"
+"TC-SP1-098","US-SP1-15","Create vendor registration & vendor type logic","vendor type selection persists across form page navigation","Functional","Medium","Rainy","Multi-step form with vendor type on step 1, other fields on step 2","test@customer.com / customer","1. On /vendor-application select unregistered business type
+2. Continue form
+3. Navigate back","business_type selection persists","CustomerVendorApplicationPageView keeps form state for business_type registered|unregistered.","Passed","","/vendor-application","customer"
+"TC-SP1-075","US-SP1-12","Implement User Registration Logic","Sign-up accepts valid email and matching passwords","UI","Critical","Sunny","Dev server running at localhost:3000","username: newuser01 | email: newuser01@bloomhero.test | password: TestPass123!","1. Open /sign-up
+2. Enter username, valid email (single @, valid domain)
+3. Enter matching password and confirm
+4. Click Create Account","Client validation passes; Supabase sign-up proceeds or shows confirm-email message","isValidEmailFormat() allows standard emails; matching passwords proceed to supabase.auth.signUp; success shows confirm message and redirects to /.","Passed","","/sign-up","guest"
+"TC-SP1-078","US-SP1-12","Implement User Registration Logic","Password mismatch blocked before sign-up API","UI","High","Sunny","Dev server running at localhost:3000","email: test@customer.com | password: abc | confirm: xyz","1. Open /sign-up
+2. Enter valid email
+3. Enter different password and confirm password
+4. Click Create Account","Passwords do not match message; no API call","handleSignUp shows ""Passwords do not match."" and stops before supabase.auth.signUp.","Passed","","/sign-up","guest"
+"TC-SP1-079","US-SP1-12","Implement User Registration Logic","Email with double @ (@@) rejected","Functional","High","Rainy","Dev server running at localhost:3000","email: user@@example.com","1. Open /sign-up
+2. Enter email user@@example.com
+3. Fill other required fields
+4. Submit","Invalid email error; account not created","isValidEmailFormat() rejects @@; UI shows ""Enter a valid email address."" without calling Supabase.","Passed","","/sign-up","guest"
+"TC-SP1-080","US-SP1-12","Implement User Registration Logic","Email with !@ in local part rejected","Functional","High","Rainy","Dev server running at localhost:3000","email: !@invalid.com","1. Open /sign-up
+2. Enter email !@invalid.com
+3. Submit","Invalid email error","Regex disallows ! in local part; message ""Enter a valid email address.""","Passed","","/sign-up","guest"
+"TC-SP1-081","US-SP1-12","Implement User Registration Logic","Email without @ symbol rejected","Functional","High","Rainy","Dev server running at localhost:3000","email: notanemail","1. Open /sign-up
+2. Enter notanemail
+3. Submit","Invalid email error","Client validation fails; HTML type=email may also block submit in browser.","Passed","","/sign-up","guest"
+"TC-SP1-082","US-SP1-12","Implement User Registration Logic","Empty username blocked","Functional","High","Rainy","Dev server running at localhost:3000","username: (empty)","1. Open /sign-up
+2. Leave username empty
+3. Try to submit","Cannot submit","username input has required attribute; browser blocks submit.","Passed","","/sign-up","guest"
+"TC-SP1-077","US-SP1-12","Implement User Registration Logic","Duplicate email shows Supabase error","Functional","High","Rainy","Dev server running at localhost:3000","email: test@customer.com (existing account)","1. Open /sign-up
+2. Use email already registered
+3. Submit valid passwords","Registration error; no duplicate account","Supabase returns error message in signup-status (e.g. User already registered).","Passed","","/sign-up","guest"
+"TC-SP1-076","US-SP1-12","Implement User Registration Logic","Weak password policy enforcement","Functional","High","Rainy","Dev server running at localhost:3000","password: 123","1. Open /sign-up
+2. Enter valid email and weak password
+3. Submit","Password strength rules enforced","No client-side strength rules in SignUp.tsx; Supabase may reject weak passwords with its own error message.","Partial","","/sign-up","guest"
+"TC-SP1-083","US-SP1-12","Implement User Registration Logic","Email with only whitespace rejected","Functional","High","Rainy","Dev server running at localhost:3000","email: (spaces only)","1. Open /sign-up
+2. Enter spaces in email field
+3. Submit","Invalid email error","isValidEmailFormat() rejects whitespace via trim/regex check.","Passed","","/sign-up","guest"
+"TC-SP1-084","US-SP1-12","Implement User Registration Logic","Email missing domain rejected","Functional","High","Rainy","Dev server running at localhost:3000","email: user@","1. Open /sign-up
+2. Enter user@
+3. Submit","Invalid email error","Shows ""Enter a valid email address."" (domain segment required).","Passed","","/sign-up","guest"
+"TC-SP1-045","US-SP1-09","Initialize API & data flow","Search API returns flowers for scope=flowers","API","High","Sunny","Dev server running at localhost:3000","GET /api/search?q=rose&scope=flowers","1. With dev server running, call GET /api/search?q=rose&scope=flowers
+2. Parse JSON body","HTTP 200; JSON has flowers array (may be empty if no data)","route.ts returns 200 with { flowers, vendors, errors }; flowers query runs when scope includes flowers and q is set.","Passed","","/api/search","guest"
+"TC-SP1-046","US-SP1-09","Initialize API & data flow","Search API returns vendors for scope=vendors","API","High","Sunny","Dev server running at localhost:3000","GET /api/search?q=shop&scope=vendors","1. Call GET /api/search?q=shop&scope=vendors
+2. Inspect JSON","HTTP 200; vendors array present","fetchVendorResults runs when scope is vendors and q is non-empty; vendors key always in payload.","Passed","","/api/search","guest"
+"TC-SP1-048","US-SP1-12","Initialize API & data flow","Empty query and no category returns empty arrays","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=&scope=all","1. Call GET /api/search with empty q and no category
+2. Read response","HTTP 200; flowers: []; vendors: []","Early return in route.ts when !hasQuery && !hasCategory returns { flowers: [], vendors: [] }.","Passed","","/api/search","guest"
+"TC-SP1-049","US-SP1-12","Initialize API & data flow","Invalid price parameter ignored","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=rose&scope=flowers&price=not_a_price","1. Call API with invalid price
+2. Compare to price=Any","No crash; results same as Any when price not recognized","Only <500, 500-700, >700 change filter; other values treated as Any.","Passed","","/api/search","guest"
+"TC-SP1-051","US-SP1-12","Initialize API & data flow","Unknown scope falls back to all","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=flower&scope=invalid_scope","1. Call with scope=invalid_scope
+2. Inspect flowers and vendors keys","Both flowers and vendors may return when q is set","normalizeSearchScope() maps unknown values; with q set, both flower and vendor fetches can run for scope=all.","Passed","","/api/search","guest"
+"TC-SP1-047","US-SP1-12","Initialize API & data flow","scope=all with query returns both arrays","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=bloom&scope=all","1. Call search with scope=all and q=bloom
+2. Verify JSON shape","flowers and vendors arrays; status 200 or 207 if partial error","Parallel fetchFlowerResults and fetchVendorResults; errors array populated on partial failure (207).","Passed","","/api/search","guest"
+"TC-SP1-052","US-SP1-12","Initialize API & data flow","Price sort applies to flowers only","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=rose&scope=all&sort=Price: Low to High","1. Call with sort=Price: Low to High
+2. Check flower price ordering","Flowers sorted by price ascending; vendors unaffected","fetchFlowerResults orders by price when sort matches; vendor sort uses shop_name unless Best Sellers.","Passed","","/api/search","guest"
+"TC-SP1-050","US-SP1-12","Initialize API & data flow","Valid category filter with query","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=&scope=flowers&category=birthday","1. Call with category=birthday (no q)
+2. Inspect flowers array","HTTP 200; flowers filtered to category or empty if none","hasCategory allows request; product_categories filter applied in fetchFlowerResults.","Passed","","/api/search","guest"
+"TC-SP1-045b","US-SP1-12","Initialize API & data flow","Best Sellers sort without query uses category or empty","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?scope=flowers&sort=Best Sellers","1. Call without q, only sort and scope
+2. Read response","Empty arrays (q required unless category)","Without q or category, returns empty flowers/vendors arrays per route guard.","Passed","","/api/search","guest"
+"TC-SP1-046b","US-SP1-12","Initialize API & data flow","Special characters in query are URL-encoded","Functional","High","Rainy","Dev server running at localhost:3000","GET /api/search?q=rose%20bouquet&scope=flowers","1. Call API with encoded space in q
+2. Confirm 200 response","No server error; search runs","q trimmed from searchParams; ilike pattern search on product_name/description.","Passed","","/api/search","guest"

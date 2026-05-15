@@ -1,0 +1,244 @@
+﻿Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks,Route,Role
+"TC-SP2-001","US-SP2-01","Mock Data Hooks","useCart returns mock items on /test-cart","Functional","High","Sunny","Dev server at localhost:3000","mockCartItems in src/lib/mockData.ts","1. Open /test-cart
+2. Open browser DevTools Console
+3. Confirm logged data array length and fields","Array with mock items; each has id, productName, vendorName, price, qty, maxQty, status; isLoading false; error null","TestCartPage calls useCart(); console logs data with 3 mock items from mockCartItems; isLoading false; error null.","Passed","","/test-cart","guest"
+"TC-SP2-002","US-SP2-01","Mock Data Hooks","useCart updateQty and removeItem mutate local state","Functional","High","Sunny","Dev server at localhost:3000","N/A","1. On /test-cart note first item qty
+2. In React DevTools or a temporary button call updateQty(id, newQty)
+3. Call removeItem(id) for one item","Qty updates in rendered list; removed item disappears; no thrown errors","useCart exposes updateQty/removeItem that map/filter mockCartItems in memory only.","Passed","Hook API test; production /cart uses Supabase not useCart.","/test-cart","guest"
+"TC-SP2-003","US-SP2-01","Mock Data Hooks","useVendorApplications loads submitted applications from Supabase","Functional","High","Rainy","Dev server at localhost:3000","test@admin.com / admin","1. Sign in as admin
+2. Open /admin/vendor-applications
+3. Wait for cards or empty state","Pending applications list from getSubmittedVendorApplications; skeleton while loading","useVendorApplications fetches real DB via getSubmittedVendorApplications; shows skeleton then cards or empty state. No mockVendorApplications.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-004","US-SP2-01","Mock Data Hooks","useVendorApplications surfaces load error without white screen","Functional","High","Rainy","Dev server at localhost:3000","Simulate network off or invalid Supabase env","1. Break network or misconfigure env
+2. Open /admin/vendor-applications
+3. Observe UI","Error message; page shell intact","Hook sets error string; page shows error/empty handling instead of crashing.","Partial","Verify manually with offline DevTools.","/admin/vendor-applications","admin"
+"TC-SP2-005","US-SP2-01","Mock Data Hooks","useActivityLogs loads rows from activity_logs table","Functional","High","Rainy","Dev server at localhost:3000","test@admin.com / admin","1. Sign in as admin
+2. Open /admin/activity-logs
+3. Wait for cards","ActivityLogCard list grouped by date; skeleton while isLoading","useActivityLogs queries Supabase activity_logs; maps to ActivityLog shape; skeleton then cards.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-006","US-SP2-01","Mock Data Hooks","useActivityLogs empty table shows empty state","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /admin/activity-logs with zero log rows in DB
+2. Observe page","No crash; empty or no logs message","data=[] renders empty state component on activity logs page.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-007","US-SP2-01","Mock Data Hooks","useCart with empty mock array shows empty message","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Temporarily set mockCartItems=[] in mockData.ts
+2. Reload /test-cart","No items message; isLoading false","TestCartPage renders 'No items in cart.' when data.length===0.","Passed","Dev-only change to mockData.ts.","/test-cart","guest"
+"TC-SP2-008","US-SP2-01","Mock Data Hooks","Guest cannot access admin hook pages","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. While signed out open /admin/vendor-applications","Redirect to /login","requireRole('admin') in admin layout redirects unauthenticated users to /login.","Passed","","/admin/vendor-applications","guest"
+"TC-SP2-009","US-SP2-01","Mock Data Hooks","Customer role blocked from admin applications hook page","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open /admin/vendor-applications","Redirect away from admin","requireRole sends non-admin users to / or vendor dashboard per role.","Passed","","/admin/vendor-applications","customer"
+"TC-SP2-010","US-SP2-01","Mock Data Hooks","useActivityLogs invalid timestamp still renders card","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Insert activity_logs row with malformed created_at in DB
+2. Reload page","Card renders with fallback date text; no crash","ActivityLogCard formats timestamp via Date; invalid dates show Invalid Date or fallback without breaking list.","Partial","","/admin/activity-logs","admin"
+"TC-SP2-011","US-SP2-02","Bloom Cart","Signed-in customer with pending cart items sees grouped vendor cards","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer; customer has pending orders with order_items","1. Sign in as customer
+2. Add products to cart from search or product page if empty
+3. Open /cart
+4. Verify vendor grouping and line items","Cart lists items grouped by vendor; qty and price visible; loading finishes","CartPage loads pending orders + order_items from Supabase; groups by vendorName; VendorCard per vendor.","Passed","","/cart","customer"
+"TC-SP2-012","US-SP2-02","Bloom Cart","CartSummary subtotal reflects selected line items","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer","1. Open /cart with multiple items
+2. Select subset via checkboxes
+3. Compare CartSummary subtotal to manual sum of selected qty*price","Subtotal matches sum of selected items only","getTotal(true) sums only selectedIds; CartSummary displays computed subtotal.","Passed","","/cart","customer"
+"TC-SP2-013","US-SP2-02","Bloom Cart","Guest on /cart sees sign-in prompt not cart data","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign out
+2. Open /cart","Prompt to sign in; no customer cart rows","initializeCustomerAndCart exits when no user; page shows sign-in CTA instead of items.","Passed","","/cart","guest"
+"TC-SP2-014","US-SP2-02","Bloom Cart","Increase qty blocked at stock maxQty","Functional","High","Rainy","Dev server at localhost:3000","Item at qty equals product.stocks","1. Open /cart
+2. Click + on item at max stock
+3. Confirm qty unchanged","Qty does not exceed maxQty; + disabled or no-op","handleIncrease only calls updateCartItem when item.qty < item.maxQty.","Passed","","/cart","customer"
+"TC-SP2-015","US-SP2-02","Bloom Cart","Out-of-stock product shows unavailable styling","Functional","High","Rainy","Dev server at localhost:3000","Product with stocks=0 in pending order","1. Open /cart with zero-stock product in pending order
+2. Inspect item row","Status out-of-stock; controls disabled or warning shown","Mapped items set status out-of-stock when stocks<=0; UI reflects unavailable state.","Passed","","/cart","customer"
+"TC-SP2-016","US-SP2-02","Bloom Cart","Remove item deletes order_items row and updates UI","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /cart
+2. Remove one line item
+3. Confirm item gone and totals update","Item removed from list; subtotal decreases","handleRemove deletes from order_items and filters local cartItems state.","Passed","","/cart","customer"
+"TC-SP2-017","US-SP2-02","Bloom Cart","Empty pending orders show empty cart state","Functional","High","Rainy","Dev server at localhost:3000","Customer with no pending orders","1. Sign in as customer with no pending orders
+2. Open /cart","Empty cart message and Browse Products link","EmptyCart component: 'Your cart is empty' with link to /.","Passed","","/cart","customer"
+"TC-SP2-018","US-SP2-02","Bloom Cart","Select all toggles every line item checkbox","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /cart with 2+ items
+2. Click select-all control
+3. Click again to deselect","All items selected then cleared","toggleSelectAll sets selectedIds to all cart item ids or empty Set.","Passed","","/cart","customer"
+"TC-SP2-019","US-SP2-02","Bloom Cart","Checkout without selected items shows validation","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /cart
+2. Deselect all items
+3. Attempt checkout / place order","Blocked with message to select items","Checkout handler requires selectedIds.size>0 before proceeding.","Passed","","/cart","customer"
+"TC-SP2-020","US-SP2-02","Bloom Cart","Supabase order_items load error does not white-screen","Functional","High","Rainy","Dev server at localhost:3000","Simulate items query failure","1. Provoke order_items select error
+2. Open /cart","Error logged; empty or partial UI","itemsError logged; cartItems may be empty while pendingOrderIds retained; page still renders.","Partial","","/cart","customer"
+"TC-SP2-021","US-SP2-03","Admin Vendor Applications","Admin views pending vendor application cards","Functional","High","Sunny","Dev server at localhost:3000","test@admin.com / admin","1. Sign in as admin
+2. Open /admin/vendor-applications
+3. Count ApplicationCard components","Header shows pending count; cards show shop name, business type Registered/Unregistered, contact fields","Page lists submitted applications with Registered/Unregistered labels, document badges, Approve/Reject actions.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-022","US-SP2-03","Admin Vendor Applications","Approve application removes card and shows success toast","Functional","High","Sunny","Dev server at localhost:3000","test@admin.com / admin","1. On a pending card click Approve
+2. Confirm credentials modal if shown
+3. Observe list update","Card removed; pending count decreases; success feedback","approveVendorApplication runs; card filtered from list; toast with issued credentials when returned.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-023","US-SP2-03","Admin Vendor Applications","Reject requires reason selection before confirm","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Reject on a card
+2. Open inline panel
+3. Try Confirm without choosing reason if no default","Rejection blocked until reason selected","Inline reject panel includes reason dropdown; confirm uses selected reason.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-024","US-SP2-03","Admin Vendor Applications","View Documents expands permit and ID links","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. On card with uploaded documents click View Documents
+2. Open each file link","Document URLs open in new tab","View Documents toggles inline file links; opens storage URLs in new browser tab.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-025","US-SP2-03","Admin Vendor Applications","Unregistered application shows reduced document requirements","Functional","High","Rainy","Dev server at localhost:3000","Application with business_type unregistered","1. Locate unregistered vendor application card
+2. Read document section","Copy indicates ID-only or no business permit required","Unregistered applications show applicable document labels per VendorApplicationForm rules.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-026","US-SP2-03","Admin Vendor Applications","Bulk reject selected applications","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Select multiple cards
+2. Click Reject All
+3. Confirm","Selected cards removed; bulk reason applied","Reject All uses BULK_REJECTION_REASON and removes selected pending applications.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-027","US-SP2-03","Admin Vendor Applications","Empty pending list shows empty state","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Approve or reject all pending applications
+2. Observe page","No cards; empty state message","When data.length===0 after load, empty state renders without layout break.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-028","US-SP2-03","Admin Vendor Applications","Approve failure shows error toast not silent fail","Functional","High","Rainy","Dev server at localhost:3000","Simulate approveVendorApplication error","1. Trigger approve API failure
+2. Click Approve","Error toast; card remains","catch sets error toast; application stays in list.","Partial","","/admin/vendor-applications","admin"
+"TC-SP2-029","US-SP2-03","Admin Vendor Applications","Skeleton shows while applications loading","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open page with slow network
+2. Observe first paint","Skeleton cards before data","isLoading true renders SkeletonCard placeholders until fetch completes.","Passed","","/admin/vendor-applications","admin"
+"TC-SP2-030","US-SP2-03","Admin Vendor Applications","View Details button has no dedicated detail route yet","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click View Details on any card","Navigate to detail page or modal","View Details provides minimal or no navigation; card inline info is primary view.","Failed","Detail page not implemented.","/admin/vendor-applications","admin"
+"TC-SP2-031","US-SP2-04","Admin Activity Logs","Admin views activity logs grouped by date","Functional","High","Sunny","Dev server at localhost:3000","test@admin.com / admin","1. Sign in as admin
+2. Open /admin/activity-logs
+3. Verify date headers and cards","ActivityLogCard entries under Today/Yesterday headers","Logs grouped by date string; each card shows timestamp, admin, action title, target.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-032","US-SP2-04","Admin Activity Logs","Filter chip Approvals shows only approved actionType","Functional","High","Sunny","Dev server at localhost:3000","N/A","1. Open /admin/activity-logs
+2. Click Approvals chip
+3. Click All to reset","Only approved logs visible; All restores full list","FILTER_CHIPS filter by actionType; active chip highlighted.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-033","US-SP2-04","Admin Activity Logs","Search filters by actionTitle substring","Functional","High","Rainy","Dev server at localhost:3000","Search: Approved","1. Type Approved in search
+2. Clear search","Matching logs only; clearing restores all","useMemo filters logs case-insensitively on actionTitle and targetName.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-034","US-SP2-04","Admin Activity Logs","Search with no matches shows empty state","Functional","High","Rainy","Dev server at localhost:3000","Search: zznonexistent","1. Enter nonsense search term
+2. Observe page","Empty state with guidance to clear search","Shows no logs found message; clear via deleting search text (no dedicated clear button).","Partial","","/admin/activity-logs","admin"
+"TC-SP2-035","US-SP2-04","Admin Activity Logs","Status dot color matches actionType","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. View cards for approved, rejected, suspended, login types
+2. Compare dot colors","Distinct colors per action type","ActivityLogCard renders colored indicator per actionType mapping.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-036","US-SP2-04","Admin Activity Logs","Skeleton during isLoading","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Throttle network
+2. Reload /admin/activity-logs","Skeleton placeholders then real cards","SkeletonCard shown while useActivityLogs isLoading true.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-037","US-SP2-04","Admin Activity Logs","Tags render as gray chips on card","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Find log row with tags array in DB
+2. Inspect card footer","Tag pills readable and spaced","tags mapped to small chip components on ActivityLogCard.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-038","US-SP2-04","Admin Activity Logs","Quick link buttons navigate via href","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click a quick link on a log card
+2. Observe navigation","Navigates to admin route from quick_links.href","Quick links use Link/href from DB JSON; navigates when href valid.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-039","US-SP2-04","Admin Activity Logs","Three-dot menu is UI placeholder","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click three-dot icon on a card","No dropdown actions required","Icon visible; no menu logic wired yet.","Passed","","/admin/activity-logs","admin"
+"TC-SP2-040","US-SP2-04","Admin Activity Logs","Non-admin cannot access activity logs","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open /admin/activity-logs","Redirect away from admin","Admin layout requireRole blocks customer.","Passed","","/admin/activity-logs","customer"
+"TC-SP2-041","US-SP2-05","Customer Order History","Customer views purchase history tabs","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open /orders
+3. Switch tabs To Pay, To Ship, To Receive, Completed","Purchase History heading; tab content loads per status","CustomerOrdersPageView at /orders with TABS and OrderCard list per activeTab.","Passed","","/orders","customer"
+"TC-SP2-042","US-SP2-05","Customer Order History","Completed tab shows Rate Order or View Rating","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer","1. Open /orders?tab=completed
+2. Inspect CTA on a completed order","To Rate or View Rating link to /review?orderId=","OrderCard links to review flow for completed orders.","Passed","","/orders?tab=completed","customer"
+"TC-SP2-043","US-SP2-05","Customer Order History","Guest sees sign-in gate on /orders","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign out
+2. Open /orders","Sign in to view your orders message","CustomerOrdersSignInView with Go to Login button.","Passed","","/orders","guest"
+"TC-SP2-044","US-SP2-05","Customer Order History","Empty tab shows tab-specific empty state","Functional","High","Rainy","Dev server at localhost:3000","Customer with no to-pay orders","1. Open /orders?tab=to-pay with no matching orders","Empty state copy and Browse Flowers CTA","EMPTY_STATE[activeTab] message and browse link rendered.","Passed","","/orders?tab=to-pay","customer"
+"TC-SP2-045","US-SP2-05","Customer Order History","To Pay tab shows payment actions when orders exist","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /orders?tab=to-pay with pending payment order
+2. Locate Pay Now","Pay Now navigates to pay flow","OrderCard includes Pay Now linking to /orders/[orderId]/pay.","Passed","","/orders?tab=to-pay","customer"
+"TC-SP2-046","US-SP2-05","Customer Order History","Missing product image uses placeholder","Functional","High","Rainy","Dev server at localhost:3000","Order item with null product_image_url","1. Open orders tab containing item without image
+2. Inspect thumbnail","Placeholder image; page stable","OrderCard falls back when image URL missing.","Passed","","/orders","customer"
+"TC-SP2-047","US-SP2-05","Customer Order History","Invalid tab query falls back safely","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /orders?tab=invalid","Default tab or empty state without crash","getCustomerOrdersPage normalizes unknown tab to default.","Passed","","/orders?tab=invalid","customer"
+"TC-SP2-048","US-SP2-05","Customer Order History","Cancel order flow reachable from order card","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. On cancellable order click Cancel
+2. Complete cancel page","Cancel page at /orders/[id]/cancel","Customer cancel route exists under (customer)/orders/[orderId]/cancel.","Passed","","/orders","customer"
+"TC-SP2-049","US-SP2-05","Customer Order History","Confirm receipt flow for to-receive orders","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open to-receive order
+2. Use Order Received action","Navigates to confirm-receipt page","/orders/[orderId]/confirm-receipt route with markOrderReceived action.","Passed","","/orders?tab=to-receive","customer"
+"TC-SP2-050","US-SP2-05","Customer Order History","Vendor account redirected from customer /orders","Functional","High","Rainy","Dev server at localhost:3000","test@vendor.com / vendor","1. Sign in as vendor
+2. Open /orders","Vendor uses /vendor/orders not customer purchase history","Customer orders page is for role customer; vendor should use vendor orders table.","Partial","May redirect or show empty depending on layout guards.","/orders","vendor"
+"TC-SP2-051","US-SP2-06","Review Creation","Customer submits new review from completed order","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer; completed orderId without review","1. From /orders?tab=completed click To Rate
+2. Select star rating and comment
+3. Submit","Review saved; orders list shows View Rating","CustomerReviewPageView submits review; completed orders update CTA to View Rating.","Passed","","/review","customer"
+"TC-SP2-052","US-SP2-06","Review Creation","Customer edits existing review","Functional","High","Sunny","Dev server at localhost:3000","Order with existing review","1. Open /review?orderId= for rated order
+2. Change rating/comment
+3. Submit update","Same review record updated","loadReviewPage returns existingReview; form updates record in place.","Passed","","/review","customer"
+"TC-SP2-053","US-SP2-06","Review Creation","Guest opening /review without session sees sign-in prompt","Functional","High","Rainy","Dev server at localhost:3000","orderId=any","1. Sign out
+2. Open /review?orderId=VALID_ID","Unauthenticated view; no order data","CustomerReviewUnauthenticatedView when loadReviewPage status unauthenticated.","Passed","","/review","guest"
+"TC-SP2-054","US-SP2-06","Review Creation","Missing orderId shows no order selected","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in
+2. Open /review without query params","No order selected message","CustomerReviewNoOrderView when orderId absent.","Passed","","/review","customer"
+"TC-SP2-055","US-SP2-06","Review Creation","Another customer's orderId shows unavailable","Functional","High","Rainy","Dev server at localhost:3000","Order belonging to different customer","1. Sign in as test@customer.com
+2. Open /review?orderId= belonging to another user","Access denied or order not found","CustomerReviewUnavailableView when order not owned by session user.","Passed","","/review","customer"
+"TC-SP2-056","US-SP2-06","Review Creation","Submit without rating blocked","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open review form
+2. Leave stars empty
+3. Submit","Validation prevents submit","Form validation requires rating before server write.","Passed","","/review","customer"
+"TC-SP2-057","US-SP2-06","Review Creation","Long comment wraps in textarea","Functional","High","Rainy","Dev server at localhost:3000","500+ character comment","1. Paste long comment
+2. Inspect layout","Textarea scrolls; layout stable","Textarea accepts long text with scroll.","Passed","","/review","customer"
+"TC-SP2-058","US-SP2-06","Review Creation","Missing vendor shop name uses fallback label","Functional","High","Rainy","Dev server at localhost:3000","Order whose vendor shop_name null","1. Open review for order with missing vendor name","Fallback vendor display name","UI shows fallback such as Bloom Cart Vendor or Vendor when shop_name missing.","Passed","","/review","customer"
+"TC-SP2-059","US-SP2-06","Review Creation","Double submit disabled while saving","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Submit twice quickly","Single write; button disabled during request","isSubmitting guard prevents duplicate posts.","Passed","","/review","customer"
+"TC-SP2-060","US-SP2-06","Review Creation","Invalid orderId format shows unavailable","Functional","High","Rainy","Dev server at localhost:3000","orderId=not-a-uuid","1. Open /review?orderId=not-a-uuid","Safe error state","loadReviewPage returns unavailable; CustomerReviewUnavailableView.","Passed","","/review","customer"
+"TC-SP2-061","US-SP2-07","Vendor Add Product","Registered vendor loads add-product form with categories","Functional","High","Sunny","Dev server at localhost:3000","test@vendor.com / vendor","1. Sign in as registered vendor
+2. Open /vendor/add-product
+3. Wait for categories and vendor status","Form fields, category pills, image upload; status not pending","VendorAddProductPage loads fetchCategories and getVendorApplicationStatusAction before submit.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-062","US-SP2-07","Vendor Add Product","Valid product submit redirects to product list","Functional","High","Sunny","Dev server at localhost:3000","Name, price>0, stock>0, 1-3 categories, 1+ images","1. Fill all required fields on /vendor/add-product
+2. Upload valid image(s)
+3. Click Add Product","Product and images created; redirect to /vendor/products","addVendorProductAction inserts product; router navigates to vendor products list on success.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-063","US-SP2-07","Vendor Add Product","Empty required fields show validation errors","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open form
+2. Submit without filling fields","Inline errors; no DB insert","Client validation and server action reject empty required fields.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-064","US-SP2-07","Vendor Add Product","Zero or negative price blocked","Functional","High","Rainy","Dev server at localhost:3000","price=0 or -10","1. Enter price 0
+2. Submit
+3. Repeat with negative","Validation error; product not created","Price normalized and validated before addVendorProductAction.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-065","US-SP2-07","Vendor Add Product","No categories selected blocks submit","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Fill text fields
+2. Leave categories empty
+3. Submit","Message to select 1-3 categories","CategoryPillSelector validation requires between 1 and 3 categoryIds.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-066","US-SP2-07","Vendor Add Product","No product images blocks submit","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Fill fields except images
+2. Submit","Upload required message","Submit guard requires at least one image file in imagePreviews.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-067","US-SP2-07","Vendor Add Product","Pending vendor status blocks product save","Functional","High","Rainy","Dev server at localhost:3000","Vendor application still pending","1. Sign in as vendor with pending status
+2. Attempt submit valid product","Cannot add products yet message","vendorStatus pending shows error and blocks addVendorProductAction.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-068","US-SP2-07","Vendor Add Product","Image preview updates when files selected","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Select 2 images
+2. Remove one preview
+3. Confirm preview list updates","Object URL previews; revoke on remove","imagePreviews state with previewUrl; cleanup on unmount removes object URLs.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-069","US-SP2-07","Vendor Add Product","Non-numeric price input rejected","Functional","High","Rainy","Dev server at localhost:3000","price=abc","1. Type letters in price field
+2. Submit","Validation error; no insert","Input type/validation prevents non-numeric persist.","Passed","","/vendor/add-product","vendor"
+"TC-SP2-070","US-SP2-07","Vendor Add Product","Unregistered vendor may be blocked from add-product","Functional","High","Rainy","Dev server at localhost:3000","test@unregistered.com / unregistered","1. Sign in as unregistered vendor
+2. Open /vendor/add-product","Blocked or redirected per business rules","Unregistered vendors focus on schedule/profile; product listing may be restricted at dashboard level.","Partial","Confirm business_type guard on route.","/vendor/add-product","unregistered"
+"TC-SP2-071","US-SP2-08","Post-login role redirection","Admin email login lands on admin dashboard","Functional","High","Sunny","Dev server at localhost:3000","test@admin.com / admin","1. Open /login
+2. Enter admin credentials
+3. Click Sign In","Redirect to /admin/dashboard","signInWithPasswordAction + resolvePostLoginDestination returns path /admin/dashboard.","Passed","","/login","guest"
+"TC-SP2-072","US-SP2-08","Post-login role redirection","Registered vendor login lands on vendor dashboard","Functional","High","Sunny","Dev server at localhost:3000","test@vendor.com / vendor","1. Open /login
+2. Sign in as vendor
+3. Confirm URL","Redirect to /vendor/dashboard","role vendor with vendors row -> /vendor/dashboard.","Passed","","/login","guest"
+"TC-SP2-073","US-SP2-08","Post-login role redirection","Customer login lands on home","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Observe redirect","Redirect to /","Customer role resolvePostLoginDestination path is /.","Passed","","/login","guest"
+"TC-SP2-074","US-SP2-08","Post-login role redirection","Unregistered vendor lands on vendor dashboard","Functional","High","Rainy","Dev server at localhost:3000","test@unregistered.com / unregistered","1. Sign in as unregistered vendor
+2. Confirm dashboard URL","Redirect to /vendor/dashboard","Vendor with business_type unregistered still uses /vendor/* shell.","Passed","","/login","guest"
+"TC-SP2-075","US-SP2-08","Post-login role redirection","Invalid password shows error and stays on login","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / wrong-password","1. Submit wrong password
+2. Read status message","Auth error text; no redirect","destination.ok false sets status from Supabase error message.","Passed","","/login","guest"
+"TC-SP2-076","US-SP2-08","Post-login role redirection","Vendor role without vendors row shows support message","Functional","High","Rainy","Dev server at localhost:3000","User with role vendor but no vendors record","1. Sign in as vendor account missing vendors row","Not registered as a vendor message","resolvePostLoginDestination returns ok:false with support copy.","Passed","","/login","guest"
+"TC-SP2-077","US-SP2-08","Post-login role redirection","New user without users row upserted as customer","Functional","High","Rainy","Dev server at localhost:3000","First-time Supabase user","1. Sign in with new auth user lacking users row
+2. Observe landing route","upsertUserAsCustomer then redirect to /","getUserRoleById null triggers upsertUserAsCustomer and role customer.","Passed","","/login","guest"
+"TC-SP2-078","US-SP2-08","Post-login role redirection","Google OAuth starts redirect to auth callback","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Login with Google
+2. Complete or cancel OAuth","OAuth to /auth/callback then role-based redirect","signInWithOAuth redirectTo /auth/callback; callback route resolves role path.","Passed","Manual OAuth; needs Google configured.","/login","guest"
+"TC-SP2-079","US-SP2-08","Post-login role redirection","must_change_password sends user to forgot-password","Functional","High","Rainy","Dev server at localhost:3000","User metadata must_change_password true","1. Sign in account flagged must_change_password
+2. Observe redirect","router.replace /forgot-password","Login.tsx checks userMetadata.must_change_password before destination.path.","Passed","","/login","guest"
+"TC-SP2-080","US-SP2-08","Post-login role redirection","Legacy vendor or market dashboard URLs are not used","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign in any vendor
+2. Confirm URL never uses /vendor or /market paths","Only /vendor/* destinations","Unified vendor model; no vendor/market dashboard redirects in resolvePostLoginDestination.","Passed","","/login","guest"
+"TC-SP2-081","US-SP2-09","Role-based navbar rendering","Guest navbar shows Home, About, Sign in","Functional","High","Sunny","Dev server at localhost:3000","N/A","1. Sign out
+2. Open /
+3. Read desktop nav links","Home, About, Sign in visible","navLinks.default: Home, About; Sign in button when no user.","Passed","","/","guest"
+"TC-SP2-082","US-SP2-09","Role-based navbar rendering","Customer navbar shows Home, Orders, Cart, Profile","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open / and /orders
+3. Compare nav links","Same customer links on each page","navAudience customer uses Home, Orders, Cart, Profile links.","Passed","","/","customer"
+"TC-SP2-083","US-SP2-09","Role-based navbar rendering","Vendor navbar hides public customer links","Functional","High","Rainy","Dev server at localhost:3000","test@vendor.com / vendor","1. Sign in as vendor
+2. Open /vendor/dashboard
+3. Check top navbar","No Orders/Cart links; vendor greeting; Sign out","hidePublicNav true for vendor; sidebar used for vendor navigation.","Passed","","/vendor/dashboard","vendor"
+"TC-SP2-084","US-SP2-09","Role-based navbar rendering","Admin navbar hides public links and logo goes to admin dashboard","Functional","High","Rainy","Dev server at localhost:3000","test@admin.com / admin","1. Sign in as admin
+2. Click logo","Logo href /admin/dashboard; minimal public nav","logoHref /admin/dashboard when isAdmin; hidePublicNav true.","Passed","","/admin/dashboard","admin"
+"TC-SP2-085","US-SP2-09","Role-based navbar rendering","Customer search bar on non-home pages","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign in as customer
+2. Open /orders
+3. Look for navbar search","Search input submits to /search?q=","showSearchBar true when logged-in customer not on / or /search.","Passed","","/orders","customer"
+"TC-SP2-086","US-SP2-09","Role-based navbar rendering","Sign out returns to login","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Sign out
+2. Confirm URL","Session cleared; /login","handleSignOut calls supabase.auth.signOut and router.push /login.","Passed","","/","customer"
+"TC-SP2-087","US-SP2-09","Role-based navbar rendering","No separate vendor vs market navbar items","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign in registered and unregistered vendors
+2. Compare navbar","Same vendor shell; business type not split in navbar","Navbar does not branch on business_type; vendor uses dashboard sidebar.","Passed","","/vendor/dashboard","vendor"
+"TC-SP2-088","US-SP2-09","Role-based navbar rendering","Mobile menu toggles link list","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Resize to mobile width
+2. Tap hamburger
+3. Tap a link","Menu opens and navigates","menuOpen state toggles mobile drawer with nav links.","Passed","","/","guest"
+"TC-SP2-089","US-SP2-09","Role-based navbar rendering","Active route highlighted in customer nav","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /cart
+2. Inspect Cart link style","Cart link uses active red underline","pathname === href applies active classes on matching link.","Passed","","/cart","customer"
+"TC-SP2-090","US-SP2-09","Role-based navbar rendering","Guest does not see Orders or Cart links","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. While signed out scan navbar","No Orders or Cart","default navLinks omit Orders and Cart until customer session.","Passed","","/","guest"
+"TC-SP2-091","US-SP2-10","Vendor profile","Vendor profile page loads header and tabs","Functional","High","Sunny","Dev server at localhost:3000","test@vendor.com / vendor","1. Sign in as vendor
+2. Open /vendor/profile
+3. Verify header and tab anchors","VendorProfileHeader; tabs Schedule, Gallery, Reviews, About","Vendor profile page renders header, sidebar, and tab nav anchors.","Passed","","/vendor/profile","vendor"
+"TC-SP2-092","US-SP2-10","Vendor profile","Preview as customer opens public vendor URL","Functional","High","Sunny","Dev server at localhost:3000","N/A","1. On /vendor/profile click Preview as customer
+2. Confirm public profile opens","Navigates to public vendor profile path","VendorProfileHeader previewHref uses publicVendorProfilePath(vendorId).","Passed","","/vendor/profile","vendor"
+"TC-SP2-093","US-SP2-10","Vendor profile","Unauthenticated user redirected to login","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign out
+2. Open /vendor/profile","Redirect /login","getPopUpVendorProfileData null redirects to /login.","Passed","","/vendor/profile","guest"
+"TC-SP2-094","US-SP2-10","Vendor profile","Edit profile opens profile editor section","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Edit profile
+2. Inspect editor UI","VendorProfileEditor or modal for profile fields","VendorProfileEditor component available on profile page for edits.","Passed","","/vendor/profile","vendor"
+"TC-SP2-095","US-SP2-10","Vendor profile","Gallery section lists uploaded photos","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open profile Gallery tab
+2. Review PopUpGalleryManager","Gallery grid or empty state","getPopupGalleryPhotos feeds PopUpGalleryManager on profile page.","Passed","","/vendor/profile#gallery","vendor"
+"TC-SP2-096","US-SP2-10","Vendor profile","Schedule tab shows location schedule editor","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open Schedule section
+2. Inspect schedule editor","PopUpProfileScheduleEditor for location requests","Schedule editor and recent location requests rendered for vendor.","Passed","","/vendor/profile#schedule","vendor"
+"TC-SP2-097","US-SP2-10","Vendor profile","Registered vendor sidebar shows business-type-aware items","Functional","High","Rainy","Dev server at localhost:3000","business_type registered","1. Compare sidebar on registered vendor
+2. Note Products vs Schedule emphasis","Sidebar reflects registered capabilities","VendorDashboardSidebarCard activeTab profile with businessType from common profile.","Passed","","/vendor/profile","vendor"
+"TC-SP2-098","US-SP2-10","Vendor profile","Long shop name wraps in header","Functional","High","Rainy","Dev server at localhost:3000","Very long shop_name in DB","1. Set long shop_name
+2. Reload /vendor/profile","Header text wraps without overlap","VendorProfileHeader layout wraps long names.","Passed","","/vendor/profile","vendor"
+"TC-SP2-099","US-SP2-10","Vendor profile","No legacy /vendor/profile route required","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Confirm vendor profile only at /vendor/profile","Unified route; old vendor paths redirect or 404","Single vendor profile under (vendor)/vendor/profile.","Passed","","/vendor/profile","vendor"
+"TC-SP2-100","US-SP2-10","Vendor profile","Customer cannot open vendor profile editor URL","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open /vendor/profile","Blocked by vendor layout requireRole","Vendor layout requireRole vendor redirects non-vendors.","Passed","","/vendor/profile","customer"
+"TC-SP2-101","US-SP2-15","Auth error handling","Wrong password shows direct auth error on login form","Functional","High","Sunny","Dev server at localhost:3000","test@customer.com / wrong-password","1. Open /login
+2. Submit invalid password
+3. Read status area","Supabase error message visible; stay on /login","signInWithPassword returns message; Login status paragraph shows error.","Passed","","/login","guest"
+"TC-SP2-102","US-SP2-15","Auth error handling","OAuth callback error query shown on login","Functional","High","Sunny","Dev server at localhost:3000","/login?error=access_denied","1. Open /login?error=access_denied
+2. Read status text","Decoded error message from query param","useEffect reads error search param and setStatus decodeURIComponent.","Passed","","/login","guest"
+"TC-SP2-103","US-SP2-15","Auth error handling","getUser failure after sign-in blocks navigation","Functional","High","Rainy","Dev server at localhost:3000","Simulate null user after ok signIn","1. Sign in when getUser returns null
+2. Observe message","Unable to load your account message","Login.tsx lines 39-42 set status and abort router.push.","Passed","","/login","guest"
+"TC-SP2-104","US-SP2-15","Auth error handling","Google OAuth signIn error surfaces in status","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Login with Google when OAuth misconfigured
+2. Read status","Provider error text; remain on login","handleGoogleLogin sets status from error.message.","Passed","","/login","guest"
+"TC-SP2-105","US-SP2-15","Auth error handling","Expired session on protected route redirects to login","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Clear cookies
+2. Open /orders","Sign-in gate not raw data leak","Server/page checks session; CustomerOrdersSignInView for guests.","Passed","","/orders","guest"
+"TC-SP2-106","US-SP2-15","Auth error handling","Auth callback route handles missing code safely","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Open /auth/callback without code param","Redirect login with error","auth/callback/route.ts redirects to /login?error= when exchange fails.","Passed","","/auth/callback","guest"
+"TC-SP2-107","US-SP2-15","Auth error handling","Vendor without row gets support message not dashboard","Functional","High","Rainy","Dev server at localhost:3000","role vendor, no vendors row","1. Sign in affected vendor account","Not registered as a vendor copy","resolvePostLoginDestination ok:false with support message.","Passed","","/login","guest"
+"TC-SP2-108","US-SP2-15","Auth error handling","Login form disabled while submitting","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Click Sign In
+2. Rapid double click","isSubmitting prevents duplicate posts","isSubmitting state disables button during handleLogin.","Passed","","/login","guest"
+"TC-SP2-109","US-SP2-15","Auth error handling","Admin requireRole blocks customer from /admin routes","Functional","High","Rainy","Dev server at localhost:3000","test@customer.com / customer","1. Sign in as customer
+2. Open /admin/dashboard","Redirect per requireRole","require-role.ts redirects non-admin away from admin paths.","Passed","","/admin/dashboard","customer"
+"TC-SP2-110","US-SP2-15","Auth error handling","New auth user auto-created as customer when role missing","Functional","High","Rainy","Dev server at localhost:3000","N/A","1. Sign in first-time user
+2. Verify users/customers rows created","upsertUserAsCustomer + ensureCustomerByUserId","resolvePostLoginDestination upserts customer when role null.","Passed","Verify in Supabase users table after test account creation.","/login","guest"

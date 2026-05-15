@@ -1,0 +1,243 @@
+﻿Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks
+TC-SP4-001,US-SP4-01,Customer Order Flow,End-to-end: customer places order and vendor sees matching order,Integration,Critical,Sunny,Customer and market vendor exist; RLS/policies allow intended access; at least one product in stock,"Customer C1, vendor V1, product P1 qty 1","""1. Log in as C1
+2. Add P1 to cart (or buy now) 
+3. Checkout completes order for V1
+4. Log in as vendor owner for V1
+5. Open vendor order list/detail for that order""","• Order shows correct customer_id, vendor_id, line items, quantities, totals
+• Status matches design (e.g. pending/completed)
+• No cross-vendor bleed","• Vendor view matches customer order
+• Fields align with database
+• No cross-vendor rows",Passed,
+TC-SP4-002,US-SP4-01,Customer Order Flow,Customer order created with wrong vendor_id (cross-vendor leak),Integration,Critical,Rainy,Two distinct vendors; product belongs to only one of them,Standard add-to-cart / checkout path for that product,"""1. Place order for product owned by vendor A 
+2. Inspect persisted order""","• Order vendor matches product vendor 
+• Line items only reference products for that vendor","• Stored vendor matches product owner 
+• No assignment to the other vendor",Passed,
+TC-SP4-003,US-SP4-01,Customer Order Flow,Vendor can read another vendor’s order (IDOR / policy gap),Security,Critical,Rainy,Two vendors each with at least one order,Authenticated vendor session (non-owner),"""1. Sign in as vendor user who does not own the target order 
+2. Request order detail via UI or API""","• Access denied or not found
+• Response contains no sensitive fields from the foreign order","• Error is generic
+• No foreign order payload returned",Passed,
+TC-SP4-004,US-SP4-01,Customer Order Flow,Order flow breaks when customers row missing but auth user exists,Integration,High,Rainy,"	
+Authenticated user without required customer profile row or fields",Standard checkout attempt,"""1. Sign in 
+2. Attempt checkout without completing required profile bootstrap""","• User-visible validation or automatic profile creation per design
+• No orphan or invalid orders 
+• No server error","• Checkout blocked or profile auto-created per spec 
+• No broken foreign keys",Passed,
+TC-SP4-005,US-SP4-01,Customer Order Flow,Mixed pending orders per customer/vendor: cart/checkout updates wrong order,Integration,High,Rainy,Same customer has more than one open order for different vendors,Standard quantity change or checkout continuation,"""1. Ensure multiple open orders exist 
+2. Perform cart update or checkout action scoped to one vendor flow 
+3. Inspect both orders""","• Only the intended order changes
+• Totals and line items for the other order remain unchanged",• Non-target order unchanged in UI and DB,Passed,
+TC-SP4-006,US-SP4-02,Fix Vendor Product Page Elements,Product elements display correctly on dashboard,Functional,High,Sunny,Vendor logged in,Product dataset with ≥3 items,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Open product page section 
+4. Verify product elements display",• Product elements visible and aligned,• Layout changes visible,Passed,
+TC-SP4-007,US-SP4-02,Fix Vendor Product Page Elements,Missing product data handled,Functional,Medium,Rainy,Product dataset incomplete,Product missing description,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Open product page section 
+4. Select product with missing data",• “Data unavailable” message shown,• Message displayed correctly,Passed,
+TC-SP4-008,US-SP4-02,Fix Vendor Product Page Elements,Invalid product ID causes crash,Functional,Critical,Rainy,Invalid product ID,Product ID=null,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Open product page with invalid ID",• Error message shown,• Error handled gracefully,Passed,
+TC-SP4-009,US-SP4-02,Fix Vendor Product Page Elements,Incorrect element mapping,Functional,Medium,Rainy,Product dataset,Product with mismatched fields,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Open product page section 
+4. Verify element mapping",• Correct element mapping,• Mapping corrected,Passed,
+TC-SP4-010,US-SP4-03,Fix Pop-up Map Elements,Map elements sized correctly,Functional,High,Sunny,Vendor has valid coordinates,Vendor: “Rose Garden”,"1. Navigate to vendor page 
+2. Open map pop-up 
+3. Observe element sizing (pins, labels)",• Elements sized proportionally,• Works,Passed,
+TC-SP4-011,US-SP4-03,Fix Pop-up Map Elements,Oversized pins overlap,Functional,Medium,Rainy,Multiple vendors,"Vendors: Rose Garden, Tulip Shop","1. Navigate to vendor page 
+2. Open map pop-up 
+3. Observe pins",• Pins distinct,• Pins display correctly,Passed,
+TC-SP4-012,US-SP4-03,Fix Pop-up Map Elements,Labels cut off in pop-up,Functional,Medium,Rainy,Vendor has long name,Vendor: “Orchid House and Garden Supplies”,"1. Navigate to vendor page 
+2. Open map pop-up 
+3. Observe label",• Label fully visible,• Label displays correctly,Passed,
+TC-SP4-013,US-SP4-03,Fix Pop-up Map Elements,Invalid sizing config crashes map,Functional,Critical,Rainy,Invalid element config,Map config=null,"1. Navigate to vendor page 
+2. Open map pop-up 
+3. Observe map",• Error message shown,• Error handled gracefully,Passed,
+TC-SP4-014,US-SP4-04,Fix Vendor Dashboard Elements,Dashboard elements sized correctly,Functional,High,Sunny,Vendor logged in,Vendor: “Orchid House”,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Observe element sizing (cards, tables)",• Elements sized proportionally,• Works,Passed,
+TC-SP4-015,US-SP4-04,Fix Vendor Dashboard Elements,Missing symbology for orders,Functional,Medium,Rainy,Vendor has pending orders,Orders dataset,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Observe orders list",• Icons/symbols visible,• Symbols display correctly,Passed,
+TC-SP4-016,US-SP4-04,Fix Vendor Dashboard Elements,Incorrect element alignment,Functional,Medium,Rainy,Vendor account,Dashboard dataset,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Observe element alignment",• Elements aligned,• Alignment corrected,Passed,
+TC-SP4-017,US-SP4-04,Fix Vendor Dashboard Elements,Invalid element config crashes dashboard,Functional,Critical,Rainy,Corrupted element config,Vendor account,"1. Login as vendor 
+2. Navigate to dashboard 
+3. Observe screen",• Error message shown,• Error handled gracefully,Passed,
+TC-SP4-018,US-SP4-05,Fix Customer-Facing Accent Color Leaks,"All interactive elements on Cart, Profile, and Search screens display correct red/coral accent color",UI,High,Sunny,"User is logged in as a customer; 
+Cart has at least 1 item; 
+Profile page is accessible; 
+Search page is accessible",Valid customer account; 1+ items in cart,"1. Navigate to the Cart page
+2. Inspect all buttons, links, icons, badges, and interactive elements for color
+3. Navigate to the Profile page and repeat inspection
+4. Navigate to the Search page and repeat inspection
+5. Check hover and active states on all interactive elements","• All buttons, links, icons, and highlights display red/coral accent color
+• No green accent colors appear on any customer-facing element
+• Hover and active states also reflect red/coral, not green
+• Color is consistent across Cart, Profile, and Search screens","• All buttons, links, icons, and highlights display red/coral accent color
+• No green accent colors appear on any customer-facing element
+• Hover and active states also reflect red/coral, not green
+• Color is consistent across Cart, Profile, and Search screens",Passed,
+TC-SP4-019,US-SP4-05,Fix Customer-Facing Accent Color Leaks,Green color leak persists on Cart page action buttons,UI,High,Rainy,"User is logged in as a customer; 
+Cart has at least 1 item;",Valid customer account; 1+ items in cart,"1. Navigate to the Cart page
+2. Inspect the primary action button (e.g., 'Proceed to Checkout')
+3. Inspect quantity controls and any icon buttons
+4. Check button color on hover and active states
+5. Compare against the expected red/coral design token","• All Cart action buttons use red/coral accent color
+• No green color is present on any button or interactive element
+• Hover and active states match red/coral","• All Cart action buttons use red/coral accent color
+• No green color is present on any button or interactive element
+• Hover and active states match red/coral",Passed,
+TC-SP4-020,US-SP4-05,Fix Customer-Facing Accent Color Leaks,Green color leak appears on Profile page links or icon indicators,UI,Medium,Rainy,User is logged in as a customer; Profile page is fully loaded,"	Valid customer account with complete profile data","1. Navigate to the Profile page
+2. Inspect all text links, icon indicators, and status badges
+3. Check the active/selected state of any profile section tabs
+4. Inspect edit buttons and any inline action links
+5. Compare all colors against the red/coral design token","• All links, icons, and indicators on the Profile page use red/coral
+• No green color visible on any element
+• Active tab or selected section indicator is red/coral, not green","• All links, icons, and indicators on the Profile page use red/coral
+• No green color visible on any element
+• Active tab or selected section indicator is red/coral, not green",Passed,
+TC-SP4-021,US-SP4-05,Fix Customer-Facing Accent Color Leaks,"Green color leak present on Search results page (e.g., tags, filters, or result highlights)",UI,Medium,Sunny,User is on the Search page; at least one search result is visible,"Search query with at least 1 result (e.g., ""flowers"")","1. Navigate to the Search page
+2. Enter a valid search query and submit
+3. Inspect result cards for any highlighted text, tags, or badges
+4. Inspect active filter chips or category indicators
+5. Check hover state on result cards and action buttons","• All highlighted text, tags, badges, and filter chips use red/coral
+• No green color appears on search results or filter elements
+• Hover states on cards and buttons reflect red/coral","• All highlighted text, tags, badges, and filter chips use red/coral
+• No green color appears on search results or filter elements
+• Hover states on cards and buttons reflect red/coral",Passed,
+TC-SP4-022,US-SP4-06,Purchase History Skeleton Loading States,Skeleton loader displays correctly while Purchase History order cards are loading,UI,High,Sunny,User is logged in as a customer with existing order history; network speed is throttleable via DevTools,Valid customer account with 2+ past orders,"1. Open browser DevTools and set network speed to 'Slow 3G'
+2. Navigate to the Purchase History page
+3. Observe the state of order cards while data is loading
+4. Wait for full page load and observe transition from skeleton to real content","• Skeleton loader appears immediately while order data is fetching
+• Skeleton layout mirrors the real card structure (image placeholder, text bars, button placeholders)
+• Shimmer or pulse animation is visible on the skeleton
+• Skeleton transitions smoothly into the real order card once data loads
+• No layout shift occurs between skeleton and real content","• Skeleton loader appears immediately while order data is fetching
+• Skeleton layout mirrors the real card structure (image placeholder, text bars, button placeholders)
+• Shimmer or pulse animation is visible on the skeleton
+• Skeleton transitions smoothly into the real order card once data loads
+• No layout shift occurs between skeleton and real content",Passed,
+TC-SP4-023,US-SP4-06,Purchase History Skeleton Loading States,Skeleton state does not appear — raw blank screen or spinner shown instead,UI,High,Rainy,User is logged in; network throttled to 'Slow 3G' via DevTools,Valid customer account with 1+ past orders,"1. Throttle network to 'Slow 3G' in DevTools
+2. Navigate to the Purchase History page
+3. Observe the UI state before order data loads
+4. Note whether a skeleton, spinner, blank screen, or other state is shown","• Skeleton loader is shown, not a blank screen or generic spinner
+• Skeleton card count matches or approximates the expected number of orders
+• No unformatted content or raw loading text visible","• Skeleton loader is shown, not a blank screen or generic spinner
+• Skeleton card count matches or approximates the expected number of orders
+• No unformatted content or raw loading text visible",Passed,
+TC-SP4-024,US-SP4-06,Purchase History Skeleton Loading States,Skeleton persists indefinitely when API call fails,Functional,High,Rainy,User is logged in; network can be blocked via DevTools to simulate API failure,Valid customer account; network set to 'Offline' after page navigation begins,"1. Navigate to the Purchase History page
+2. Immediately set DevTools network to 'Offline' to simulate API failure
+3. Wait for the loading state to resolve
+4. Observe whether the skeleton is replaced by an error state or persists indefinitely","• Skeleton does not persist indefinitely
+• An error state or empty state message is shown after the request fails (e.g., 'Failed to load orders. Please try again.')
+• A retry button or refresh option is visible
+• No console crashes or unhandled promise rejections","• Skeleton does not persist indefinitely
+• An error state or empty state message is shown after the request fails
+• A retry button or refresh option is visible
+• No console crashes or unhandled promise rejections",Passed,
+TC-SP4-025,US-SP4-06,Purchase History Skeleton Loading States,"Skeleton layout does not match real card structure, causing layout shift on load",UI,Medium,Rainy,User is logged in with existing orders; network throttled to observe skeleton,Valid customer account with 2+ past orders of varying item counts,"1. Throttle network to 'Slow 3G'
+2. Navigate to the Purchase History page
+3. Note the skeleton card dimensions and layout
+4. Wait for real order cards to load
+5. Compare skeleton structure against the rendered order card structure","• Skeleton card height and column layout closely match the real card
+• No significant content jump or layout shift (CLS) when real cards replace the skeleton
+• Image placeholder, text bars, and button placeholders align with real card elements","• Skeleton card height and column layout closely match the real card
+• No significant content jump or layout shift when real cards replace the skeleton
+• Image placeholder, text bars, and button placeholders align with real card elements",Passed,
+TC-SP4-026,US-SP4-07,Fix Purchase History Tab Responsiveness,Purchase History tabs display overflow scroll indicator correctly on mobile,UI,High,Sunny,User is logged in as a customer on a mobile device or emulated mobile viewport (375px); Purchase History page is accessible,Valid customer account; viewport set to 375px width,"1. Open the app on a mobile device or set DevTools viewport to 375px
+2. Navigate to the Purchase History page
+3. Observe the tab bar (All, Pending, Completed, Cancelled, etc.)
+4. Check if a scroll indicator (fade gradient or arrow) is visible on the right edge
+5. Swipe or scroll horizontally through the tabs","• Tab bar is horizontally scrollable on mobile
+• A scroll indicator (fade/gradient or arrow) is visible on the right edge when more tabs exist off-screen
+• All tabs are reachable via horizontal scroll
+• No tab text is clipped or hidden without indication
+• Scroll indicator disappears when the last tab is in view","• Tab bar is horizontally scrollable on mobile
+• A scroll indicator (fade/gradient or arrow) is visible on the right edge when more tabs exist off-screen
+• All tabs are reachable via horizontal scroll
+• No tab text is clipped or hidden without indication
+• Scroll indicator disappears when the last tab is in view",Passed,
+TC-SP4-027,US-SP4-07,Fix Purchase History Tab Responsiveness,Tabs overflow off-screen on mobile with no scroll indicator shown,UI,High,Rainy,User is on a 375px mobile viewport; Purchase History page is loaded,Valid customer account; viewport at 375px,"1. Set DevTools viewport to 375px
+2. Navigate to the Purchase History page
+3. Inspect the tab row for overflow behavior
+4. Check whether overflowing tabs are hidden with no visual indicator
+5. Attempt to interact with tabs that are off-screen","• Overflow tabs are not silently hidden
+• A scroll indicator is visible indicating more tabs exist
+• All tabs are accessible via horizontal scroll ","• Overflow tabs are not silently hidden
+• A scroll indicator is visible indicating more tabs exist
+• All tabs are accessible via horizontal scroll",Passed,
+TC-SP4-028,US-SP4-07,Fix Purchase History Tab Responsiveness,Active tab is off-screen and not auto-scrolled into view on mobile,Functional,Medium,Rainy,"User is on a 375px mobile viewport; user navigates directly to Purchase History with a non-default tab active (e.g., 'Cancelled')",Valid customer account with cancelled orders; direct URL or deep link to Cancelled tab,"1. Set DevTools viewport to 375px
+2. Navigate directly to the Purchase History page with the 'Cancelled' tab active
+3. Observe whether the active tab is visible in the viewport without manual scrolling
+4. Check if the tab bar auto-scrolls to bring the active tab into view","• Active tab is automatically scrolled into view on page load
+• User does not need to manually scroll to find the selected tab
+• Scroll indicator adjusts based on active tab position","• Active tab is automatically scrolled into view on page load
+• User does not need to manually scroll to find the selected tab
+• Scroll indicator adjusts based on active tab position",Passed,
+TC-SP4-029,US-SP4-07,Fix Purchase History Tab Responsiveness,Tab bar layout breaks on very small viewport (320px) or when font size is increased,UI,Low,Rainy,DevTools viewport set to 320px OR browser font size increased to 'Large' in accessibility settings,Valid customer account; viewport at 320px or large system font size enabled,"1. Set DevTools viewport to 320px (or enable large font size in system/browser settings)
+2. Navigate to the Purchase History page
+3. Inspect the tab bar for text clipping, wrapping, or broken layout
+4. Attempt to scroll horizontally through all tabs
+5.Check that the scroll indicator is still visible and functional","• Tab labels do not wrap to a second line
+• Tab bar remains horizontally scrollable
+• Scroll indicator is still visible and functional
+• No tab text is clipped or cut off without a scroll affordance
+• Page layout does not break at 320px","• Tab labels do not wrap to a second line
+• Tab bar remains horizontally scrollable
+• Scroll indicator is still visible and functional
+• No tab text is clipped or cut off without a scroll affordance
+• Page layout does not break at 320px",Passed,
+TC-SP4-030,US-SP4-08,Implement RBAC in proxy,Public route remains accessible without session,Security,High,Sunny,proxy middleware is active and public paths are configured,"Path='/about-us', no auth cookies",1. Open /about-us in a fresh browser session 2. Observe middleware behavior 3. Verify final route,Request is treated as public by proxy; no redirect to /login occurs; page renders normally for guest users,,,
+TC-SP4-031,US-SP4-08,Implement RBAC in proxy,Protected route allows authenticated user through,Security,High,Sunny,proxy middleware is active and valid auth session exists,"Path='/orders', valid Supabase auth cookie",1. Sign in with a valid account 2. Open /orders 3. Inspect routing result,Proxy detects authenticated user and allows access to protected route; no unexpected redirect is triggered,,,
+TC-SP4-032,US-SP4-08,Implement RBAC in proxy,Guest user is redirected when opening protected admin path,Security,Critical,Rainy,proxy middleware is active and no authenticated user exists,"Path='/admin/vendor-applications', no auth cookies",1. Open /admin/vendor-applications in logged-out state 2. Observe middleware response,Proxy identifies protected prefix '/admin' and redirects guest user to /login before rendering admin content,,,
+TC-SP4-033,US-SP4-08,Implement RBAC in proxy,Guest user is redirected when opening protected vendor path,Security,High,Rainy,proxy middleware is active and no authenticated user exists,"Path='/market/dashboard', no auth cookies",1. Open /market/dashboard without signing in 2. Observe middleware behavior,Proxy blocks request on protected vendor prefix and redirects to /login; dashboard shell is not exposed,,,
+TC-SP4-034,US-SP4-08,Implement RBAC in proxy,Search route stays publicly accessible even when unauthenticated,Security,Medium,Rainy,proxy middleware is active and public path list includes /search,"Path='/search?q=rose', no auth cookies",1. Open /search?q=rose while logged out 2. Observe navigation and rendering,Proxy treats /search as public; route is accessible without session; no auth wall appears,,,
+TC-SP4-035,US-SP4-08,Implement RBAC in proxy,Auth callback prefix bypasses protected checks,Integration,High,Rainy,OAuth flow is configured and callback route is hit after provider login,Path='/auth/callback?code=sample',1. Trigger OAuth callback URL 2. Let middleware process request 3. Observe redirect chain,Proxy allows '/auth/callback' as public prefix; callback logic executes instead of being redirected to /login,,,
+TC-SP4-036,US-SP4-08,Implement RBAC in proxy,Nested protected route under profile is blocked for guests,Security,High,Rainy,proxy middleware is active and no session exists,"Path='/profile/settings', logged-out user",1. Open /profile/settings in private browser 2. Observe route decision,Prefix matcher treats nested '/profile/*' as protected; guest is redirected to /login,,,
+TC-SP4-037,US-SP4-08,Implement RBAC in proxy,Cookie propagation preserves auth state across middleware response,Integration,Medium,Rainy,Supabase SSR client updates cookies during middleware execution,Authenticated request that refreshes session tokens,1. Sign in and open a protected route repeatedly 2. Check route continuity 3. Observe if session persists,Updated cookies are set on middleware response; auth state persists across navigations without random logout loops,,,
+TC-SP4-038,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",getSession returns role plus vendor metadata from a single call,Integration,High,Sunny,getSession helper is wired in target pages/components,Authenticated vendor user with app_metadata.vendor_type and app_metadata.shop_name,"1. Trigger page load that reads session data 2. Capture session object 3. Verify role, vendor_type, and vendor_shop_name fields","Single getSession call yields user and profile payload with role, vendor_type, and vendor_shop_name ready for UI/RBAC decisions",,,
+TC-SP4-039,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Navbar greeting consumes vendor_shop_name from session profile,Functional,High,Sunny,Navbar receives session prop produced by getSession,"role='vendor', vendor_shop_name='Bloom Cart'",1. Open a page with navbar while signed in as vendor 2. Inspect greeting text,Navbar displays store-specific greeting using vendor_shop_name from session profile; no extra vendor fetch is needed in client code,,,
+TC-SP4-040,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Missing users.role returns safe profile state,Functional,High,Rainy,Authenticated user exists but users.role query returns null,users.role=null for signed-in user,1. Sign in with account lacking role row/value 2. Trigger getSession consumer page 3. Observe fallback behavior,Session payload remains structurally valid; role-dependent UI safely falls back without crashing; user is routed to safe default experience,,,
+TC-SP4-041,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Absent app_metadata vendor_type does not break vendor flow checks,Functional,Medium,Rainy,User role is vendor but app_metadata.vendor_type is missing,"role='vendor', app_metadata.vendor_type=null",1. Open vendor-gated route relying on session profile 2. Observe route decision and UI state,Session exposes vendor_type as null; checks fail safely and redirect/fallback logic runs without throwing undefined errors,,,
+TC-SP4-042,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Absent app_metadata shop_name falls back to generic vendor label,UI,Low,Rainy,User role is vendor and shop_name is missing in metadata,app_metadata.shop_name=null,1. Load navbar/profile area for vendor account 2. Inspect displayed store name,UI falls back to generic label such as 'Your Store'; no broken text interpolation appears,,,
+TC-SP4-043,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Concurrent consumers share cached getSession payload in a request,Performance,Medium,Rainy,Multiple server components request session info in same render cycle,One request triggering navbar + page role checks,1. Open route with several components needing session 2. Observe that data remains consistent across components,All components receive consistent role/vendor values from cached helper output; no contradictory role/vendor rendering on same page,,,
+TC-SP4-044,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Session helper handles unauthenticated access with null-safe payload,Security,High,Rainy,No active session,Guest user opens page reading session helper,1. Open a route that consumes getSession while logged out 2. Inspect behavior,"getSession returns { user:null, profile:null }; downstream logic redirects or shows guest UI without runtime exceptions",,,
+TC-SP4-045,US-SP4-09,"Refactor redundant db calls to use getSession for getting userRole, vendor type, shop name",Role and vendor metadata remain aligned after role transition,Integration,High,Rainy,User role transitions from customer to vendor and metadata is updated,"Before: role='customer' After: role='vendor', vendor_type='market'",1. Promote user role 2. Refresh session-consuming page 3. Inspect role and vendor fields,Session consumers reflect updated role and vendor metadata together; no stale combination (vendor role with missing type) is rendered,,,
+TC-SP4-046,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Cart primary action uses customer red palette only,UI,High,Sunny,Customer cart page is reachable,Path='/cart',"1. Open /cart 2. Inspect main CTA buttons (Browse Products, Checkout actions) 3. Compare against design token intent",Customer CTAs use red shades only; no green brand accents remain on customer-facing cart actions,,,
+TC-SP4-047,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Search result actions and active controls use red accents,UI,High,Sunny,Search page has results and interactive controls,Path='/search?q=rose' with flower and vendor results,1. Open search results 2. Inspect active pagination pill and vendor action buttons 3. Verify color usage,Interactive emphasis in customer search uses red theme; previously green-highlighted controls are migrated to red and stay visually consistent,,,
+TC-SP4-048,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Profile login prompt button does not keep green styling,UI,Medium,Rainy,User opens profile while unauthenticated,Path='/profile' without session,1. Open /profile logged out 2. Inspect Go to Login button color,Login prompt CTA on customer profile uses red scheme; no green background/hover color remains,,,
+TC-SP4-049,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Profile avatar/hero accents avoid green leakage,UI,Low,Rainy,User profile page loads authenticated customer data,Path='/profile' with session,1. Open /profile 2. Inspect avatar badge backgrounds and accent text colors,Customer profile decorative accents align with neutral/red palette; green accent backgrounds are removed from customer-facing hero elements,,,
+TC-SP4-050,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Search vendor card button no longer uses green background class,UI,Medium,Rainy,Vendor cards appear in search scope all/vendors,Path='/search?q=bloom&scope=vendors',1. Open vendor search results 2. Inspect 'View vendor' button styles,Vendor card CTA uses red customer accent instead of green fill; hover state remains in same red family,,,
+TC-SP4-051,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Search rating chip color is neutral/red-safe on customer screens,UI,Low,Rainy,Vendor cards render average rating chip,Result card with vendor.average_rating present,1. Open vendor results with ratings 2. Inspect rating chip text/background contrast,Rating chip avoids green text leak on customer surface and remains readable with neutral/red-compatible palette,,,
+TC-SP4-052,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",Cross-page palette consistency stays intact after navigation,UI,Low,Rainy,"Customer can navigate among cart, profile, and search",Logged-in customer session,1. Open /cart then /profile then /search 2. Compare CTA/accent palette on each page,Red accent treatment is consistent across all three customer pages; no page regresses to green emphasis,,,
+TC-SP4-053,US-SP4-10,"Audit and fix all remaining green red color leaks on customer-facing screens (Cart, Profile, Search)",No inaccessible red-over-red or low-contrast regressions introduced,Accessibility,Medium,Rainy,Color migration has been applied on customer pages,"Buttons, chips, links, active tabs across cart/profile/search",1. Inspect text contrast on red and neutral backgrounds 2. Test hover/focus states,Color leak fixes keep accessible contrast and state visibility; no unreadable text or indistinguishable active states are introduced,,,
+TC-SP4-054,US-SP4-11,Add loading skeleton states to Purchase History order cards,Orders page displays card skeletons while initial data loads,UI,High,Sunny,Purchase History page is opened with a delayed data response,Path='/orders?tab=to-pay' with network throttling,1. Open orders page under slow network 2. Observe initial render before data resolves,Skeleton placeholders matching order-card shape are shown during load; full cards replace skeletons after data arrives,,,
+TC-SP4-055,US-SP4-11,Add loading skeleton states to Purchase History order cards,Skeleton count reflects expected first viewport density,UI,Medium,Sunny,Orders page uses skeleton loader state,Slow network + tab with many orders,1. Open orders page while loading 2. Count visible skeleton cards in first viewport,Skeleton count and spacing mimic real card stack and prevent major layout shift when actual cards render,,,
+TC-SP4-056,US-SP4-11,Add loading skeleton states to Purchase History order cards,Empty state is not shown before loading completes,Functional,High,Rainy,Orders query is delayed,Delayed response with eventual non-empty data,1. Open orders page 2. Observe transitional UI before query resolves,Page shows skeletons instead of premature empty-state messaging; empty-state appears only after load completes and result is truly empty,,,
+TC-SP4-057,US-SP4-11,Add loading skeleton states to Purchase History order cards,Tab switch triggers per-tab skeleton while filtered data reloads,Functional,Medium,Rainy,User can switch tabs in purchase history,Switch from to-pay to completed under throttled network,1. Load tab A with data 2. Switch to tab B 3. Observe loading transition,"On tab change, skeletons appear for the new tab dataset; stale cards from previous tab are not misleadingly shown as final content",,,
+TC-SP4-058,US-SP4-11,Add loading skeleton states to Purchase History order cards,Skeleton cards preserve card border radius and section rhythm,UI,Low,Rainy,Skeleton UI implemented for order cards,Orders page load state,1. Inspect skeleton card container styles 2. Compare with real OrderCard layout,"Skeletons match real card rhythm (header/body/footer spacing, rounded container, list cadence), reducing visual jump on hydration",,,
+TC-SP4-059,US-SP4-11,Add loading skeleton states to Purchase History order cards,Skeleton rendering does not break footer actions after hydration,Functional,Medium,Rainy,Orders load state transitions into real cards,Any tab with actionable footer buttons,1. Wait for skeleton-to-card transition 2. Click actions like Pay Now/Buy Again,"After hydration, footer action buttons are fully interactive; no leftover skeleton overlay blocks clicks",,,
+TC-SP4-060,US-SP4-11,Add loading skeleton states to Purchase History order cards,Skeleton state handles rapid refresh without flicker loops,Performance,Low,Rainy,User repeatedly refreshes purchase history,Multiple quick reloads,1. Refresh orders page multiple times quickly 2. Observe load behavior,Skeleton state appears consistently and settles into cards without flicker loops or stuck loading placeholders,,,
+TC-SP4-061,US-SP4-11,Add loading skeleton states to Purchase History order cards,Skeleton fallback handles fetch error path gracefully,Integration,High,Rainy,Orders fetch can fail due to backend/network issue,Simulated query failure,1. Open orders page with induced query error 2. Observe transition from skeleton to error/empty handling,Skeleton displays during pending state; on failure it resolves into controlled empty/error messaging without infinite skeleton display,,,
+TC-SP4-062,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Tab row is horizontally scrollable on narrow screens,UI,High,Sunny,Purchase History has multiple tabs and mobile viewport is active,Viewport width 320-390px,1. Open /orders on a small viewport 2. Attempt horizontal swipe on tab row,Tab container scrolls horizontally without clipping labels; all tabs remain reachable on mobile,,,
+TC-SP4-063,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Overflow hint appears when additional tabs are off-screen,UI,High,Sunny,Mobile tab row supports overflow indicator treatment,Small viewport with tabs extending beyond width,1. Open /orders on mobile width 2. Observe right edge of tab container before scrolling,A visual overflow cue (fade/indicator/affordance) indicates more tabs are available off-screen,,,
+TC-SP4-064,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),No horizontal page scroll leak from tab container,UI,Medium,Rainy,Tab row uses horizontal scrolling,Mobile viewport,1. Open /orders on mobile 2. Swipe horizontally in tab area and page body,Only tab row scrolls horizontally; page body does not gain unwanted horizontal overflow,,,
+TC-SP4-065,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Active tab remains visible after selecting off-screen tab,UI,Medium,Rainy,User selects a tab that starts out partially off-screen,Tab='completed' on narrow viewport,1. Scroll tabs to the end 2. Select an off-screen/edge tab 3. Observe active position,Selected tab is brought into visible area or remains clearly visible; active state is obvious after selection,,,
+TC-SP4-066,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Indicator updates correctly after user scrolls to the end,UI,Low,Rainy,Overflow indicator exists on tab row,Mobile viewport with manual tab scrolling,1. Open /orders and note indicator 2. Scroll to far right 3. Observe indicator behavior,"Overflow indicator hides or changes state when no further right overflow exists, avoiding stale cues",,,
+TC-SP4-067,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Tab touch targets stay usable without overlap,Accessibility,Medium,Rainy,Mobile tab row is scrollable,Touch interactions on 5 tab labels,1. Tap each tab quickly on mobile viewport 2. Verify hit area and state change,Each tab remains easy to tap with adequate hit area; no overlap with indicator or neighboring controls,,,
+TC-SP4-068,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Long localized tab labels do not break mobile layout,UI,Low,Rainy,Tab labels may expand due to localization/copy changes,Simulated long labels for to-receive/completed,1. Render with longer tab text 2. Inspect tab row on mobile widths,Labels remain in scrollable row without collapsing card layout; overflow handling still works with longer text,,,
+TC-SP4-069,US-SP4-12,Fix mobile responsiveness on Purchase History tabs (overflow scroll indicator),Tab row keeps style parity across iOS and Android browsers,UI,Low,Rainy,Cross-browser mobile testing is available,iOS Safari and Android Chrome,1. Open /orders on both browsers 2. Compare tab scrolling and indicator behavior,Mobile tab responsiveness and overflow indicator behavior are consistent across common mobile browsers,,,
+TC-SP4-070,US-SP4-13,Integrate admin activity log with backend,Activity log page loads records from backend source,Integration,Critical,Sunny,Admin is authenticated and backend activity_logs data exists,activity_logs rows with approved/rejected/login events,1. Open /admin/activity-logs as admin 2. Observe initial data source 3. Compare with backend rows,useActivityLogs fetches backend rows rather than mock data; rendered logs reflect persisted records and current environment state,,Passed,
+TC-SP4-071,US-SP4-13,Integrate admin activity log with backend,Skeleton is shown while backend logs are being fetched,UI,High,Sunny,Activity log fetch is delayed,Network throttling enabled,1. Open activity logs page under slow network 2. Observe first paint,Skeleton cards render while request is pending and are replaced by real backend logs once fetch resolves,,Passed,
+TC-SP4-072,US-SP4-13,Integrate admin activity log with backend,Filter chips map to backend action types accurately,Functional,High,Sunny,Backend returns mixed action types,Rows include approved/rejected/suspended/login,1. Load activity logs 2. Select each filter chip 3. Verify visible cards,Each chip filters by backend actionType correctly; counts and visible cards match backend-derived dataset,,Passed,
+TC-SP4-073,US-SP4-13,Integrate admin activity log with backend,Search query filters backend-fetched logs by title and target,Functional,Medium,Sunny,Logs are loaded from backend,searchQuery='vendor',1. Enter search text in activity log search box 2. Observe filtered list,Client-side search operates on backend-fetched records and filters by actionTitle/targetName as expected,,Passed,
+TC-SP4-074,US-SP4-13,Integrate admin activity log with backend,Approve vendor action writes an approval log entry,Integration,Critical,Sunny,Admin can approve submitted vendor applications,approveVendorApplication called with valid applicationId,1. Approve an application from admin workflow 2. Open activity logs page 3. Find new entry,"Backend inserts an activity log row with actionType='approved', admin identity, target vendor/application metadata, and timestamp",,Passed,
+TC-SP4-075,US-SP4-13,Integrate admin activity log with backend,Reject vendor action writes a rejection log with reason,Integration,Critical,Sunny,Admin can reject submitted vendor applications,reject reason='Incomplete documents',1. Reject an application with a reason 2. Open activity logs 3. Inspect detail lines,Backend writes rejection log containing reason detail; log card surfaces structured reason text and target information,,Passed,
+TC-SP4-076,US-SP4-13,Integrate admin activity log with backend,Admin login event is persisted as activity log,Integration,High,Sunny,Admin successfully authenticates,Admin login session event,1. Sign out admin 2. Sign in again 3. Open activity logs,A login event row is persisted and displayed with actionType='login' and accurate timestamp ordering,,Passed,
+TC-SP4-077,US-SP4-13,Integrate admin activity log with backend,Logs are grouped by day using backend timestamps,Functional,Medium,Sunny,Backend rows span today and previous dates,Rows with timestamps across multiple dates,1. Load activity logs with multi-day dataset 2. Inspect grouped sections,Logs are grouped into Today/Yesterday/date buckets based on backend timestamps and rendered in correct chronological groups,,Passed,
+TC-SP4-078,US-SP4-13,Integrate admin activity log with backend,Quick links navigate using backend-provided metadata,Functional,Medium,Sunny,Backend activity logs include quick link targets,quickLinks payload with href values,1. Open a log with quick links 2. Click each quick link action,Quick-link buttons route to relevant admin pages using backend metadata; links are no longer dummy placeholders,,Passed,
+TC-SP4-079,US-SP4-13,Integrate admin activity log with backend,Backend fetch failure shows controlled empty/error UI,Integration,High,Rainy,Activity logs endpoint/database is unavailable,Simulated backend failure/timeout,1. Open /admin/activity-logs while backend is down 2. Observe transition from skeleton,Page exits loading state and shows controlled no-logs/error fallback; app does not crash or freeze in perpetual skeleton mode,,Passed,
+TC-SP4-080,US-SP4-13,Integrate admin activity log with backend,Unauthorized user cannot read admin activity logs,Security,Critical,Rainy,Non-admin session exists,role='customer' or role='vendor',1. Sign in as non-admin 2. Attempt to access /admin/activity-logs 3. Observe access control,Access is denied by RBAC/protected routing; non-admin user cannot fetch or view backend activity log data,,Passed,
+TC-SP4-081,US-SP4-13,Integrate admin activity log with backend,Partial malformed log row is tolerated without breaking page render,Integration,Medium,Rainy,One backend row contains missing optional fields,Log row missing tags or quickLinks,1. Insert malformed/non-critical log row 2. Open activity logs page 3. Scroll through list,Renderer tolerates partial row shape with safe fallbacks; remaining valid logs still display; no full-page runtime error occurs,,Passed,

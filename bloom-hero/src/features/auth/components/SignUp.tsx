@@ -7,6 +7,13 @@ import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import Image from "next/image";
 
+function isValidEmailFormat(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed || /\s/.test(trimmed)) return false;
+    if (trimmed.includes("@@")) return false;
+    return /^[^\s@!#$%^&*()+=]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+}
+
 export default function SignUp() {
     const router = useRouter();
     // const [role, setRole] = useState<Role>("client");
@@ -40,6 +47,12 @@ export default function SignUp() {
         // if (role === "client") {
         if (password !== confirmPassword) {
             setStatus("Passwords do not match.");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!isValidEmailFormat(email)) {
+            setStatus("Enter a valid email address.");
             setIsSubmitting(false);
             return;
         }
@@ -169,6 +182,7 @@ export default function SignUp() {
                         </label>
                         <input
                             type="text"
+                            data-testid="signup-username"
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -182,6 +196,7 @@ export default function SignUp() {
                         </label>
                         <input
                             type="email"
+                            data-testid="signup-email"
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -195,6 +210,7 @@ export default function SignUp() {
                         </label>
                         <input
                             type="password"
+                            data-testid="signup-password"
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -208,6 +224,7 @@ export default function SignUp() {
                         </label>
                         <input
                             type="password"
+                            data-testid="signup-confirm-password"
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -220,6 +237,7 @@ export default function SignUp() {
                     <div className="flex items-center justify-center">
                         <button
                             type="submit"
+                            data-testid="signup-submit"
                             disabled={isSubmitting}
                             className="cursor-pointer inline-flex items-center justify-center my-2 px-6 py-2 bg-accent text-white rounded-full font-medium hover:bg-red-400 transition"
                         >
@@ -230,7 +248,7 @@ export default function SignUp() {
                     </div>
 
                     {status ? (
-                        <p className="text-sm text-center text-gray-700">{status}</p>
+                        <p data-testid="signup-status" className="text-sm text-center text-gray-700">{status}</p>
                     ) : null}
                 </form>
 

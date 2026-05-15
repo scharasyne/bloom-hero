@@ -1,0 +1,327 @@
+Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks,Automatable,Route,Role
+"TC-SP1-001","US-SP1-01","Admin Dashboard Interface","Admin Login screen exists","Completeness","High","Sunny","None","test@admin.com / admin","1. Open /login
+2. Verify shared login UI (all roles use /login)","BloomHero logo, email and password fields, Sign In button, Forgot password link, Login with Google, Sign up link","• Admin Portal login screen present with BloomHero logo
+• Email and Password fields
+• SIGN IN button
+• ""Back to site"" link 
+• subtitle ""Sign in to manage vendors and reviews""","Passed","","true","/login","guest"
+"TC-SP1-002","US-SP1-01","Admin Dashboard Interface","Vendor Application Queue list view","Completeness","High","Sunny","Dev server running at localhost:3000","N/A","1. Navigate to Vendor Application Queue screen
+2. Inspect layout","• List view shows pending vendor cards, each with vendor name, document status, 
+   Approve/Reject buttons","• Vendor cards showing name, type, application date, contact info, 
+   document status, Approve/Reject/View Details buttons","Passed","","true","/admin/dashboard","admin"
+"TC-SP1-003","US-SP1-01","Admin Dashboard Interface","Document preview panel present","Completeness","High","Sunny","Vendor Application Queue screen visible","N/A","1. Inspect vendor application card
+2. Look for document preview panel","• Panel shows business permit and valid ID preview area, zoom/expand option visible","• ""View Documents >"" link visible on vendor cards with Business Permit and 
+   Valid ID checkmarks displayed inline","Passed","Document preview panel  is a link/button — 
+no full  panel shown but document status 
+indicators present","true","/admin/dashboard","admin"
+"TC-SP1-004","US-SP1-01","Admin Dashboard Interface","Approve/Reject buttons with reason input","Completeness","High","Sunny","Vendor Application Queue screen visible","N/A","1. Locate action buttons on vendor card
+2. Check for rejection reason input","• Green Approve button and Red Reject button present. 
+• Rejection reason input/dropdown  visible on Reject action","• Green Approve and Red Reject buttons present on each vendor card
+• Bulk ""Approve Selected"" and ""Reject All"" buttons also available","Passed","Rejection reason input not visible — 
+rejection reason field missing from UI","true","/admin/dashboard","admin"
+"TC-SP1-005","US-SP1-01","Admin Dashboard Interface","Vendor Management Dashboard table","Completeness","High","Rainy","Dev server running at localhost:3000","N/A","1. Navigate to Vendor Management Dashboard screen
+2. Inspect table layout","• Table shows vendor name, type, status columns. Suspend, Deactivate, View Details action 
+   buttons visible","• Vendor Management screen present with table showing Vendor name, 
+   Type (Registered / Unregistered), Status badge, Orders count, Rating, and View Details 
+   action button","Passed","","true","/admin/dashboard","admin"
+"TC-SP1-006","US-SP1-01","Admin Dashboard Interface","Status badges are visually distinct","Visual Design","High","Rainy","Vendor Management Dashboard visible","Verified, Pending, Suspended vendor entries","1. Locate all 3 status badge types
+2. Compare colors and labels","• Verified = green badge, Pending = yellow badge, Suspended = red badge. 
+• All labels readable with sufficient contrast","• Verified = green badge with checkmark
+• Pending = orange/yellow badge with clock icon
+• Suspended = red/pink badge with warning icon. 
+• All 3 states visible and color-distinct","Passed","","true","/admin/dashboard","admin"
+"TC-SP1-007","US-SP1-01","Admin Dashboard Interface","Search and filter controls visible","Usability","Medium","Rainy","Vendor Management Dashboard visible","N/A","1. Inspect top of dashboard
+2. Locate search and filter UI","• Search input field, filter dropdown for status (Verified/Pending/Suspended), clear affordance 
+   present","• ""Search vendors…"" input field and ""Filters"" button visible at top of Vendor 
+   Management screen. 
+• Status filter chips (All, Verified: 45, Pending: 12, Suspended: 3) also visible","Passed","","true","/admin/dashboard","admin"
+"TC-SP1-008","US-SP1-01","Admin Dashboard Interface","Review Moderation Panel present","Completeness","Medium","Rainy","Dev server running at localhost:3000","N/A","1. Navigate to Review Moderation Panel screen
+2. Inspect layout","• Screen shows pending reviews list, approve/reject controls per review, flagged content 
+   section visible","• Review Moderation screen present with Pending/Flagged tabs
+• flagged review cards showing reviewer name, vendor, rating, reason for flagging,
+   Approve/Reject/View Order buttons, and Block User for suspected competitor","Passed","","true","/admin/dashboard","admin"
+"TC-SP1-009","US-SP1-02","Order Status Visualization","To Pay tab shows payment deadline","Completeness","High","Sunny","Purchase History screens visible in Figma","N/A","1. Navigate to Purchase History - To Pay tab
+2. Inspect card layout","• Payment deadline countdown visible on order card. Payment method options shown inline 
+(GCash, Maya, COD)","• To Pay tab present. 
+• Order card shows ""Payment due by Feb 13, 2026"" in red with warning icon. 
+• ""Proceed to Payment"" and ""Change Payment Method"" buttons visible. 
+• Unpaid banner at top.","Passed","","true","/orders","customer"
+"TC-SP1-010","US-SP1-02","Order Status Visualization","To Ship tab shows vendor message","Completeness","High","Sunny","Purchase History screens visible","N/A","1. Navigate to Purchase History - To Ship tab
+2. Inspect card content","• ""Order being prepared by vendor"" message shown. 
+• Message Vendor quick action button present","• To Ship tab present. 
+• Order card shows ""Vendor is preparing your order"" message with package icon. 
+• ""Contact Vendor"" quick action button visible.","Passed","","true","/orders","customer"
+"TC-SP1-011","US-SP1-02","Order Status Visualization","To Receive tab has 5-stage timeline","Visual Design","High","Sunny","Purchase History screens visible","N/A","1. Navigate to Purchase History - To Receive tab
+2. Inspect progress timeline","• Timeline shows: Paid → Preparing → Shipped → Out for Delivery → Completed. 
+• All 5 stages labeled with icons","• To Receive tab present with 5-stage progress timeline: Paid → Preparing 
+   → Shipped → Out for Delivery → Delivered. 
+• All stages labeled with dots.","Passed","","true","/orders","customer"
+"TC-SP1-012","US-SP1-02","Order Status Visualization","Timeline active stage is highlighted","Visual Design","High","Sunny","To Receive tab timeline visible","Order currently in ""Shipped"" stage","1. Inspect active stage on timeline
+2. Compare active vs completed vs future stages","• Active stage has icon + color highlight. 
+• Completed stages show checkmarks. 
+• Future stages  grayed out. 
+• Each stage shows timestamp","• Active stages (Paid, Preparing, Shipped, Out for Delivery) shown in green/filled. 
+• Future stage (Delivered) shown grayed out. 
+• Estimated delivery shown: ""Today before 7:00 PM"". 
+• Courier and tracking info visible.","Passed","No timestamps on each individual stage — 
+only overall estimated delivery shown","true","/orders","customer"
+"TC-SP1-013","US-SP1-02","Order Status Visualization","Completed tab has Leave Review CTA","Usability","Medium","Rainy","Purchase History screens visible","N/A","1. Navigate to Completed tab
+2. Inspect card action buttons","• ""Leave Review"" CTA prominently visible. 
+• ""Buy Again"" and ""View Receipt"" buttons present. 
+• Delivery completion timestamp shown","• Completed tab present with ""Not Yet Reviewed"" and ""Already Reviewed"" sections. 
+• ""Leave a Review"" button and star rating CTA visible for unreviewed orders. 
+• ""Buy Again"" and ""View Receipt"" buttons present on both.","Passed","","true","/orders","customer"
+"TC-SP1-014","US-SP1-02","Order Status Visualization","Track Package button and courier info","Completeness","Medium","Rainy","To Receive tab visible","N/A","1. Inspect To Receive order card
+2. Look for tracking elements","• Track Package button visible. 
+• Courier name and estimated delivery date displayed on card","• ""Track Package"" button visible on To Receive card. 
+• Courier name ""FastFlowers"" and tracking number ""FF-123456"" displayed. 
+• Estimated delivery time shown.","Passed","","true","/orders","customer"
+"TC-SP1-015","US-SP1-02","Order Status Visualization","To Pay tab with expired payment deadline","Visual Design","Medium","Rainy","Purchase History - To Pay tab visible","Order with payment deadline already passed","1. Inspect To Pay card with expired deadline 
+2. Observe visual treatment","• Expired deadline shown in red/warning color. 
+• ""Payment Overdue"" or similar label visible","• To Pay card shows payment deadline ""Payment due by Feb 13, 2026"" in red with 
+   warning icon. 
+• Unpaid status clearly communicated via orange banner at top.","Passed","Expired/overdue state not separately 
+designed — same visual for upcoming and 
+overdue deadline","true","/orders","customer"
+"TC-SP1-016","US-SP1-02","Order Status Visualization","Empty order history state","Completeness","Medium","Rainy","Purchase History screens visible","Account with no orders placed","1. Navigate to Purchase History with no orders 
+2. Inspect empty state","• Empty state illustration shown. 
+• ""No orders yet"" message and Browse Flowers CTA button  present","• No empty order history screen.","Failed","No empty order history screen.","true","/orders","customer"
+"TC-SP1-017","US-SP1-03","Vendor location discovery","Map view screen with vendor pins","Completeness","High","Sunny","Dev server running at localhost:3000","N/A","1. Navigate to Pop-up Map View screen
+2. Inspect map and filter chips","• Map screen shows vendor location pins. 
+• Filter chips for Today, Open Now, Within 5km visible at top","• Pop-up Map View present with split layout: vendor list on left, 
+   interactive map on right. 
+• Vendor pins (numbered 1–5) visible on map. 
+• ""Request Pop-up"" CTA button present. 
+• Back arrow navigation visible.","Passed","","true","/map","guest"
+"TC-SP1-018","US-SP1-03","Vendor location discovery","Vendor pins show Open/Closed status","Visual Design","High","Sunny","Pop-up Map View visible","Mix of open and closed vendors","1. Inspect map pins
+2. Compare open vs closed pin designs","• Open vendors have green/active pin. 
+• Closed vendors have gray/muted pin. 
+• Status visually distinct at a glance","• Open vendors have green/active pin. 
+• Closed vendors have gray/muted pin. 
+• Status visually distinct at a glance","Passed","","true","/map","guest"
+"TC-SP1-019","US-SP1-03","Vendor location discovery","Pin detail modal shows full info","Completeness","High","Sunny","Map view visible","N/A","1. Inspect vendor pin detail modal
+2. Check all required fields","• Modal shows: vendor photo, name, address, operating hours, dates, featured products 
+   preview, Get Directions and View Shop buttons","• Pin detail modal present showing vendor name ""Bloom & Co."", address 
+   ""Ayala Central Bloc, Cebu IT Park"", dates ""02/15/26 – 02/16/26"", 
+   and an external link icon","Passed","","true","/map","guest"
+"TC-SP1-020","US-SP1-03","Vendor location discovery","Pop-up List View exists","Completeness","Medium","Sunny","Dev server running at localhost:3000","N/A","1. Navigate to Pop-up List View screen
+2. Inspect card layout","• Card layout with vendor name, distance, Open/Closed status, ratings. 
+• Map/List view toggle button visible","• Pop-up List View screen present with card layout showing vendor name, 
+   address, dates for all 5 vendors. 
+• Map icon toggle visible in header to switch views. 
+• ""Request Pop-up"" button at bottom.","Passed","","true","/map","guest"
+"TC-SP1-021","US-SP1-03","Vendor location discovery","Location Request Form layout","Completeness","Medium","Rainy","Dev server running at localhost:3000","N/A","1. Navigate to Location Request Form screen
+2. Inspect form elements","• Map with draggable pin visible. 
+• Date picker for preferred date. 
+• Submit button present. 
+• Form is clearly labeled","• Pop-up Request Form modal present overlaid on map. 
+• Fields: City*, Barangay*, Landmark*, Date* with date picker icon. 
+• ""Submit Request"" button present.","Passed","","true","/map","guest"
+"TC-SP1-022","US-SP1-03","Vendor location discovery","Homepage product stock badges","Visual Design","Medium","Rainy","Homepage screens visible","Products with different stock levels","1. Navigate to Homepage
+2. Inspect product cards","• Green ""In Stock"" badge, Orange ""Low Stock"" badge (≤5 items), Gray ""Out of Stock"" 
+   overlay with ""Notify Me"" button. 
+• All badges readable","• Green ""In Stock"" badge, Orange ""Low Stock"" badge (≤5 items), Gray ""Out of Stock"" 
+   overlay with ""Notify Me"" button. 
+• All badges readable","Passed","","true","/map","guest"
+"TC-SP1-023","US-SP1-03","Vendor location discovery","Map with no unregistered vendors nearby","Completeness","Medium","Rainy","Pop-up Map View visible","Location with 0 active vendors","1. View map with no vendor pins 
+2. Inspect empty state","• Empty state message shown on map (e.g., ""No pop-ups near you""). 
+• Location Request CTA  or suggestion visible","• No empty map state ","Failed","","true","/map","guest"
+"TC-SP1-024","US-SP1-03","Vendor location discovery","Location permission denied state","Usability","Medium","Rainy","Pop-up Map View screen visible","User denies location permission","1. Inspect location permission prompt screen 
+2. Check denied state design","• Location permission prompt designed. 
+• Denied state shows fallback (manual location input or ""Enable Location"" button). 
+• Not a blank/broken screen","• No location permission denied state visible","Failed","","true","/map","guest"
+"TC-SP1-025","US-SP1-04","Forgot Password Flow","Forgot password resets account successfully","Integration","Critical","Sunny","	
+Account exists; user can access email inbox; reset link not expired","Valid registered email","1. Open Login 
+2. Click “Forgot Password”
+3. Submit registered email 
+4. Open reset email 
+5. Set new valid password 
+6. Log in using new password","• Reset email delivered 
+• Reset link works once 
+• Password updated 
+• Login succeeds with new password","• Reset completed 
+• Login works","Passed","","true","/forgot-password","guest"
+"TC-SP1-026","US-SP1-04","Forgot Password Flow","Forgot password with unregistered email","Security","High","Sunny","	
+None","	
+Unregistered email","1. Open Forgot Password 
+2. Submit unregistered email","• UI shows generic success message (no account enumeration)
+• No reset email sent","• Generic message shown","Passed","","true","/forgot-password","guest"
+"TC-SP1-027","US-SP1-04","Forgot Password Flow","Reset link expired/invalid","Security","High","Sunny","Reset email link generated earlier","Expired/invalid reset token","1. Open reset link after expiry OR tamper token 
+2. Attempt to set password","• Error shown 
+• Password not changed
+• User is prompted to request a new reset","• Reset blocked","Passed","","true","/forgot-password","guest"
+"TC-SP1-028","US-SP1-04","Forgot Password Flow","Weak password rejected during reset","Security","High","Sunny","Valid reset link","Weak/invalid password (fails policy)","1. Open reset link 
+2. Enter weak password 
+3. Submit","• Policy validation shown
+• Reset not applied 
+• User remains on reset page","• Validation works","Passed","","true","/forgot-password","guest"
+"TC-SP1-029","US-SP1-05","Dashboard Role Initialization","New user role initializes correctly and routes to correct dashboard","Integration","Critical","Sunny","User signs up and selects a role (customer/vendor/admin if applicable)","Role selection input","1. Register 
+2. Select role 
+3. Complete onboarding 
+4. Navigate to dashboard/home","• Role stored in DB 
+• User redirected to the correct dashboard 
+• Navbar matches role","• Correct route and UI","Passed","","true","/login","guest"
+"TC-SP1-030","US-SP1-05","Dashboard Role Initialization","Access vendor dashboard as customer blocked","Security","Critical","Sunny","Logged in as customer","Direct URL to vendor dashboard","1. Log in as customer 
+2. Enter vendor dashboard URL","• Access denied or redirected
+• No vendor data visible","• Access blocked","Passed","","true","/login","guest"
+"TC-SP1-031","US-SP1-05","Dashboard Role Initialization","Access customer dashboard as vendor blocked","Security","Critical","Sunny","Logged in as vendor","Direct URL to customer dashboard","1. Log in as vendor 
+2. Enter customer dashboard URL","• Access denied or redirected
+• No customer data visible","• Access blocked","Passed","","true","/login","guest"
+"TC-SP1-032","US-SP1-05","Dashboard Role Initialization","Role missing/null on session","Integration","High","Sunny","Auth session exists but role record missing/incomplete","Missing role profile","1. Log in 
+2. Attempt to open dashboard","• User sent to error screen
+• No crash
+• No privileged access","• Safe fallback","Passed","","true","/login","guest"
+"TC-SP1-033","US-SP1-06","Vendor Registration","Vendor registration completes successfully","Integration","Critical","Sunny","Registration page accessible; required fields known","Valid vendor registration data","1. Open vendor registration
+2. Fill all required fields 
+3. Submit 
+4. Verify dashboard access","• Vendor account created
+• Vendor profile row created 
+• Redirected to vendor dashboard 
+• Vendor navbar shown","• Vendor created","Passed","","true","/vendor-application","customer"
+"TC-SP1-034","US-SP1-06","Vendor Registration","Vendor registration missing required fields","UI","High","Sunny","None","	
+Missing required field(s)","1. Open vendor registration 
+2. Leave required fields blank 
+3. Submit","• Inline validation 
+• Submit blocked 
+• No account/profile created","• Validation works","Passed","","true","/vendor-application","customer"
+"TC-SP1-035","US-SP1-06","Vendor Registration","Vendor registration with duplicate email","Integration","High","Sunny","Existing account already uses email","Duplicate email","1. Attempt vendor registration using existing email ","• Error shown 
+• No duplicate account created","• Duplicate blocked","Passed","","true","/vendor-application","customer"
+"TC-SP1-036","US-SP1-06","Vendor Registration","Vendor registration creates profile but role mismatch","Security","Critical","Sunny","None","Force mismatch (e.g., vendor profile without vendor role)","1. Register vendor
+2. Attempt vendor dashboard","• Access denied until role/profile consistent
+• System prevents partial privilege escalation","• No escalation","Passed","","true","/vendor-application","customer"
+"TC-SP1-037","US-SP1-07","Customer Registration","Customer registration completes successfully","Integration","Critical","Sunny","Registration page accessible","Valid customer registration data","1. Open customer registration 
+2. Fill required fields 
+3. Submit 
+4. Verify customer dashboard access","• Customer auth account created
+• Customer profile row created 
+• Redirected to customer dashboard 
+• Customer navbar shown","• Customer created","Passed","","true","/sign-up","guest"
+"TC-SP1-038","US-SP1-07","Customer Registration","Customer registration invalid email format","UI","High","Sunny","None","Invalid email format","1. Open registration
+2. Enter invalid email
+3. Submit","• Validation shown
+• Submit blocked
+• No account created","• Validation works","Passed","","true","/sign-up","guest"
+"TC-SP1-039","US-SP1-07","Customer Registration","Customer registration weak password","Security","High","Sunny","None","Weak password","1. Enter weak password
+2. Submit","• Password policy message
+• Submit blocked","• Policy enforced","Passed","","true","/sign-up","guest"
+"TC-SP1-040","US-SP1-07","Customer Registration","Customer registration duplicate email","Integration","High","Sunny","Existing account uses email","Duplicate email","1. Attempt registration with existing email","• Error shown
+• No duplicate created","• Duplicate blocked","Passed","","true","/sign-up","guest"
+"TC-SP1-041","US-SP1-08","Vendor map","Pop-up map view displays correctly","UI","High","Sunny","Figma design prototype available","Vendor pin mock data","1. Open the live app in the browser
+2. Click “View Map” button 
+3. Open /map and inspect the map UI 
+4. Verify pin and labels are visible","• Map view shows vendor pin and labels clearly","","Passed","","true","/map","guest"
+"TC-SP1-042","US-SP1-08","Vendor map","Empty state message design","UI","Medium","Sunny","	
+Vendor has no coordinates (mock)","Empty state frame","1. Open the live app in the browser
+2. Click “View Map” button 
+3. Open /map and inspect the map UI ","• Empty state message “Location unavailable” displayed with proper spacing","","Passed","","true","/map","guest"
+"TC-SP1-043","US-SP1-08","Vendor map","Multiple pins overlap visually","UI","Medium","Sunny","≥3 vendor pins in mock","Pins layer in Figma","1. Open the live app in the browser
+2. Click “View Map” button 
+3. Open /map and inspect the map UI ","• Pins are distinct and spaced correctly","","Passed","","true","/map","guest"
+"TC-SP1-044","US-SP1-08","Vendor map","Error state design","UI","Critical","Sunny","Invalid map element in mock","Error frame","1. Open the live app in the browser
+2. Click “View Map” button 
+3. Open /map and inspect the map UI ","• Error message displayed in UI with consistent styling","","Passed","","true","/map","guest"
+"TC-SP1-046","US-SP1-09","Initialize API & data flow","API search endpoint handles parallel flower and vendor queries","Integration","High","Sunny","API endpoint is live, products and vendors tables have matching data","query='bloom', scope='all'","1. Call GET /api/search?q=bloom&scope=all 2. Inspect both flowers and vendors arrays 3. Verify response time","Status 200 is returned; both flowers and vendors arrays are populated; response time is under 500ms; no data duplication across arrays","","","","false","/","guest"
+"TC-SP1-047","US-SP1-09","Initialize API & data flow","missing product_images relation falls back gracefully","Integration","High","Rainy","Database schema has products but product_images relation is unavailable","Query that references product_images on missing relation","1. Call API search with query that should trigger product_images select 2. Observe response and logs","API returns 200 or 207; flowers are returned without product_images; controlled error is logged; request does not fail entirely","","","","false","/","guest"
+"TC-SP1-048","US-SP1-09","Initialize API & data flow","empty search query returns empty arrays","Functional","Medium","Rainy","API endpoint is live, search route is accessible","Empty query string (q='')","1. Call GET /api/search?q=&scope=all 2. Check response payload","Status 200 is returned; flowers array is empty []; vendors array is empty []; no error message; page remains usable","","","","false","/","guest"
+"TC-SP1-049","US-SP1-09","Initialize API & data flow","invalid price parameter is ignored with fallback","Functional","Low","Rainy","API endpoint is live","price='invalid_price'","1. Call GET /api/search?q=rose&price=invalid_price 2. Inspect results","API ignores invalid price and returns all products; price filter defaults to 'Any'; results are not empty if matches exist","","","","false","/","guest"
+"TC-SP1-050","US-SP1-09","Initialize API & data flow","database query fails and returns 207 status with errors array","Integration","High","Rainy","One database query fails while another succeeds","Simulated database error on products query but vendors succeeds","1. Call GET /api/search?q=test&scope=all with one query failing 2. Inspect status and errors array","Status 207 is returned (partial success); successful data (vendors) is preserved; errors array contains the failure message; client can gracefully handle mixed results","","","","false","/","guest"
+"TC-SP1-051","US-SP1-09","Initialize API & data flow","unknown scope parameter defaults to 'all'","Functional","Low","Rainy","API endpoint is live","scope='invalid_scope'","1. Call GET /api/search?q=flower&scope=invalid_scope 2. Observe returned data","Scope defaults to 'all'; API returns both flowers and vendors; no error is thrown; results are consistent with 'all' scope","","","","false","/","guest"
+"TC-SP1-052","US-SP1-09","Initialize API & data flow","price sorting is applied but does not affect vendor results","Functional","Medium","Rainy","Database has vendors and products at different price points","query='shop', sort='Price: Low to High', scope='all'","1. Call GET /api/search with mixed scope and price sort 2. Compare returned arrays","Flowers array is sorted by price; vendors array ignores price sort and returns with default ordering; both arrays remain separate and unmangled","","","","false","/","guest"
+"TC-SP1-045","US-SP1-09","Initialize API & data flow","API search endpoint returns filtered flower results","Integration","High","Sunny","API endpoint is live, products table has data with images","query='rose', scope='flowers', price='<1000'","1. Call GET /api/search?q=rose&scope=flowers&price=<1000 2. Parse response payload 3. Validate returned structure","Status 200 is returned; response includes flowers array with product_name, price, product_images; vendors array is empty; product_images contain image_url and display_order","","","","false","/","guest"
+"TC-SP1-053","US-SP1-10","Initialize Role-Based Access Control (RBAC)","RBAC allows vendor with Unregistered business to access pop-up routes","Security","High","Sunny","User is authenticated, user.role='vendor', user.business_type='unregistered'","business_type='unregistered', role=vendor","1. Call requireRole(['vendor']) from /vendor/dashboard 2. Verify function returns session","Function returns session without redirect; user can access pop-up-specific routes; vendorType matches requested role","","","","true","/login","guest"
+"TC-SP1-054","US-SP1-10","Initialize Role-Based Access Control (RBAC)","RBAC allows customer to access customer-only routes","Security","High","Sunny","User is authenticated, user.role='customer'","role='customer', allowedRoles=['customer']","1. Call requireRole(['customer']) from /customer/dashboard 2. Check that session is returned 3. Verify redirect does not occur","Function returns session object without redirection; user remains on customer route; role validation passes silently","","","","true","/login","guest"
+"TC-SP1-055","US-SP1-10","Initialize Role-Based Access Control (RBAC)","unauthenticated request redirects to login","Security","Critical","Rainy","No active session, user is null","user=null","1. Call requireRole(['customer']) without authentication 2. Observe routing behavior","Request redirects to /login; no user session data is exposed; protected content is not rendered","","","","true","/login","guest"
+"TC-SP1-056","US-SP1-10","Initialize Role-Based Access Control (RBAC)","vendor without vendor_type falls back to home redirect","Security","High","Sunny","User is authenticated, role='vendor', vendor_type=null or undefined","role='vendor', vendor_type=null","1. Call requireRole(['vendor']) as vendor without type 2. Observe redirect","Function redirects to stable destination (/ fallback); no infinite redirect loop occurs; user can recover by completing vendor setup","","","","true","/login","guest"
+"TC-SP1-057","US-SP1-10","Initialize Role-Based Access Control (RBAC)","customer accessing vendor-only route is redirected appropriately","Security","High","Sunny","User is authenticated with role='customer', attempts to access /vendor/dashboard","role='customer'","1. Call requireRole(['vendor']) from customer session 2. Observe redirect","User is redirected to / (home); no vendor-specific content is exposed; redirect happens before any data load","","","","true","/login","guest"
+"TC-SP1-058","US-SP1-10","Initialize Role-Based Access Control (RBAC)","unregistered vendor accessing market-only route is blocked","Security","High","Rainy","User is vendor with business_type='unregistered', attempts to access /vendor/dashboard","role='vendor', business_type='unregistered', role=vendor","1. Call requireRole(['vendor']) as unregistered vendor 2. Check redirect destination","Function redirects to /vendor/dashboard (vendor-type-appropriate route); no content leakage occurs; user is not stuck on wrong dashboard","","","","true","/login","guest"
+"TC-SP1-059","US-SP1-10","Initialize Role-Based Access Control (RBAC)","admin accessing non-admin route is denied","Security","High","Rainy","User is authenticated with role='admin', attempts customer-only route","role='admin'","1. Call requireRole(['customer']) as admin 2. Observe redirect","Admin is redirected to / (home) or appropriate admin route; no customer content is served; RBAC boundary is enforced","","","","true","/login","guest"
+"TC-SP1-060","US-SP1-10","Initialize Role-Based Access Control (RBAC)","allowedRoles array empty causes redirect","Functional","Low","Rainy","requireRole called with empty allowedRoles array","allowedRoles=[]","1. Call requireRole([]) with any authenticated user 2. Observe redirect behavior","User is redirected regardless of their role; empty allowedRoles is treated as deny-all; no content is rendered","","","","true","/login","guest"
+"TC-SP1-061","US-SP1-11","End-to-End Auth & Role Testing","user completes full login flow and is routed to correct dashboard","Integration","High","Sunny","User registered with role='customer' and email confirmed","test@customer.com / customer","1. Go to /login
+2. Sign in as customer
+3. Confirm redirect","Session created; customer lands on / (home) or /dashboard","","","","true","/login","guest"
+"TC-SP1-062","US-SP1-11","End-to-End Auth & Role Testing","vendor logs in and is redirected to vendor-specific dashboard","Integration","High","Sunny","Vendor registered with role='vendor', business_type='unregistered', email confirmed","test@vendor.com / vendor (registered business)","1. Go to /login
+2. Sign in as registered vendor (test@vendor.com)
+3. Confirm redirect","Session created; redirect to /vendor/dashboard","","","","true","/login","guest"
+"TC-SP1-063","US-SP1-11","End-to-End Auth & Role Testing","login with incorrect password fails gracefully","Functional","High","Sunny","User exists in auth system","test@customer.com / customer; wrong password","1. Go to /login
+2. Enter valid email with wrong password
+3. Submit","Invalid login credentials message; remain on /login","","","","true","/login","guest"
+"TC-SP1-064","US-SP1-11","End-to-End Auth & Role Testing","login with non-existent email displays appropriate error","Functional","High","Sunny","User does not exist in system","Email that does not exist in auth.users table","1. Go to /login
+2. Use unknown email
+3. Submit","Error shown; no session; stay on /login","","","","true","/login","guest"
+"TC-SP1-065","US-SP1-11","End-to-End Auth & Role Testing","session expires during navigation and user is redirected to login","Security","Medium","Sunny","User was authenticated but session token expired","Expired session token in cookies","1. Without session, open /orders or /admin/dashboard","Redirect to /login","","","","true","/orders","guest"
+"TC-SP1-066","US-SP1-11","End-to-End Auth & Role Testing","vendor login without matching role in users table falls back to customer redirect","Functional","Medium","Rainy","Auth user exists but users table record is missing or has null role","user.id exists but users.role is null","1. Sign in as user with vendor role but no vendor row","Login error or safe redirect; no vendor dashboard without vendor profile","","","","true","/login","guest"
+"TC-SP1-067","US-SP1-11","End-to-End Auth & Role Testing","concurrent login attempts maintain session consistency","Security","Medium","Rainy","User opens login page in multiple tabs","Same credentials in multiple concurrent requests","1. Log in in two tabs with same account
+2. Compare session","Same user in both tabs","","","","true","/login","guest"
+"TC-SP1-068","US-SP1-11","End-to-End Auth & Role Testing","after login refreshing protected page maintains authentication","Functional","Medium","Sunny","User just logged in and is on /customer/dashboard","test@customer.com / customer","1. Sign in as customer
+2. Open /orders
+3. Refresh page","Still authenticated; Purchase History visible","","","","true","/orders","customer"
+"TC-SP1-069","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User signs in with Google and lands back in the app as an authenticated user","Integration","High","Sunny","User is signed out and can access the login page","Google account with access to the app","1. Open the login page and look for the Google sign-in button
+
+2. Click the Google sign-in button
+
+3. Complete the Google consent screen
+
+4. Return to the app after sign-in
+
+5. Refresh the page and check whether the user is still signed in","The user sees the Google sign-in flow open normally, completes sign-in successfully, returns to the app without errors, and remains signed in after refresh","","","","false","/","guest"
+"TC-SP1-070","US-SP1-12","Configure Supabase Authentication (Google OAuth)","Google sign-in button is visible and easy to use on the login page","Functional","Low","Rainy","User is signed out and viewing the login page","Logged-out user on a normal browser session","1. Open the login page
+
+2. Observe the available sign-in options
+
+3. Click the Google sign-in button once
+
+4. Watch what happens next","The Google sign-in button is visible, clearly clickable, and responds immediately with a loading state or redirect; the page does not freeze or trigger multiple sign-in attempts","","","","false","/","guest"
+"TC-SP1-071","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User cancels Google sign-in and stays safely signed out","Functional","High","Rainy","User reaches the Google consent screen and chooses not to continue","Google account with consent cancelled","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Reach the Google consent screen
+
+4. Cancel the sign-in or close the Google window
+
+5. Return to the app","The user is not signed in, no account session is created, and the app returns them to the login experience with a clear and calm outcome","","","","false","/","guest"
+"TC-SP1-072","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User denies Google permission and the app explains that sign-in did not finish","Functional","High","Rainy","User reaches the Google consent screen and denies access","Google account with permissions denied","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Deny the permission request on the Google consent screen
+
+4. Observe what the app shows after returning","The user is not signed in, the app shows a clear failure or retry message, and the login page remains usable without broken navigation","","","","false","/","guest"
+"TC-SP1-073","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User completes Google sign-in but loses the session after refreshing the page","Security","Medium","Rainy","User can sign in successfully first and then reload the page","Normal browser session with cookies turned off or blocked","1. Sign in with Google successfully
+
+2. Refresh the page
+
+3. Observe whether the app still treats the user as signed in
+
+4. Try navigating to another page","The app may allow the first sign-in step, but the session does not stay active after refresh; the user is taken back to a signed-out experience and is prompted to sign in again","","","","false","/","guest"
+"TC-SP1-074","US-SP1-12","Configure Supabase Authentication (Google OAuth)","User starts Google sign-in but an error interrupts the flow and the app recovers cleanly","Functional","Medium","Rainy","User begins sign-in but the connection drops or the browser loses access temporarily","Temporary network interruption during sign-in","1. Open the login page
+
+2. Click the Google sign-in button
+
+3. Interrupt the connection while the sign-in is in progress
+
+4. Return to the app and try again","The user sees a recoverable failure state instead of a broken screen, no half-finished session is left behind, and the login option remains available for another attempt","","","","false","/","guest"
+"TC-SP1-075","US-SP1-13","Implement User Registration Logic","customer registration creates user and stores default role","Functional","High","Sunny","Signup form is accessible, Supabase auth is configured","email='newcustomer@example.com', password='NewPass123!', username='john_doe'","1. Navigate to /sign-up 2. Fill form with email, password, username 3. Click Sign up 4. Verify confirmation email is sent 5. Check users table for new record","Auth user is created; users table record inserted with role='customer'; username stored in auth metadata; confirmation email is sent; status message shows 'Check your email to confirm'","","","","false","/","guest"
+"TC-SP1-076","US-SP1-13","Implement User Registration Logic","password validation prevents weak passwords","Functional","High","Sunny","Signup form is visible and functional","password='Pass1!', confirmPassword='Pass1!'","1. Navigate to /sign-up 2. Try to signup with weak password 3. Submit form","Form validation catches weak password; error message appears (e.g., 'Password must be at least 8 characters'); signup request is not sent; user can re-enter stronger password","","","","false","/","guest"
+"TC-SP1-077","US-SP1-13","Implement User Registration Logic","duplicate email is rejected during registration","Functional","High","Rainy","User with email already exists in auth.users","email='existing@example.com'","1. Navigate to /sign-up 2. Enter email of existing user 3. Submit form","Supabase returns 'User already registered' error; signup form displays error; user is guided to login instead; no duplicate records are created","","","","false","/","guest"
+"TC-SP1-078","US-SP1-13","Implement User Registration Logic","password mismatch is caught before submission","Functional","High","Rainy","Signup form is open","password='SecurePass123!', confirmPassword='Different456!'","1. Fill signup form with mismatched passwords 2. Submit form","Client-side validation triggers error: 'Passwords do not match'; form submission is blocked; user can correct and retry","","","","false","/","guest"
+"TC-SP1-079","US-SP1-13","Implement User Registration Logic","email format validation prevents invalid emails","Functional","Medium","Rainy","Signup form is accessible","email='not-an-email'","1. Navigate to /sign-up 2. Enter invalid email format 3. Try to submit form","Email validation fails; error message 'Please enter a valid email' appears; form submission is blocked; input field may show red border","","","","false","/","guest"
+"TC-SP1-080","US-SP1-13","Implement User Registration Logic","username field cannot be empty","Functional","Medium","Rainy","Signup form is visible","username=''","1. Navigate to /sign-up 2. Leave username field empty 3. Attempt to submit form","Form validation error shows 'Username is required'; form submission is blocked; user must enter username before proceeding","","","","false","/","guest"
+"TC-SP1-081","US-SP1-13","Implement User Registration Logic","signup fails when Supabase service is unavailable","Integration","High","Rainy","Supabase auth service is down or unreachable","Supabase service error/timeout","1. Navigate to /sign-up with service down 2. Fill valid form data 3. Submit form 4. Observe error handling","Signup request fails gracefully; error message displays 'Service unavailable, please try again later'; form remains populated; user can retry when service returns","","","","false","/","guest"
+"TC-SP1-082","US-SP1-13","Implement User Registration Logic","long username or email is truncated or rejected appropriately","Functional","Low","Rainy","Very long email or username provided","email='verylongemail' + 200 chars, username='a' repeated 300 times","1. Fill signup form with oversized inputs 2. Submit form","Form validation catches length limits; error appears: 'Email/username too long'; request is not sent; user sees length requirements","","","","false","/","guest"
+"TC-SP1-083","US-SP1-14","Implement Signup Notification Logic","confirmation email is sent with valid callback link","Integration","High","Sunny","Signup completed, email service configured","Email service: SendGrid or Supabase email","1. Complete signup form 2. Check inbox for confirmation email 3. Click email link 4. Verify redirect to confirmation page","Confirmation email arrives within 2 minutes; email contains valid link to /auth/callback; clicking link confirms email; user is redirected to login or dashboard","","","","false","/","guest"
+"TC-SP1-084","US-SP1-14","Implement Signup Notification Logic","welcome email contains user information and next steps","Integration","High","Sunny","Signup completed and email template configured","Email template with variables for username and action links","1. Complete signup 2. Check welcome email 3. Verify content includes username, next steps, and support info","Email contains: user's username, clear next steps (confirm email, login), support contact info, company branding; email is readable on mobile and desktop","","","","false","/","guest"
+"TC-SP1-085","US-SP1-14","Implement Signup Notification Logic","missing email provider blocks notification sending","Integration","High","Rainy","Email service is not configured or credentials are invalid","EMAIL_PROVIDER not set or invalid credentials","1. Complete signup form 2. Observe backend logs 3. Check if email was sent","Signup succeeds but email is not sent; error is logged; user is notified: 'Confirmation email could not be sent'; user can request email resend","","","","false","/","guest"
+"TC-SP1-086","US-SP1-14","Implement Signup Notification Logic","email delivery fails and retry mechanism handles it","Integration","High","Rainy","Email service returns temporary failure","Email service timeout or rate limit hit","1. Complete signup with email service in failure state 2. Wait for retry logic 3. Check if email eventually arrives or user is notified","Initial send fails; backend retries 2-3 times; if all retries fail, user sees error: 'Unable to send email'; resend button is offered","","","","false","/","guest"
+"TC-SP1-087","US-SP1-14","Implement Signup Notification Logic","confirmation link expires after time window","Security","Medium","Rainy","Confirmation link generated but time limit exceeded before click","Link expiration: 24 hours","1. Signup and receive confirmation email 2. Wait 24+ hours (or simulate expiration) 3. Click link 4. Observe error","Link is invalid; user sees: 'Confirmation link expired'; user is offered option to resend email; no user is auto-confirmed with expired link","","","","false","/","guest"
+"TC-SP1-088","US-SP1-14","Implement Signup Notification Logic","confirmation email fails for invalid email format in database","Functional","Medium","Rainy","Email address stored incorrectly or is malformed","Email stored with invalid format: 'user@.com'","1. Signup attempt with edge-case email format 2. Check if email notification queues 3. Observe error handling","Signup validation rejects malformed email before it reaches email service; error message: 'Invalid email format'; notification is never attempted","","","","false","/","guest"
+"TC-SP1-089","US-SP1-14","Implement Signup Notification Logic","double confirmation attempts do not send duplicate emails","Functional","Medium","Rainy","User clicked confirm button twice or submitted multiple confirmation requests","N/A","1. Signup and receive confirmation email 2. Click confirmation button twice rapidly 3. Check email inbox and system state","Idempotent confirmation: first click succeeds; second click shows: 'Already confirmed' or redirects to login; only one confirmation email is counted; user is not confused","","","","false","/","guest"
+"TC-SP1-090","US-SP1-14","Implement Signup Notification Logic","email did not send","Functional","Medium","Rainy","User signed up and was notified that a confirmation email has been sent","N/A","1. Signup and receive confirmation email 2. Check email / inbox","Email confirmation should be sent to the email","","","","false","/","guest"
+"TC-SP1-091","US-SP1-15","Create vendor registration & vendor type logic","vendor selects vendor type and application is stored with correct type","Functional","High","Sunny","Customer navigates to vendor application, Supabase ready","business_type='unregistered', shop_name='Rose Garden Pop-up'","1. Open /vendor-application page 2. Select 'Pop-up' vendor type 3. Fill business info (name, address, contact) 4. Submit form 5. Verify application record","vendor_applications record created with business_type='unregistered'; submission_status='submitted'; shop_name stored correctly; owner_id linked to current user","","","","true","/vendor-application","customer"
+"TC-SP1-092","US-SP1-15","Create vendor registration & vendor type logic","vendor application stores documents and all metadata correctly","Functional","High","Sunny","Multi-step vendor form complete, document upload working","business_type='registered', documents: TIN cert, ID, business permit","1. Fill vendor application with all required fields 2. Upload government ID and business documents 3. Select 'Market' vendor type 4. Submit 5. Check database","vendor_applications row created with all metadata; government_id_document_url, taxpayer_identification_number stored; business_type='registered'; submission_status='submitted'; documents are accessible","","","","true","/vendor-application","customer"
+"TC-SP1-093","US-SP1-15","Create vendor registration & vendor type logic","selecting vendor type without completing business info shows validation error","Functional","High","Sunny","Vendor application form with incomplete data","Missing shop_name or business info","1. Navigate to vendor application 2. Select vendor type 3. Try to submit without required fields 4. Observe form validation","Form validation error: 'Please complete all required fields'; submission is blocked; shop_name field is highlighted; user must fill before proceeding","","","","true","/vendor-application","customer"
+"TC-SP1-094","US-SP1-15","Create vendor registration & vendor type logic","vendor type mismatch during application causes redirect to correct profile","Functional","High","Sunny","User applies as pop-up but navigates to market dashboard before approval","Applied business_type='unregistered', navigating to /vendor/dashboard","1. Apply as unregistered vendor 2. Before approval, manually navigate to /vendor/dashboard 3. Observe redirect","User is redirected to /vendor/dashboard (matching applied type); no mixed-type view is shown; user sees: 'Your application is under review'","","","","true","/vendor-application","customer"
+"TC-SP1-095","US-SP1-15","Create vendor registration & vendor type logic","vendor cannot re-apply with different type if application is pending","Security","Medium","Rainy","Vendor has submitted application, tries to submit another","Existing submitted application for business_type='unregistered', attempting new application as 'market'","1. Submit vendor application as pop-up 2. Try to submit another application as market type 3. Observe system behavior","Form shows: 'You already have a pending application'; submission is blocked; user must wait for current application resolution or contact admin","","","","true","/vendor-application","customer"
+"TC-SP1-096","US-SP1-15","Create vendor registration & vendor type logic","document upload fails and error is shown to user","Integration","High","Rainy","Storage bucket is unavailable or upload endpoint fails","Document upload to storage fails","1. Fill vendor form 2. Attempt to upload document 3. Observe error handling","Upload fails with error: 'Document upload failed. Please try again'; form can still be submitted without the failed document (if optional) or shows required warning; user can retry upload","","","","true","/vendor-application","customer"
+"TC-SP1-097","US-SP1-15","Create vendor registration & vendor type logic","vendor application submission fails when database is unavailable","Integration","High","Rainy","Supabase database is offline or returns error","Database query error during insert","1. Fill complete vendor application 2. Submit form while database is unavailable 3. Observe error response","Form shows error: 'Unable to submit application. Please try again'; form data is preserved; user can retry when service returns; no partial record is created","","","","true","/vendor-application","customer"
+"TC-SP1-098","US-SP1-15","Create vendor registration & vendor type logic","vendor type selection persists across form page navigation","Functional","Medium","Rainy","Multi-step form with vendor type on step 1, other fields on step 2","Step 1: select vendor_type; Step 2: business info","1. Step 1: Select 'pop-up' as vendor type 2. Navigate to Step 2 3. Navigate back to Step 1 4. Observe vendor type value","Selected business_type='unregistered' persists when returning to Step 1; form state is maintained; user does not lose selection; LocalStorage or form state preserves value","","","","true","/vendor-application","customer"

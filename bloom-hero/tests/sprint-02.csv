@@ -1,0 +1,506 @@
+﻿Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks
+TC-SP2-001,US-SP2-01,Mock Data Hooks,Verify useCart returns valid mock cart items,Functional,High,Sunny,mockCartItems array exists in lib/mockData.ts,mockCartItems with 3+ items,"1. Import useCart hook
+2. Call const { data, isLoading, error } = useCart()
+3. Log data to console
+4. Verify structure","• Returns array with ≥3 items
+• Each item has: id, productName, vendorName, price, qty, maxQty, status, imageUrl
+• isLoading = false
+• error = null","• data is an array with 3 items
+• Each item has: id, productName, vendorName, price, qty, maxQty, status, imageUrl
+• isLoading = false
+• error = null",Passed,
+TC-SP2-002,US-SP2-01,Mock Data Hooks,Verify useCart handles empty cart,Functional,High,Rainy,mockCartItems is empty array,mockCartItems = [],"1. Set mockCartItems to []
+2. Call useCart()
+3. Observe returned data","• Returns empty array []
+• isLoading = false
+• No errors thrown
+• Cart displays EmptyState component","• data is an array with no items
+• isLoading = false
+• error = null
+• Cart is in EmptyState component",Passed,Edge case
+TC-SP2-003,US-SP2-01,Mock Data Hooks,Verify useVendorApplications returns valid data,Functional,High,Sunny,mockVendorApplications exists,mockVendorApplications with 3+ apps,"1. Import useVendorApplications
+2. Call const { data } = useVendorApplications()
+3. Verify each application structure","• Returns ≥3 applications
+• Each has: id, vendorName, type, dateApplied, email, phone, location, status, documents","• returns 3 applications
+• Each item has: id, vendorName, type, dateApplied, email, phone, location, status, documents
+• No errors thrown",Passed,
+TC-SP2-004,US-SP2-01,Mock Data Hooks,Verify useVendorApplications with null documents,Functional,Medium,Rainy,Some applications have documents = null,"Application with documents: { businessPermit: false, validId: false }","1. Set documents fields to false
+2. Call hook
+3. Check ApplicationCard rendering","• Hook returns data without errors
+• ApplicationCard shows ""No documents required"" warning
+• ""View Documents"" button is disabled or hidden","• No crash or white screen
+• ApplicationCard shows ""No documents required"" text
+• View Documents button is NOT shown for that card",Passed,Negative case
+TC-SP2-005,US-SP2-01,Mock Data Hooks,Verify useActivityLogs returns valid log entries,Functional,High,Sunny,mockActivityLogs has ≥4 entries,mockActivityLogs with 4+ logs,"1. Import useActivityLogs
+2. Call const { data } = useActivityLogs()
+3. Verify structure","• Returns ≥4 log entries
+• Each has: id, timestamp, adminName, actionType, actionTitle, targetName, details, tags","• Returns 4 log entries
+• Each has: id, timestamp, adminName, actionType, actionTitle, targetName, details, tags
+• No errors",Passed,
+TC-SP2-006,US-SP2-01,Mock Data Hooks,Verify useActivityLogs handles invalid timestamps,Functional,Low,Rainy,Some logs have malformed timestamp strings,"timestamp: ""invalid-date""","1. Add log with invalid timestamp
+2. Call hook
+3. Check error handling","• Hook handles gracefully
+• Shows ""Invalid Date"" or skips entry
+• No console errors","• No crash or unhandled error in Console
+• Card either shows ""Invalid Date"" text OR skips the timestamp gracefully
+• All other log cards still render normally",Passed,Error handling
+TC-SP2-007,US-SP2-01,Mock Data Hooks,Verify useActivityLogs isLoading state,Functional,Medium,Rainy,Simulate async loading delay,Add setTimeout to simulate loading,"1. Call useActivityLogs()
+2. Check isLoading immediately
+3. Check after delay","• Initially isLoading = true
+• After delay, isLoading = false
+• data populates correctly","• During the 3s delay: skeleton loading cards are shown
+• After the delay: actual log cards appear
+• No crash at any point",Passed,Loading state test
+TC-SP2-008,US-SP2-01,Mock Data Hooks,Verify useProduct returns null for invalid ID,Functional,Medium,Rainy,Product ID does not exist in mock data,"useProduct(""invalid-id-999"")","1. Call useProduct with non-existent ID
+2. Observe return value","• Returns null or undefined
+• No errors thrown
+• Error state is set appropriately","• data = null
+• No unhandled JavaScript errors thrown
+• error state is set appropriately (or at minimum, no crash)",Passed,Boundary case
+TC-SP2-009,US-SP2-02,Bloom Cart,User increases quantity within stock limit,Functional,Critical,Sunny,"Cart has item: qty=1, maxQty=5, status='available'","Product: ""Sunflower Bouquet"", price: ₱250, qty: 1, maxQty: 5","1. Navigate to /cart
+2. Find ""Sunflower Bouquet"" cart item
+3. Click ""+"" button 3 times
+4. Observe qty and total","• Qty increases: 1→2→3→4
+• Line total updates: ₱250→₱500→₱750→₱1000
+• No warnings shown
+• CartSummary total updates","• Qty goes: 1 → 2 → 3 → 4
+• Line total updates: ₱250 → ₱500 → ₱750 → ₱1000
+• No warning messages shown
+• CartSummary subtotal updates in sync",Passed,
+TC-SP2-010,US-SP2-02,Bloom Cart,User tries to exceed maxQty limit,Functional,Critical,Rainy,"Cart item at maxQty: qty=5, maxQty=5","Product: ""Rose Bouquet"", qty: 5, maxQty: 5","1. Navigate to /cart
+2. Locate item at max qty
+3. Attempt to click ""+"" button
+4. Observe behavior","• ""+"" button is disabled (grayed out)
+• Qty remains at 5
+• No errors in console","• + button is grayed out/cannot be clicked
+• Qty stays at 5, does NOT go to 6
+• No errors in Console",Passed,Boundary test
+TC-SP2-011,US-SP2-02,Bloom Cart,User decreases quantity to minimum (1),Functional,High,Rainy,Cart item: qty=2,"Product: ""Tulip Mix"", qty: 2","1. Navigate to /cart
+2. Click ""-"" button once
+3. Try to click ""-"" again","• Qty decreases to 1
+• ""-"" button becomes disabled
+• Cannot go below 1
+• Total updates correctly","• First click: qty goes 2 → 1 
+• Second click: - button becomes disabled
+• Qty stays at 1, does NOT go to 0
+• Line total updates correctly at each step",Passed,Lower boundary
+TC-SP2-012,US-SP2-02,Bloom Cart,Display out-of-stock item variant,UI,Critical,Rainy,Cart has item with status='out-of-stock',"Product: ""Orchid Plant"", status: ""out-of-stock""","1. Navigate to /cart
+2. Locate out-of-stock item
+3. Observe styling and controls","• Entire card is grayed out
+• Qty stepper is disabled
+• Red label shows: ""Item no longer available""
+• ""Remove"" button is highlighted/enabled","• Entire card appears grayed out
+• Qty stepper is disabled: both + and - unclickable
+• Red label shows: ""Item no longer available""
+• Remove button is still enabled",Passed,Variant state
+TC-SP2-013,US-SP2-02,Bloom Cart,Display price-changed item variant,UI,High,Rainy,Cart item with status='price-changed',"Old price: ₱200, New price: ₱180","1. Add item to cart at ₱200
+2. Change price to ₱180 in mock data
+3. Refresh /cart page
+4. Observe price display","• Old price ₱200 shown with strikethrough
+• New price ₱180 in green
+• Small note: ""Price updated since you added this""
+• Line total uses new price","• Old price ₱200 shown with strikethrough in gray
+• New price ₱180 shown in green
+• Small note visible: ""Price updated since you added this""
+• Line total uses the NEW price (₱180), not the old one",Passed,Price change scenario
+TC-SP2-014,US-SP2-02,Bloom Cart,User removes item from cart,Functional,High,Rainy,Cart has 3+ items,Cart with 3 items,"1. Navigate to /cart
+2. Click ""Remove"" button on 2nd item
+3. Observe cart update","• Item is removed from list
+• Cart count decreases
+• Subtotal and total recalculate
+• Remaining items stay intact","• Rose Bouquet disappears from the list immediately
+• Cart item count decreases (e.g., ""3 items"" → ""2 items"")
+• Subtotal and Total in CartSummary recalculate correctly
+• The other 2 items (Sunflower Bouquet, Tulip Mix) are untouched",Passed,Delete operation
+TC-SP2-015,US-SP2-02,Bloom Cart,CartSummary calculates totals correctly,Functional,Critical,Sunny,Cart has 3 items with known prices,"Item 1: ₱250×2, Item 2: ₱180×1, Item 3: ₱300×3","1. Navigate to /cart
+2. Observe CartSummary section
+3. Verify calculations","• Subtotal = ₱1580 (250×2 + 180×1 + 300×3)
+• Delivery Fee = ₱40 (flat rate)
+• Total = ₱1620
+• All values display correctly","• Subtotal = ₱1,580 (500 + 180 + 900)
+• Delivery Fee = ₱40 (flat rate)
+• Total = ₱1,620
+• All values display correctly with ₱ symbol",Passed,Calculation test
+TC-SP2-016,US-SP2-02,Bloom Cart,CartSummary with zero delivery fee edge case,Functional,Low,Rainy,Cart total < ₱500 (or other rule),Subtotal: ₱100,"1. Set cart to low value
+2. Check if delivery fee rule applies
+3. Observe CartSummary","• Delivery fee behavior follows business rules
+• If free delivery threshold exists, applies correctly
+• Total calculates properly","• Delivery fee follows app's business rule: 
+   • no free delivery threshold: delivery fee = ₱40 flat always
+• Total = Subtotal + correct delivery fee
+• No calculation errors or NaN values in Console",Passed,Business rule test
+TC-SP2-017,US-SP2-02,Bloom Cart,Empty cart shows EmptyState component,UI,High,Rainy,Cart has 0 items,cartItems.length = 0,"1. Navigate to /cart with empty cart
+2. Observe page content","• EmptyState component renders
+• Shows message like ""Your cart is empty""
+• ""Continue Shopping"" button visible
+• No CartSummary or checkout button shown","• EmptyState component is rendered
+• Shows a message like ""Your cart is empty""
+• A ""Continue Shopping"" button is visible
+• No CartItem components rendered
+• No CartSummary or checkout button shown",Passed,Empty state
+TC-SP2-018,US-SP2-02,Bloom Cart,Proceed to Checkout button opens modal,Integration,Critical,Sunny,"Cart has items, total > 0",Valid cart with 2 items,"1. Navigate to /cart
+2. Click ""Proceed to Checkout"" button
+3. Observe behavior","• CheckoutModal opens
+• console.log shows checkout initiated
+• Modal displays cart items and total
+• Cart page remains in background","• CheckoutModal opens (a modal/popup appears)
+• Modal displays cart items and total correctly
+• Check Console — console.log fires (since full checkout isn't wired yet)
+• Cart page is still visible in the background (modal overlays it, doesn't navigate away)",Passed,Modal integration
+TC-SP2-019,US-SP2-02,Bloom Cart,Qty stepper updates CartSummary in real-time,Integration,High,Rainy,Cart with items,Product qty changes from 1→3,"1. Change qty using stepper
+2. Observe CartSummary without page refresh","• Subtotal updates immediately
+• Total recalculates in real-time
+• No page reload needed
+• Smooth UI update","• Subtotal updates immediately after each qty change
+• Total recalculates in real-time
+• No page reload needed — everything is reactive
+• UI updates are smooth, no flicker or layout shift",Passed,Real-time update
+TC-SP2-020,US-SP2-02,Bloom Cart,Multiple variant states in same cart,Integration,Medium,Rainy,"Cart has available, out-of-stock, and price-changed
+items together",3 items with different statuses,"1. Navigate to /cart
+2. Verify each item renders correctly","• Each item shows correct variant styling
+• Available: normal
+• Out-of-stock: grayed, disabled
+• Price-changed: strikethrough + new price
+• All states coexist properly","• All 3 states coexist properly — no styling bleeds between cards
+• CartSummary still calculates only using available + price-changed items correctly",Passed,Mixed states
+TC-SP2-021,US-SP2-03,Admin Vendor Applications,Admin views pending applications list,Functional,High,Sunny,mockVendorApplications has 3+ pending,3 applications with status='pending',"1. Navigate to /admin/vendor-applications
+2. Observe application cards
+3. Verify count display","• Shows ""Pending Applications: 3""
+• All 3 ApplicationCard components render
+• Each shows vendor name, type, date, location, email, phone","• Header shows ""Pending Applications: 3""
+• All 3 ApplicationCard components are rendered
+• Each card shows: vendor name, type (stall/popup), date applied, location, email, phone",Passed,
+TC-SP2-022,US-SP2-03,Admin Vendor Applications,NEW badge displays for recent applications,UI,Medium,Sunny,Application dateApplied within last 3 days,"dateApplied: ""2026-03-12"" (2 days ago)","1. View application card
+2. Check for NEW badge","• Orange ""NEW"" badge visible next to vendor name
+• Badge only on applications ≤3 days old
+• Older applications show no badge","• Orange ""NEW"" badge visible next to vendor name
+• Badge only on applications ≤3 days old
+• Older applications show no badge",Passed,
+TC-SP2-023,US-SP2-03,Admin Vendor Applications,Admin approves vendor application,Functional,Critical,Rainy,Pending application exists,"Application ID: app-1, vendor: ""Rose Garden""","1. Locate application card
+2. Click green ""Approve"" button
+3. Observe changes","• Card is removed from list
+• Pending count decreases by 1
+• Success toast: ""Application approved""
+• Local state updates (status → approved)","• Rose Garden Stall card disappears from the list immediately
+• Pending count decreases: ""Pending Applications: 2""
+• Success toast appears: ""Vendor approved successfully!"" 
+• Local state is updated — status changed to approved
+• The other 2 cards are untouched",Passed,Approve flow
+TC-SP2-024,US-SP2-03,Admin Vendor Applications,Admin rejects application with reason,Functional,Critical,Rainy,Pending application exists,Application to reject,"1. Click red ""Reject"" button
+2. Inline confirmation appears
+3. Select reason: ""Incomplete documents""
+4. Confirm rejection","• Reason dropdown shows: Incomplete documents, Invalid permit, Duplicate registration, Other
+• After confirm: card removed
+• Toast: ""Application rejected""
+• Status updated to rejected","• Inline confirmation section appears on the card itself
+• Reason dropdown shows all 4 options: Incomplete documents, Invalid permit, Duplicate registration, Other
+• After selecting a reason and confirming:
+• Card is removed from the list
+• Toast appears: ""Application rejected: Incomplete Documents""
+• Pending count decreases by 1
+• Status updated to rejected in local state",Passed,Reject flow
+TC-SP2-025,US-SP2-03,Admin Vendor Applications,View Documents button - documents available,Functional,High,Rainy,Application has businessPermit=true OR validId=true,"documents: { businessPermit: true, validId: true }","1. Check document status row
+2. Observe ""View Documents"" button state","• ""View Documents"" button is enabled (green/clickable)
+• Shows document checkmarks or icons
+• Button click opens document view (or console.log)","• Document status row shows checkmarks or icons for businessPermit and validId
+• ""View Documents"" button is clickable
+• Clicking it does nothing",Failed,No document view
+TC-SP2-026,US-SP2-03,Admin Vendor Applications,No documents warning for popup vendors,UI,Medium,Rainy,"Application type='popup', documents: 
+{ businessPermit: false, validId: false }",Popup vendor with no docs,"1. View popup vendor application
+2. Check document section","• Shows warning: ""No documents required"" (popup types may not need permits)
+• ""View Documents"" button disabled or shows warning icon
+• Admin can still approve/reject","• Shows text: ""No documents required"" (or warning icon)
+• View Documents button is either disabled or not shown
+• Admin can still see Approve and Reject buttons (they still work)
+• No Console errors
+",Passed,Popup vendor rule
+TC-SP2-027,US-SP2-03,Admin Vendor Applications,Admin clicks View Details button,UI,Low,Rainy,Any pending application,Any application,"1. Click gray ""View Details"" button
+2. Observe action","• console.log or navigation to detail view
+• No errors
+• UI provides feedback (if modal/page)","• The button darkened when it was hovered
+• No navigation to detail view
+• No errors
+• UI did not provide any feedback",Failed,No detail view
+TC-SP2-028,US-SP2-03,Admin Vendor Applications,Filter button displays (UI only),UI,Low,Rainy,Page loaded,N/A,"1. View page
+2. Locate filter button","• Filter button visible
+• No logic implemented (UI only)
+• Button renders without errors","• Filter button is visible on the page
+• Button renders without errors
+• Clicking it does nothing yet (UI only — no logic implemented) 
+• No Console errors on click",Passed,UI placeholder
+TC-SP2-029,US-SP2-03,Admin Vendor Applications,Empty state when all resolved,UI,High,Rainy,All applications approved or rejected,applications.filter(a => a.status === 'pending').length = 0,"1. Approve/reject all applications
+2. Observe page","• Empty state component displays
+• Message: ""No pending applications"" or similar
+• No application cards shown","• Empty state component renders — no application cards shown
+• Shows a message like ""No pending applications"" or similar
+• No crash, no broken layout",Passed,"If reject all, it should ask 
+for reason each vendor"
+TC-SP2-030,US-SP2-03,Admin Vendor Applications,Duplicate approval attempt,Functional,Medium,Rainy,Application already approved in session,Same application clicked twice,"1. Click Approve
+2. Quickly click Approve again before removal","• Prevents duplicate approval
+• Card removed after first click
+• No errors or double-processing","• 2 different vendor cards are removed
+• 2 toast messages appeared
+• No errors in Console",Failed,Double approve
+TC-SP2-031,US-SP2-03,Admin Vendor Applications,Reject without selecting reason,Functional,Medium,Rainy,"Rejection confirmation open, no reason selected",No reason dropdown selection,"1. Click Reject
+2. Try to confirm without selecting reason","• Shows validation error: ""Please select a reason""
+• Does not process rejection
+• User must select reason to proceed",• Incomplete documents is the default choice,Passed,Validation test
+TC-SP2-032,US-SP2-03,Admin Vendor Applications,Multiple applications with mixed document statuses,Integration,Medium,Rainy,"3 apps: one with docs, one without, one partial",Mixed document statuses,"1. View all application cards
+2. Verify document status display","• Each card shows correct document status
+• ""View Documents"" enabled only where applicable
+• No UI conflicts between cards","• Each card shows correct document status independently
+• No styling bleeds between cards (UI conflicts)
+• All 3 Approve/Reject buttons still work on all cards",Passed,Mixed data
+TC-SP2-033,US-SP2-04,Admin Activity Logs,Admin views activity logs list,Functional,High,Sunny,mockActivityLogs has ≥5 entries,5+ log entries,"1. Navigate to /admin/activity-logs
+2. Observe log cards
+3. Verify grouping","• All logs render as ActivityLogCard components
+• Grouped by date: Today, Yesterday, etc.
+• Each log shows timestamp, admin name, action title, target name","• All 4 logs render as ActivityLogCard components — no blank screen
+• Logs are grouped under date headers:
+   • ""Today"" — log-1, log-2 (2 cards)
+   • ""Yesterday"" — log-3, log-4 (2 cards)
+• Each card shows: timestamp, admin name, action title, target name",Passed,
+TC-SP2-034,US-SP2-04,Admin Activity Logs,Colored status dot displays correctly,UI,Medium,Sunny,Logs with different actionTypes,"actionType: approved, rejected, suspended, login","1. View logs with various actionTypes
+2. Check status dot colors","• Approved: green dot
+• Rejected: red dot
+• Suspended: orange/yellow dot
+• Login: blue/gray dot
+• Colors distinct and visible",• The color of each dot per card matches the describes status dot colors,Passed,
+TC-SP2-035,US-SP2-04,Admin Activity Logs,Search filters logs by actionTitle,Functional,High,Rainy,Logs with various actionTitles,"Search term: ""Approved""","1. Type ""Approved"" in search bar
+2. Observe filtered results","• Only logs with ""Approved"" in actionTitle display
+• Other logs hidden
+• Search is case-insensitive
+• Clears when search is empty","• While typing ""Approved"":
+   • Only the log whose actionTitle contains ""Approved"" are shown (log-1)
+   • Other 3 logs are hidden
+• Search is case-insensitive– typing ""approved"" or ""APPROVED"" worked
+• After clearing: all 5 logs reappear",Passed,Search filter
+TC-SP2-036,US-SP2-04,Admin Activity Logs,Search filters logs by targetName,Functional,High,Rainy,Logs with different targetNames,"Search term: ""Bongbong's Flowers""","1. Type ""Bongbong's Flowers"" in search bar
+2. Observe filtered results","• Only logs with ""Bongbong's Flowers"" in targetName display
+• Partial matches work
+• Real-time filtering as user types","• Typing ""Bongbong's Flowers"" → only log-3 (Bongbong's Flowers) is shown
+• Typing just ""Flowers"" → still shows log-3 (partial match works)
+• Filtering updates while typing
+• Other logs are hidden while search is active",Passed,Search filter
+TC-SP2-037,US-SP2-04,Admin Activity Logs,"Filter chips work (All, Approvals, Rejections)",Functional,High,Rainy,Logs with mixed actionTypes,Click filter chip,"1. Click ""Approvals"" chip
+2. Observe filtered logs
+3. Click ""All"" to reset","• ""Approvals"" shows only actionType='approved'
+• ""Rejections"" shows actionType='rejected'
+• ""All"" shows all logs
+• Active chip highlighted","• ""Approvals"" chip → shows only actionType: ""approved"" logs (log-1)
+• ""Rejections"" chip → shows only actionType: ""rejected"" logs (log-2)
+• ""All"" chip → all 4 logs reappear
+• The active chip is visually highlighted 
+• Chip for Suspensions → shows log-3 only
+• Chip for Logins → shows log-4 only",Passed,Filter chips
+TC-SP2-038,US-SP2-04,Admin Activity Logs,Skeleton cards display during loading,UI,Medium,Rainy,isLoading = true,useActivityLogs returns isLoading: true,"1. Simulate loading state
+2. Observe page while isLoading=true","• Skeleton cards render (placeholder UI)
+• No actual log data shown
+• Smooth transition when isLoading→false","• During the 3s delay: skeleton loading cards are shown (gray placeholder shapes, 
+   no real data)
+• Actual log data is NOT visible while loading
+• After 3 seconds: real log cards appear smoothly
+• Transition is smooth — no flash or layout jump",Passed,Loading state
+TC-SP2-039,US-SP2-04,Admin Activity Logs,Empty state when no logs match filter,UI,High,Rainy,Search/filter returns 0 results,"Search: ""NonexistentVendor""","1. Enter search term with no matches
+2. Observe page","• Empty state component displays
+• Message: ""No activity logs found"" or similar
+• Option to clear filters visible","• Empty state component displays — no log cards rendered
+• Shows message ""No logs found""
+• No option to clear filters/search is visible 
+   (e.g., a ""Clear"" button or ""X"" in the search bar)
+• No crash, no blank white page",Failed,"Empty state (No clear 
+button yet)"
+TC-SP2-040,US-SP2-04,Admin Activity Logs,Three-dot menu renders (UI only),UI,Low,Rainy,Any log card,N/A,"1. View activity log card
+2. Locate three-dot menu icon","• Three-dot icon visible
+• No dropdown logic (UI only per spec)
+• Icon renders without errors","• Three-dot icon is visible on each card
+• Icon renders without errors (no broken icon, no missing image)
+• Clicking it does nothing yet (UI only per spec — no dropdown logic needed)
+• No Console errors on click",Passed,UI placeholder
+TC-SP2-041,US-SP2-04,Admin Activity Logs,Tags display as gray chips,UI,Medium,Rainy,Logs with tags array,"tags: [""vendor-applications"", ""approved""]","1. View log card with tags
+2. Observe tag rendering","• Tags render as small gray chips
+• Multiple tags display correctly
+• Chips are readable and properly spaced","• Both tags render: ""vendor-applications"" and ""approved""
+• Tags appear as small gray chip/pill components
+• Chips are readable — text is not cut off or overflowing
+• Chips are properly spaced — not overlapping each other
+• Multiple tags display on the same row correctly",Passed,Tag display
+TC-SP2-042,US-SP2-04,Admin Activity Logs,Quick link buttons trigger console.log,Functional,Medium,Rainy,Log with quick links,"Quick links: ""View Review"", ""View User""","1. Click ""View Review"" button
+2. Check console
+3. Click ""View User""","• Console.log fires on each click
+• Shows clicked link name and log ID
+• No navigation errors","• Clicking ""View Review"": Console logs ""Navigating to: 
+   /admin-review-moderation-panel""
+• Clicking ""View Vendor Profile"": Console logs similarly 
+• No navigation errors — page doesn't crash or redirect to a 404
+• Both buttons are clickable — not disabled",Passed,Console test
+TC-SP2-043,US-SP2-05,Order History,Customer views completed orders list,Functional,High,Sunny,Customer account has completed orders,Customer C1 account has completed orders,"1. Log in as C1 
+2. Navigate to /customer/orders 
+3. Observe order list ","• Page shows 3 completed order cards with vendor name, date, items, and total",• Page shows the completed orders with no issues or errors,Passed,
+TC-SP2-044,US-SP2-05,Order History,Customer with no completed orders sees empty state,Functional,Medium,Rainy,Customer account exists but no completed orders,Customer C2 account with zero completed orders,"1. Log in as C2; 
+2. Navigate to /customer/orders; 
+3. Observe page","• Page displays empty state message ""No completed orders yet""",• Page shows no orders/empty state,Passed,
+TC-SP2-045,US-SP2-05,Order History,Order item missing product image handled gracefully,UI,Medium,Rainy,Order item product_image_url is NULL,Missing image URL,"1. Log in
+2. Navigate to /customer/orders
+3. Locate item with missing image",• Placeholder image shown and page loads normally,• Page loads with no issues and the placeholder img replaces the missing img ,Passed,
+TC-SP2-046,US-SP2-05,Order History,Order exists without order_items does not break UI,UI,High,Rainy,Order record exists but order_items table empty,Order with zero items ,"1. Log in
+2. Navigate to /customer/orders
+3. Observe page",• Page loads normally and UI does not crash,• Page loads with no issues,Passed,
+TC-SP2-047,US-SP2-05,Order History,Order History Review button defaults to To Rate when review service fails,Integration,Medium,Rainy,Simulated reviews query failure,Database permission error simulation,"1. Log in 
+2. Navigate to /customer/orders
+3. Observe review buttons","• Orders still load and buttons show ""To Rate""","• ""To Rate"" button is still unchanged because of failed review submission",Passed,
+TC-SP2-048,US-SP2-06,Review Creation,Customer submits review successfully,Functional,High,Sunny,Completed order exists with no review Order,Order O1 vendor V1 customer C1,"1. Log in
+2. Navigate to orders
+3. Click To Rate
+4. Select rating
+5. Submit review",• Review saved and button changes to View Rating,"• Review is successfully submitted and ""View Rating"" is shown in place of ""To Rate""",Passed,
+TC-SP2-049,US-SP2-06,Review Creation,Access review page without login shows sign in prompt,Functional,High,Rainy,User not logged in,OrderId parameter present,1. Open /customer/review?orderId=O1 in incognito,• Sign in prompt appears and no order data visible,"• ""User is not logged in"" is shown and no order data is displayed",Passed,
+TC-SP2-050,US-SP2-06,Review Creation,Access review page without orderId,UI,Medium,Rainy,User logged in but no orderId,/customer/review URL only,"1. Log in
+2. Navigate to /customer/review ","• Page displays message ""No order selected""",• No order is selected and review is not displayed,Passed,
+TC-SP2-051,US-SP2-06,Review Creation,Unauthorized user cannot access another customer's review page,Functional,Critical,Rainy,User logged in as different customer,Order belongs to another user,"1. Log in as different customer
+2. Open review",• URL Access denied or safe error displayed,• Order is not found or belongs to another user,Passed,
+TC-SP2-052,US-SP2-06,Review Creation,Database failure during review submission handled gracefully,Functional,High,Rainy,Simulated database insert failure,Supabase error simulation,"1. Submit review
+2. Observe error handling",• Error alert shown and form remains with entered data,• Form is reset to blank,Passed,
+TC-SP2-053,US-SP2-06,Review Creation,User views and edits existing review,Functional,Medium,Sunny,Existing review record exists,Review rating=5 comment=Very nice,"1. Log in
+2. Click View Rating
+3. Edit comment
+4. Submit",• Review updates successfully in same record,• Review is successfully updated with new text and rating,Passed,
+TC-SP2-054,US-SP2-06,Review Creation,Very long review comment renders properly,UI,Low,Rainy,Review comment exceeds 500 characters,Long comment text,"1. Open review page
+2. Observe text area",• Text wraps correctly and layout remains stable,• Full text is shown and can be scrolled,Passed,
+TC-SP2-055,US-SP2-06,Review Creation,Review page loads when vendor record missing,UI,Medium,Rainy,Vendor record missing or shop_name NULL,Missing vendor data,1. Open review page,"• Page loads with fallback vendor name ""Vendor""","• default Vendor value is shown as ""Bloom Cart Vendor""",Passed,
+TC-SP2-056,US-SP2-06,Review Creation,Double submit review prevented,Functional,Low,Rainy,User clicks submit twice quickly,Existing review,1. Click Edit Review twice quickly,• Button disables and only one update occurs,• Button can only be pressed once,Passed,
+TC-SP2-057,US-SP2-07,Vendor Product Addition,Vendor adds a product successfully (complete valid form),Functional,High,Sunny,"Vendor account is logged in, Vendor Dashboard loads, Add Product form is accessible","Product Name: ""Sunflower Bouquet""; Price: 250; Stock: 10; Category: ""Bouquet""; Description: ""Fresh sunflowers""; Image: valid .jpg","1. Navigate to Vendor Dashboard - Products
+2. Click ""Add Product""
+3. Fill in all required fields with valid data
+4. Upload a valid image
+5. Click ""Add Product""","• Product is created
+• Product appears in vendor product list with correct details
+• Form closes or resets","• Product is created
+• Product appears in vendor product list with correct details
+• Form closes and goes back to the product list page",Passed,
+TC-SP2-058,US-SP2-07,Vendor Product Addition,Add Product fails when required fields are empty,Functional,Critical,Rainy,Vendor is logged in and Add Product form is open,Leave fields blank,"1. Click ""Add Product""
+2. Leave required fields empty
+3. Click ""Add Product""","• Inline validation errors shown for required fields
+• No product created
+• No API call OR API returns validation error handled gracefully
+• No page crash","• Inline errors for each empty field
+• No product created
+• No API call
+• No page crash",Passed,
+TC-SP2-059,US-SP2-07,Vendor Product Addition,Add Product rejects negative or zero price,Functional,High,Rainy,Vendor is logged in and Add Product form is open,Price: 0 (or -10),"1. Enter valid name, category, stock
+2. Set price to 0
+3. Click ""Add Product""
+4. Repeat with price = -10","• Validation message like ""Price must be greater than 0""
+• Save button disabled OR submission blocked
+• No product created","• Numeric field goes back to 0
+• No product created
+",Passed,
+TC-SP2-060,US-SP2-07,Vendor Product Addition,Add Product blocks unsupported image type,UI,Medium,Rainy,Vendor is logged in and Add Product form is open,Image: .pdf or .exe (unsupported),"1. Fill valid fields
+2. Upload unsupported file type
+3. Attempt to submit","• Error message such as ""Unsupported file type""
+• Image not accepted
+• Submission blocked or continues without image based on rules","• No error message shown
+• Unsupported file type is uploaded
+• Submission does not get blocked",Failed,
+TC-SP2-061,US-SP2-07,Vendor Product Addition,Add Product rejects non-numeric price input (if text field allows),UI,Medium,Rainy,Vendor is logged in and Add Product form is open,"Price: ""abc""","1. Type letters into price field
+2. Attempt to submit","• Price field prevents non-numeric entry OR shows validation error
+• Submission blocked
+• No product created","• Validation error is shown saying ""Enter a number""
+• Submission is blocked
+• Product does not get created
+",Passed,
+TC-SP2-062,US-SP2-08,Role based redirection post-authentication (Google),Customers get redirected to customer dashboard,Functional,High,Sunny,User has a registered Google account; registered as a customer,Own Google account,"1. Navigate to Log in 
+2. Click ""Log In using Google""
+3. Choose the Google account to be used, if there's any
+","• User redirects to customer dashboard
+• User stays logged in for a minute without being logged out
+• User encounters cart, orders in the navigation bar","• User redirects to customer dashboard
+• User stays logged in for a minute without being logged out
+• User encounters cart, orders in the navigation bar",Passed,
+TC-SP2-063,US-SP2-08,Role based redirection post-authentication (Google),Pop-up vendors get redirected to pop-up dashboard,Functional,High,Sunny,User has a registered Google account; registered and approved as a pop-up vendor,Own Google account,"1. Navigate to Log in 
+2. Click ""Log In using Google""
+3. Choose the Google account to be used, if there's any","• User redirects to pop-up dashboard
+• User stays logged in for a minute without being logged out
+• User encounters home, dashboard, profile in the navigation bar; additional schedule in the side bar under explore page","• User redirects to pop-up dashboard
+• User stays logged in for a minute without being logged out
+• User encounters home, dashboard, profile in the navigation bar; additional schedule in the side bar under explore page",Passed,
+TC-SP2-064,US-SP2-08,Role based redirection post-authentication (Google),Market vendors get redirected to market dashboard,Functional,High,Sunny,User has a registered Google account; registered and approved as a market vendor,Own Google account,"1. Navigate to Log in 
+2. Click ""Log In using Google""
+3. Choose the Google account to be used, if there's any","• User redirects to pop-up dashboard
+• User stays logged in for a minute without being logged out
+• User encounters home, dashboard, profile in the navigation bar","• User redirects to pop-up dashboard
+• User stays logged in for a minute without being logged out
+• User encounters home, dashboard, profile in the navigation bar",Passed,
+TC-SP2-063,US-SP2-08,Role based redirection post-authentication (Google),New users get redirected to customer dashboard,Functional,Critical,Sunny,User has a registered Google account,Own Google account,"1. Navigate to Log in 
+2. Click ""Log In using Google""
+3. Choose the Google account to be used, if there's any
+","• User redirects to customer dashboard
+• User stays logged in for a minute without being logged out
+• User encounters cart, orders in the navigation bar","• User redirects to customer dashboard
+• User stays logged in for a minute without being logged out
+• User encounters cart, orders in the navigation bar",Passed,
+TC-SP2-065,US-SP2-09,Role-based navbar rendering,"Logged out, default navbar items include Home, Flowers, Shops, About, Sign in",UI,Medium,Sunny,No user is logged in,,"1. Open the tab
+2. Check navbar items consistency","• Navbar items should consistently display Home, Flowers, Shops, About, Sign in
+• Navbar items are the same no matter which tab is opened","• Navbar items should consistently display Home, Flowers, Shops, About, Sign in
+• Navbar items are the same no matter which tab is opened",Passed,
+TC-SP2-066,US-SP2-09,Role-based navbar rendering,"Pop-up vendor navbar items should include Home, Dashboard, Profile, Sign Out",UI,Medium,Sunny,Pop-up vendor is logged in,,"1. Open the tab
+2. Check navbar items consistency","• Navbar items should consistently display Home, Dashboard, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened","• Navbar items should consistently display Home, Dashboard, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened",Passed,
+TC-SP2-067,US-SP2-09,Role-based navbar rendering,"Market vendor navbar items should include Home, Dashboard, Profile, Sign Out",UI,Medium,Sunny,Market vendor is logged in,,"1. Open the tab
+2. Check navbar items consistency","• Navbar items should consistently display Home, Dashboard, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened","• Navbar items should consistently display Home, Dashboard, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened",Failed,
+TC-SP2-068,US-SP2-09,Role-based navbar rendering,"Customer navbar items should include Home, Orders, Cart, Profile, Sign Out",UI,Medium,Sunny,Customer is logged in,,"1. Open the tab
+2. Check navbar items consistency","• Navbar items should consistently display Home, Orders, Cart, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened","• Navbar items should consistently display Home, Orders, Cart, Profile, Sign Out
+• Navbar items are the same no matter which tab is opened",Passed,
+TC-SP2-069,US-SP2-10,Initialize pop up profile,Profile loads vendor row and renders shop header,Integration,High,Sunny,User is authenticated and has a pop-up vendor row,"vendor_type='pop-up', shop_name='Rose Cart', user.id linked to vendors.owner_id",1. Open the pop-up profile page 2. Let the server load vendor data 3. Inspect the header and shop label,The vendor row is fetched by owner_id; the shop name flows into the header; the page renders the correct pop-up profile shell without redirecting away,,,
+TC-SP2-070,US-SP2-10,Initialize pop up profile,Profile falls back to application type when vendor row is missing,Integration,High,Sunny,Authenticated user has a vendor application but no vendor row yet,vendor_applications.vendor_type='pop-up',1. Open the pop-up profile page 2. Observe the vendor lookup 3. Watch the fallback redirect path,The missing vendor row triggers a lookup in vendor_applications; the application vendor_type flows into a profile redirect; the user is sent to the correct pop-up profile route or onboarding flow,,,
+TC-SP2-071,US-SP2-10,Initialize pop up profile,Missing profile data redirects to vendor application flow,Functional,High,Rainy,Authenticated user has neither a vendor row nor a vendor application,No vendors row and no vendor_applications row for owner_id,1. Open the pop-up profile route 2. Let the profile loader resolve vendor data 3. Observe the final route,No vendor data can be resolved; the page redirects to the vendor application page instead of crashing; the user sees a safe onboarding path,,,
+TC-SP2-072,US-SP2-10,Initialize pop up profile,Wrong vendor type routes to the matching profile,Functional,Medium,Rainy,User has a vendor row with a different vendor_type than the current route,vendor_type='market' while opening the pop-up profile route,1. Open the pop-up profile route 2. Let vendor_type be resolved from the vendor row 3. Watch the route change,The loaded vendor_type flows into a type check; the mismatch triggers a redirect to the correct profile route; no mixed vendor profile is shown,,,
+TC-SP2-073,US-SP2-10,Initialize pop up profile,Blank shop name uses a safe visual fallback,UI,Low,Rainy,Vendor row exists but shop_name is blank or whitespace,shop_name='',1. Open the pop-up profile page 2. Inspect the avatar initial and shop heading,The UI uses a safe fallback initial instead of breaking on blank text; the profile shell remains readable; no null or empty-name crash occurs,,,
+TC-SP2-074,US-SP2-10,Initialize pop up profile,Product relation fallback preserves profile content,Integration,High,Rainy,products relation is unavailable or schema cache is stale,products select includes product_images relation that fails,1. Open the pop-up profile page 2. Wait for product loading 3. Inspect whether the fallback query runs,"The initial product query can fail on the relation, then a fallback query without product_images is used; the profile shell remains intact and product data still flows through the simpler shape",,,
+TC-SP2-075,US-SP2-10,Initialize pop up profile,Empty catalog shows a no-bouquets state,UI,Low,Rainy,Vendor exists but has no products yet,No products for vendor_id,1. Open the pop-up profile page 2. Scroll to the bouquets section,An empty product set flows through to the UI as a clear no-bouquets state; the layout stays stable; no broken list placeholders appear,,,
+TC-SP2-076,US-SP2-10,Initialize pop up profile,Profile copy stays aligned with long vendor names,UI,Low,Rainy,Vendor row exists with a long shop_name,shop_name='The Blooming Corner And Floral Works Studio',1. Open the pop-up profile page 2. Inspect the header and summary copy,Long shop names flow through the header without overlapping the avatar or actions; the text wraps cleanly and stays readable,,,
+TC-SP2-077,US-SP2-11,Pop up vendor addition of product,Add product form loads categories and vendor status,Functional,High,Sunny,Vendor session exists and categories table has rows,"type='pop-up', categories with id and category_name exist",1. Open the add product page 2. Let status and categories load 3. Inspect the form state,Vendor status is fetched first and categories are loaded into the selector; both data sources flow into the form before submission is allowed,,,
+TC-SP2-078,US-SP2-11,Pop up vendor addition of product,Selected files flow into live image previews,UI,High,Sunny,Add product form is open,3 image files selected through the file input,1. Choose multiple product images 2. Observe the preview grid 3. Remove one image and watch updates,The selected files flow into object URLs for preview; previews appear immediately; removed files revoke old URLs and the preview list updates cleanly,,,
+TC-SP2-079,US-SP2-11,Pop up vendor addition of product,Pending vendor status blocks product submission,Functional,High,Rainy,Vendor application status is pending,vendorStatus='pending',1. Open the add product page 2. Try to submit valid product data 3. Observe the validation message,The pending status flows into the submit guard; submission is blocked before server action runs; the user sees that products cannot be added yet,,,
+TC-SP2-080,US-SP2-11,Pop up vendor addition of product,Missing category selection stops the save flow,Functional,High,Rainy,Add product page is loaded,No categoryIds selected,1. Fill the product fields 2. Leave categories empty 3. Submit the form,The category list is validated before submission; no data is sent to the server action; the user is told to select between 1 and 3 categories,,,
+TC-SP2-081,US-SP2-11,Pop up vendor addition of product,Invalid category ids are rejected before insert,Integration,High,Rainy,Selected category ids do not exist in categories table,categoryIds include a deleted or fake id,1. Select one invalid category id 2. Submit the form 3. Observe the server response,The category ids flow into a validation query; missing ids are detected; the insert is rejected and no product row is created,,,
+TC-SP2-082,US-SP2-11,Pop up vendor addition of product,Zero or negative price is blocked in the form flow,Functional,Medium,Rainy,Add product page is open,price='-10' or price='abc',1. Enter an invalid price 2. Submit the form 3. Observe the message,The price value is normalized and checked before insertion; invalid or negative values stop the flow; the product is not saved,,,
+TC-SP2-083,US-SP2-11,Pop up vendor addition of product,Missing product images stops the product insert,Functional,High,Rainy,Add product page is open,No productImages selected,1. Fill the text fields 2. Leave image upload empty 3. Submit the form,The file input check blocks the flow because at least one image is required; no product row is created; the user sees a clear upload message,,,
+TC-SP2-084,US-SP2-11,Pop up vendor addition of product,Successful submit pushes the vendor back to product list,Functional,Medium,Sunny,Vendor is approved and all required fields are valid,"productName='Tulip Bundle', stock=15, price=850, valid categories and images",1. Fill the form completely 2. Submit product data 3. Watch the redirect after save,"The form data flows into the server action, the product and image rows are created, and the redirectTo value routes the vendor back to the product list",,,
+TC-SP2-085,US-SP2-12,Polish vendor profile base (DB + API),Vendor profile reads vendor and product data in a single flow,Integration,High,Sunny,Authenticated vendor has a valid vendor row and products,"vendor_type='pop-up' or 'market', product rows exist",1. Open the vendor profile page 2. Let the profile loader query vendor and product rows 3. Inspect the rendered output,"Vendor, product, and profile data flow together into the page; the header and product sections render from the same source of truth; the layout stays consistent",,,
+TC-SP2-086,US-SP2-12,Polish vendor profile base (DB + API),Profile uses relation fallback when product_images lookup is unavailable,Integration,High,Sunny,products exist but product_images relation is missing from the schema cache,product_images relation error during product query,1. Open the vendor profile page 2. Allow the relation-based query to fail 3. Observe the fallback query,The first product query can fail on the relation shape; fallback query without product_images is executed; the product list still flows through a simpler projection,,,
+TC-SP2-087,US-SP2-12,Polish vendor profile base (DB + API),Missing vendor row falls back to application type or onboarding,Functional,High,Rainy,Authenticated user has no vendor record,vendor_applications.vendor_type present or absent,1. Open the vendor profile page 2. Observe vendor lookup failure 3. Watch the redirect decision,"If an application vendor_type exists, that type flows into a profile redirect; otherwise the user is routed to vendor application onboarding; no uncaught error page appears",,,
+TC-SP2-088,US-SP2-12,Polish vendor profile base (DB + API),Vendor type mismatch redirects to the matching profile base,Functional,Medium,Rainy,Vendor row exists but route type does not match the stored vendor_type,stored vendor_type='market' while opening pop-up profile,1. Open the vendor profile route with the wrong type 2. Let the type normalization run 3. Observe navigation,The stored vendor_type flows through normalization; the mismatch triggers a redirect to the matching vendor profile route; the wrong route is not rendered,,,
+TC-SP2-089,US-SP2-12,Polish vendor profile base (DB + API),Shop initial is derived safely from the vendor name,UI,Low,Rainy,Vendor row exists with short or empty shop_name,shop_name='' or 'A',1. Open the vendor profile page 2. Inspect the avatar initial 3. Check that the header still renders,The shop name flows into the initial generator; blank values become a safe placeholder and single-letter names render correctly; the UI does not break,,,
+TC-SP2-090,US-SP2-12,Polish vendor profile base (DB + API),Empty product set shows a no-bouquets state,UI,Low,Rainy,Vendor exists but has no products,No products for vendor_id,1. Open the vendor profile page 2. Scroll to the product section,An empty products array flows into a friendly empty state; the shell stays intact; no broken cards or missing spacing appear,,,
+TC-SP2-091,US-SP2-12,Polish vendor profile base (DB + API),Product query failure still preserves the profile shell,Integration,High,Rainy,Vendor row exists but product query fails due to schema issue or network error,Database or schema cache error on products select,1. Open the vendor profile page 2. Trigger the product query failure 3. Observe the fallback behavior,"The first query result is caught, a fallback product query without product_images runs, and the profile shell continues to render; if both fail, the error is surfaced cleanly instead of a broken layout",,,
+TC-SP2-092,US-SP2-12,Polish vendor profile base (DB + API),Long vendor description wraps without breaking the card,UI,Low,Rainy,Vendor row exists with long name and summary text,Very long shop_name and profile copy,1. Open the vendor profile page 2. Inspect the header card and text blocks,Long text flows through the card and wraps safely; actions remain visible; no overlap or clipping appears in the profile base layout,,,
+TC-SP2-094,US-SP2-13,Vendor profile UI (basic),Product section shows the loaded bouquet list,UI,High,Sunny,Vendor has at least one product,Product rows with image and price,1. Open the vendor profile page 2. Scroll to the bouquet section 3. Inspect product cards,"Loaded product rows flow into bouquet cards; images, price, and descriptions are visible; the list remains aligned with the vendor data",,,
+TC-SP2-095,US-SP2-13,Vendor profile UI (basic),No product rows shows the empty catalog message,UI,Low,Rainy,Vendor exists but has no products,Empty product set,1. Open the vendor profile page 2. Scroll to the products section 3. Observe the empty state,An empty data set flows into a clear no-bouquets message; the page keeps its spacing and does not collapse,,,
+TC-SP2-096,US-SP2-13,Vendor profile UI (basic),Preview and edit buttons stay non-destructive,Functional,Low,Rainy,Vendor profile page is open,Preview as customer and Edit profile buttons,1. Click the preview button 2. Click the edit button 3. Observe the response,The buttons are present and do not crash the page; the actions remain safe placeholders or future navigation points,,,
+TC-SP2-097,US-SP2-13,Vendor profile UI (basic),Tabs stay attached to the current profile state,UI,Low,Rainy,Vendor profile page is open,Selected tab anchor values,"1. Click between Bouquets, Reviews, and About 2. Watch the card state 3. Return to the top section",The tab anchors flow the user to the correct content areas; the current section remains readable and visually anchored,,,
+TC-SP2-098,US-SP2-13,Vendor profile UI (basic),Long shop name does not distort the header layout,UI,Low,Rainy,Vendor row has an unusually long shop_name,Long shop_name value,1. Open the vendor profile page 2. Inspect the header on desktop and mobile widths,"The long vendor name wraps cleanly, the avatar stays aligned, and the header card keeps its structure",,,
+TC-SP2-099,US-SP2-13,Vendor profile UI (basic),Profile route keeps the correct vendor context after refresh,Functional,Medium,Sunny,Logged-in vendor opened from the right route,vendor_type matches route,1. Open the vendor profile route 2. Refresh the page 3. Observe the route and loaded vendor context,The correct vendor context is reloaded from the database on refresh; route-specific profile state stays intact and does not jump to another vendor type,,,
+TC-SP2-100,US-SP2-13,Vendor profile UI (basic),Products and reviews sections remain readable on narrow screens,UI,Medium,Rainy,Vendor profile page is open on a mobile width,Narrow viewport,1. Resize to mobile width 2. Scroll through profile sections 3. Inspect spacing and stacking,The profile UI adapts to the narrow viewport; sections stack cleanly; text and cards remain readable without overlap,,,
+TC-SP2-101,US-SP2-14,Add Product - Stall Vendor,Stall vendor add-product page loads vendor status and categories,Integration,High,Sunny,Vendor type is market and categories exist,"type='market', category rows available",1. Open the stall vendor add-product page 2. Let vendor status load 3. Let categories load 4. Inspect the form,The vendor status and categories flow into the add-product form; the page is ready for input once both data sources finish loading,,,
+TC-SP2-102,US-SP2-14,Add Product - Stall Vendor,Valid submit creates product rows and image rows,Integration,High,Sunny,Vendor is approved and form fields are filled,"productName='Stall Bouquet', price=1200, stock=20, valid categories and images",1. Fill the add-product form 2. Submit the product 3. Verify the database rows,The submitted data flows into addVendorProductAction; a product row and related image rows are created; the vendor returns to the product list,,,
+TC-SP2-103,US-SP2-14,Add Product - Stall Vendor,Pending vendor status blocks the save flow,Functional,High,Rainy,Vendor status is pending,vendorStatus='pending',1. Open the add-product page 2. Try to submit a product 3. Observe the status message,The pending status flows into the submit guard; the save is blocked; the page shows that products cannot be added yet,,,
+TC-SP2-104,US-SP2-14,Add Product - Stall Vendor,Category selection outside allowed range is rejected,Functional,High,Rainy,Add-product form is open,0 categories selected or more than 3 selected,1. Select no categories or more than three categories 2. Submit the form,The selected categories are validated before the server action runs; the form is blocked with a clear category count message,,,
+TC-SP2-105,US-SP2-14,Add Product - Stall Vendor,Invalid vendor profile stops product insertion,Functional,High,Rainy,Authenticated user has no matching vendor row for the current type,owner_id exists but no vendor row for type='market',1. Open the add-product page 2. Submit valid product data 3. Observe the server response,The vendor lookup fails and the save does not continue; no product row is created; the user sees that the vendor profile is missing,,,
+TC-SP2-106,US-SP2-14,Add Product - Stall Vendor,Non-numeric price or stock is rejected before persistence,Functional,Medium,Rainy,Add-product page is open,"price='abc', stock='-5'",1. Enter invalid numeric values 2. Submit the form 3. Observe validation,Invalid values are normalized and blocked before insertion; no write reaches the database; the user sees a clear price or stock error,,,
+TC-SP2-107,US-SP2-14,Add Product - Stall Vendor,Missing image upload stops the add-product flow,Functional,High,Rainy,Add-product page is open,No files selected for productImages,1. Fill the text fields 2. Leave the image upload empty 3. Submit the form,The missing image list blocks the flow because at least one image is required; no product row is inserted,,,
+TC-SP2-108,US-SP2-14,Add Product - Stall Vendor,Category lookup error surfaces without corrupting the form,Integration,Medium,Rainy,categories table query fails or returns invalid ids,Database or schema error on categories lookup,1. Open the add-product page 2. Trigger the categories query failure 3. Inspect the error message,The categories data flow is interrupted cleanly; the form shows a load error; no partial submission is attempted,,,
+TC-SP2-109,US-SP2-14,Add Product - Stall Vendor,Successful save routes back to the stall product list,Functional,Medium,Sunny,Vendor is approved and all required fields are valid,"productName='Daisy Bundle', price=750, stock=8, valid categories and images",1. Complete the form 2. Submit the product 3. Watch the redirect target,The new product flows through the server action successfully and the redirect points back to the stall vendor product list,,,
+TC-SP2-111,US-SP2-15,Auth error handling,Login recovers when the user record is missing and creates a default customer profile,Functional,High,Sunny,User logs in successfully but users table has no row yet,Valid email/password for a new account,1. Log in with a user that has no users row 2. Let the login flow continue 3. Check the fallback write path,The missing role data triggers a fallback upsert into users and customers; the user is treated as a customer and the session continues without a dead end,,,
+TC-SP2-112,US-SP2-15,Auth error handling,Vendor login without vendor row shows the support message,Functional,High,Rainy,Auth user exists with role='vendor' but no vendors row,role='vendor' and no vendor record,1. Log in as the vendor account 2. Let the role lookup run 3. Observe the status text,The missing vendor record blocks the vendor flow; the user sees the support message about not being registered as a vendor; no vendor dashboard redirect happens,,,
+TC-SP2-113,US-SP2-15,Auth error handling,OAuth popup failure surfaces the provider error,Integration,High,Rainy,Google login is available but OAuth setup or popup fails,OAuth redirect or provider error,1. Click Login with Google 2. Let the OAuth call fail 3. Inspect the status message,The OAuth error flows into the login status area; no session is created; the user stays on the login page with a retry option,,,
+TC-SP2-114,US-SP2-15,Auth error handling,User load failure after sign-in stops navigation safely,Integration,High,Rainy,Password sign-in succeeds but getUser fails,Transient auth fetch failure after sign-in,1. Submit valid credentials 2. Force getUser to fail 3. Observe the post-login branch,The failed user fetch blocks the rest of the auth flow; the form reports it cannot load the account; no unsafe redirect occurs,,,
+TC-SP2-115,US-SP2-15,Auth error handling,Profile upsert failure is shown and the user remains on login,Functional,High,Rainy,Login succeeds but users or customers upsert fails,Database error when writing users/customers rows,1. Log in with a new account 2. Force the users upsert to fail 3. Observe the error text,The write failure is surfaced to the user; the session is not treated as complete; no broken redirect happens,,,
+TC-SP2-116,US-SP2-15,Auth error handling,Google login success routes through the callback path,Functional,Medium,Sunny,OAuth provider is configured and callback route exists,Valid Google OAuth flow,1. Click Login with Google 2. Complete provider consent 3. Follow the callback redirect,The auth callback receives the code and the session data flows through the callback path; the user is redirected according to role and vendor type,,,
+TC-SP2-117,US-SP2-15,Auth error handling,Expired session redirects to login instead of showing protected content,Security,High,Rainy,User tries to open a protected page with an expired session,Expired cookie or invalid token,1. Open a protected route with an expired session 2. Let the session check run 3. Observe routing,The session check fails cleanly and redirects to /login; no protected data is rendered; stale auth does not leak into the page,,,
+TC-SP2-118,US-SP2-15,Auth error handling,Session without role falls back to a safe default route,Functional,Medium,Rainy,Authenticated user has no role in the users table,role=null or missing,1. Sign in with a record that lacks a role 2. Let the route selection logic run 3. Observe where the user lands,Missing role data flows to the fallback branch; the user is routed to a safe default route instead of a broken role-specific page,,,
+TC-SP2-110,US-SP2-15,Auth error handling,Login shows a direct auth error message for bad credentials,Functional,High,Rainy,Login form is open and auth is reachable,"email='user@test.com', password='wrong-password'",1. Submit the login form with an invalid password 2. Observe the status text,The auth error from signInWithPassword flows directly into the status message; no redirect occurs; the form stays usable for another attempt,,,

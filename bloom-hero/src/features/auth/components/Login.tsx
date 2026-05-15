@@ -117,6 +117,7 @@ export default function Login() {
             <label className="block text-sm text-gray-700 mb-1">Email</label>
             <input
               type="email"
+              data-testid="login-email"
               className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -136,6 +137,7 @@ export default function Login() {
             </div>
             <input
               type="password"
+              data-testid="login-password"
               className="w-full px-4 py-2 rounded-md border border-gray-300 bg-[#f0e4df] focus:outline-none focus:ring-2 focus:ring-red-300"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -146,6 +148,7 @@ export default function Login() {
           <div className="flex flex-col items-center justify-center gap-3">
             <button
               type="submit"
+              data-testid="login-submit"
               disabled={isSubmitting}
               className="w-full bg-[#d24b46] text-white py-2 rounded-full font-medium hover:bg-red-400 transition cursor-pointer disabled:cursor-not-allowed"
             >
@@ -162,7 +165,7 @@ export default function Login() {
           </div>
 
           {status ? (
-            <p className="text-sm text-center text-gray-700 mt-2">{status}</p>
+            <p data-testid="login-status" className="text-sm text-center text-gray-700 mt-2">{status}</p>
           ) : null}
         </form>
 

@@ -1,0 +1,719 @@
+﻿Test Case ID,User Story ID,Module,Test Title,Test Type,Priority,Case Type,Preconditions,Test Data,Steps to Execute,Expected Result,Actual Result,Status,Remarks
+TC-SP5-001,US-SP5-01,Customer NavBar fixes,NavBar renders correctly for logged-in customer,UI,Critical,Sunny,User is logged in as a customer,Valid customer account,"1. Log in as a customer
+2. Observe the NavBar on any customer-facing page","• NavBar displays BloomHero logo
+• ""Flowers"" and ""Shops"" links are NOT visible
+• Search bar is visible and functional
+• Photo icon and customer name are displayed instead of ""Profile"" text
+• No visual glitch or flicker on load",,,
+TC-SP5-002,US-SP5-01,Customer NavBar fixes,NavBar search bar accepts input and navigates to search results,Functional,High,Sunny,User is logged in as a customer,"Search keyword: ""roses""","1. Log in as a customer
+2. Click on the search bar in the NavBar
+3. Type ""roses""
+4. Press Enter or click the search icon","• Search bar accepts text input
+• User is navigated to the search results page
+• Results for ""roses"" are displayed",,,
+TC-SP5-003,US-SP5-01,Customer NavBar fixes,NavBar displays guest state when not logged in,UI,High,Rainy,User is NOT logged in,No session / logged-out state,"1. Open the app without logging in
+2. Observe the NavBar","• Photo icon and name are NOT shown
+• NavBar shows appropriate guest state (e.g. Login button)
+• No customer-specific links are visible",,,
+TC-SP5-004,US-SP5-01,Customer NavBar fixes,NavBar search bar submitted with empty input,Functional,Medium,Rainy,User is logged in as a customer,"Empty string """"","1. Log in as a customer
+2. Click the search bar
+3. Press Enter without typing anything","• No navigation occurs OR user is taken to search page with empty state message
+• No crash or console error",,,
+TC-SP5-005,US-SP5-01,Customer NavBar fixes,NavBar search bar submitted with special characters,Functional,Medium,Rainy,User is logged in as a customer,"Input: ""!@#$%^&*()""","1. Log in as a customer
+2. Type ""!@#$%^&*()"" in the search bar
+3. Press Enter","• App does not crash
+• Empty state or ""no results"" message is shown
+• No unhandled error displayed to the user",,,
+TC-SP5-006,US-SP5-01,Customer NavBar fixes,NavBar does not expose vendor links for customer role,Security,Critical,Rainy,"User is logged in as a customer (role = ""customer"")",Valid customer account,"1. Log in as a customer
+2. Inspect the NavBar for any vendor-only links (Dashboard, Products, Schedule)
+3. Manually navigate to /vendor/dashboard","• No vendor links are visible in the NavBar
+• Attempting to access /vendor/dashboard redirects or shows unauthorized state",,,
+TC-SP5-007,US-SP5-01,Customer NavBar fixes,NavBar does not glitch to vendor mode after vendor application submission,Functional,Critical,Rainy,User is logged in as a customer and submits a vendor application,Customer account that submits vendor application form,"1. Log in as a customer
+2. Submit a vendor application via the pop-up form
+3.Observe the NavBar immediately after submission","• NavBar does NOT switch to vendor mode after form submission
+• Customer NavBar remains intact until admin approves the application",,,
+TC-SP5-008,US-SP5-01,Customer NavBar fixes,NavBar handles very long customer name without breaking layout,UI,Low,Rainy,User is logged in as a customer with an unusually long name,"Name: ""Mariana Jacinta Evangelista dela Cruz Reyes""","1. Set customer name to a very long string in Account Settings
+2. Observe the NavBar photo icon and name display","• Name is truncated with ellipsis or wraps gracefully
+• NavBar layout does not break or overflow",,,
+TC-SP5-009,US-SP5-02,Product Detail Screen,Product detail page loads with complete information,Functional,Critical,Sunny,User is logged in as a customer; at least one product exists in the DB,"Product: ""White Lilies"", Price: ₱399, Tags: [""Birthday"", ""All-occasion""], 3 images","1. Log in as a customer
+2. Navigate to the landing page or search page
+3. Click on a product card","• Product detail page loads without error
+• Product name, price, tags, and description are displayed
+• At least one product image is shown
+• Add to Cart and Buy Now buttons are visible",,,
+TC-SP5-010,US-SP5-02,Product Detail Screen,Multiple product photos can be swiped through,Functional,High,Sunny,Product has 3 or more images in the DB,Product with 3 images,"1. Navigate to a product detail page with multiple images
+2. Click or swipe to the next image
+3. Continue through all available images","• All images are accessible via swipe or click navigation
+• Image indicator (dots or counter) updates correctly
+• No images are broken or missing",,,
+TC-SP5-011,US-SP5-02,Product Detail Screen,Product detail page for product with no images shows fallback,UI,Medium,Rainy,A product exists in the DB with no images uploaded,Product with null product_image_url,1. Navigate to the detail page of a product with no image,"• Fallback image placeholder is displayed
+• Page does not crash or show broken image icon",,,
+TC-SP5-012,US-SP5-02,Product Detail Screen,Product detail page for non-existent product ID,Functional,High,Rainy,User is logged in as a customer,URL: /customer/product/invalid-id-9999,1. Manually navigate to a product detail URL with an invalid/non-existent product ID,"• 404 page or ""Product not found"" message is shown
+• App does not crash",,,
+TC-SP5-013,US-SP5-02,Product Detail Screen,Add to Cart while not logged in prompts login,Functional,High,Rainy,User is NOT logged in,No session / logged-out state,"1. Navigate to a product detail page without logging in
+2. Click ""Add to Cart""","• User is redirected to the login page OR a login prompt is shown
+• Item is not silently added to an anonymous cart",,,
+TC-SP5-014,US-SP5-02,Product Detail Screen,Add to Cart with quantity set to 0 or negative value,Functional,Medium,Rainy,User is logged in as a customer,"Quantity: 0, then -1","1. Navigate to a product detail page
+2. Manually set quantity to 0
+3. Click ""Add to Cart""
+4. Repeat with quantity set to -1","• Validation error is shown (e.g. ""Quantity must be at least 1"")
+• Item is NOT added to cart",,,
+TC-SP5-015,US-SP5-02,Product Detail Screen,Product detail page handles slow or no network gracefully,Functional,Medium,Rainy,User is logged in as a customer; network throttled to slow 3G or offline in DevTools,Any product detail page,"1. Open DevTools and set network to ""Slow 3G"" or ""Offline""
+2. Navigate to a product detail page","• Loading state or skeleton is shown while fetching
+• If offline, a graceful error message is displayed
+• Page does not crash or show blank white screen",,,
+TC-SP5-016,US-SP5-02,Product Detail Screen,Product with no tags displays gracefully without errors,UI,Low,Rainy,A product exists in the DB with no tags assigned,Product with empty tags array ],"1. Navigate to the detail page of a product with no tags
+2. Observe the tags section","• Tags section is hidden or shows ""No tags"" gracefully
+• No null reference error or broken UI",,,
+TC-SP5-017,US-SP5-03,Account Settings Page,Account Settings page loads with existing user data pre-filled,Functional,Critical,Sunny,User is logged in as a customer with existing profile data,"Name: ""Arianna Rufila"", Contact: ""09123456789"", Address: ""Cebu City""","1. Log in as a customer
+2. Navigate to Account Settings via the NavBar","• Full name field is pre-filled with current name
+• Contact number field is pre-filled
+• Shipping address field is pre-filled
+• Change password fields are empty by default",,,
+TC-SP5-018,US-SP5-03,Account Settings Page,Customer can update full name successfully,Functional,High,Sunny,User is logged in as a customer,"New name: ""Arianna A. Rufila""","1. Navigate to Account Settings
+2. Clear the full name field
+3. Type ""Arianna A. Rufila""
+4. Click Save","• Success message or toast is shown
+• NavBar photo + name updates to reflect new name
+• Name is persisted on page refresh",,,
+TC-SP5-019,US-SP5-03,Account Settings Page,Customer submits Account Settings with empty full name,Functional,High,Rainy,User is logged in as a customer,"Full name: """" (empty)","1. Navigate to Account Settings
+2. Clear the full name field completely
+3. Click Save","• Validation error is shown: ""Full name is required"" or similar
+• Data is NOT saved to the database",,,
+TC-SP5-020,US-SP5-03,Account Settings Page,Password change fails when new password and confirm password do not match,Functional,High,Rainy,User is logged in as a customer,"New password: ""NewPass456!"", Confirm: ""NewPass789!""","1. Navigate to Account Settings
+2. Enter a new password
+3. Enter a different value in the confirm password field
+4. Click Save","• Validation error: ""Passwords do not match"" or similar
+• Password is NOT changed in Supabase",,,
+TC-SP5-021,US-SP5-03,Account Settings Page,Password change fails when new password is too short or weak,Functional,High,Rainy,User is logged in as a customer,"New password: ""abc""","1. Navigate to Account Settings
+2. Enter ""abc"" as new password
+3. Confirm ""abc""
+4. Click Save","• Validation error is shown (e.g. ""Password must be at least 8 characters"")
+• Password is NOT updated",,,
+TC-SP5-022,US-SP5-03,Account Settings Page,Unauthenticated user cannot access Account Settings,Security,Critical,Rainy,User is NOT logged in,No session; URL: /customer/settings,"1. Without logging in, navigate directly to /customer/settings","• User is redirected to the login page
+• Account settings data is NOT accessible",,,
+TC-SP5-023,US-SP5-03,Account Settings Page,Save fails when contact number has invalid format,Functional,Medium,Rainy,User is logged in as a customer,"Contact number: ""abcd1234"", ""123"", ""+63 999 999""","1. Navigate to Account Settings
+2. Enter an invalid contact number format
+3. Click Save","• Validation error is shown: ""Enter a valid contact number"" or similar
+• Data is NOT saved to the database",,,
+TC-SP5-024,US-SP5-03,Account Settings Page,Save fails when shipping address field is empty,Functional,Medium,Rainy,User is logged in as a customer,"Shipping address: """" (empty)","1. Navigate to Account Settings
+2. Clear the shipping address field completely
+3. Click Save","• User is redirected to the login page
+• Account settings data is NOT accessible",,,
+TC-SP5-025,US-SP5-04,Landing Page Updates,Best sellers grid loads correctly,Functional,High,Sunny,Homepage accessible,Product dataset with ≥4 items,"1. Navigate to homepage
+2. Observe best sellers grid layout
+3. Click a category chip",• Grid shows products in correct layout,,,
+TC-SP5-026,US-SP5-04,Landing Page Updates,Category chips missing data,Functional,Medium,Rainy,Category dataset incomplete,Category list missing “Roses”,"1. Navigate to homepage
+2. Observe best sellers grid layout
+3. Click a category chip with missing data",• “No products available” message,,,
+TC-SP5-027,US-SP5-04,Landing Page Updates,Grid breaks on slow network,UI,Medium,Rainy,Simulate slow connection,Product dataset,"1. Simulate slow network connection
+2. Navigate to homepage
+3. Wait for grid to load
+4. Check if spinner appears",• Loading spinner until grid loads,,,
+TC-SP5-028,US-SP5-04,Landing Page Updates,Invalid category chip selection,Functional,Critical,Rainy,User clicks invalid chip,Chip ID=null,"1. Inject invalid CSS stylesheet
+2. Reload homepage
+3. Observe grid and chip layout
+4. Verify if page degrades gracefully","1. Open browser
+2. Navigate to homepage
+3. Observe best sellers grid layout
+4. Click a category chip",,,
+TC-SP5-029,US-SP5-05,Search Page Fixes,Dropdown filter works correctly,Functional,High,Sunny,User logged in,Query: “Tulips”,"1. Login as user
+2. Enter search term “Tulips”
+3. Apply dropdown filter
+4. Verify results list",• Results filtered correctly,,,
+TC-SP5-030,US-SP5-05,Search Page Fixes,4-per-line layout breaks,UI,Medium,Rainy,Product dataset ≥8 items,Search “Roses”,"1. Login as user
+2. Enter search term “Roses”
+3. Observe product layout
+4. Verify items align 4 per row",• Products aligned 4 per row,,,
+TC-SP5-031,US-SP5-05,Search Page Fixes,Button radius not applied,UI,Medium,Rainy,User logged in,Search query,"1. Login as user
+2. Enter any search term
+3. Observe search button styling
+4. Verify button radius applied",• Rounded corners applied,,,
+TC-SP5-032,US-SP5-05,Search Page Fixes,Filter query causes timeout,Functional,Critical,Rainy,DB connection slow,Query: “Orchids”,"1. Simulate slow DB connection
+2. Enter search term “Orchids”
+3. Apply dropdown filter
+4. Observe system response",• Timeout message shown,,,
+TC-SP5-033,US-SP5-06,Vendor Sidebar,Sidebar loads with vendor profile,Functional,High,Sunny,Vendor logged in,Vendor: “Tulip Shop”,"1. Login as vendor
+2. Navigate to vendor dashboard
+3. Open sidebar
+4. Verify profile info displays",• Profile info displays,,,
+TC-SP5-034,US-SP5-06,Vendor Sidebar,Missing schedule data handled,Functional,Medium,Rainy,Vendor schedule empty,Vendor: “Rose Garden”,"1. Login as vendor with empty schedule
+2. Navigate to vendor dashboard
+3. Open sidebar then schedule tab
+4. Observe system response",• “No schedule available” message,,,
+TC-SP5-035,US-SP5-06,Vendor Sidebar,Requests tab fails on slow API,Functional,Critical,Rainy,API delay simulated,Vendor: “Orchid House”,"1. Simulate slow API response
+2. Login as vendor
+3. Open sidebar then requests tab
+4. Verify spinner or fallback message",• Spinner until data loads,,,
+TC-SP5-036,US-SP5-06,Vendor Sidebar,Unauthorized user access,Functional,Critical,Rainy,Customer logged in,Customer account,"1. Login as customer (not vendor)
+2. Navigate to vendor dashboard
+3. Attempt to open sidebar
+4. Observe access control behavior",• Access denied,,,
+TC-SP5-037,US-SP5-07,Product Images,Retrieve product with multiple images successfully,Functional,High,Sunny,Product exists with multiple images in DB,Product ID with multiple images,"1. Call Product API
+2. Pass valid product ID
+3. Observe response","• Response includes array of image URLs
+• All associated images are returned
+• UI displays all images correctly",,,
+TC-SP5-038,US-SP5-07,Product Images,Product has no images,Functional,Medium,Rainy,Product exists without images,Product ID with no images,"1. Call Product API
+2. Pass product ID with no images","• Empty image array OR default image returned
+• UI shows placeholder image
+• No crash occurs",,,
+TC-SP5-039,US-SP5-07,Product Images,Duplicate image entries in DB,Functional,Medium,Rainy,Product has duplicate image records,Product ID with duplicate images,"1. Call Product API
+2. Observe image list","• Duplicate images are handled gracefully
+• No duplicate display OR UI handles properly",,,
+TC-SP5-040,US-SP5-07,Product Images,Broken image URLs returned,Functional,Medium,Rainy,Product has at least one invalid image URL,Product ID with broken image URL,"1. Call Product API
+2. Load images in UI","• Broken images do not crash UI
+• Placeholder/fallback image displayed",,,
+TC-SP5-041,US-SP5-08,Product Category,Retrieve products by category successfully,Functional,High,Sunny,Category exists with products,Valid category ID,"1. Call Category API
+2. Pass valid category ID","• List of products returned
+• Product details are correct
+• UI displays products properly",,,
+TC-SP5-042,US-SP5-08,Product Category,Invalid category ID,Functional,High,Rainy,None,Invalid category ID,"1. Call Category API
+2. Pass invalid category ID","• Error response returned (e.g., 404)
+• No products returned",,,
+TC-SP5-043,US-SP5-08,Product Category,Category exists but has no products,Functional,Medium,Rainy,Category exists but empty,Valid empty category ID,"1. Call Category API
+2. Pass category ID","• Empty list returned
+• UI shows """"No products available""",,,
+TC-SP5-044,US-SP5-08,Product Category,Large number of products in category,Functional,Medium,Rainy,Category has many products,Valid category ID,"1. Call Category API
+2. Observe response time and pagination","• Pagination or limit applied
+• Response time acceptable
+• No UI lag",,,
+TC-SP5-045,US-SP5-09,Product Search,Search using “all” filter successfully,Functional,High,Sunny,Products and vendors exist,Keyword + filter = all,"1. Call Search API
+2. Enter keyword
+3. Set filter to ""all""","• Returns both products and vendors
+• Relevant results displayed",,,
+TC-SP5-046,US-SP5-09,Product Search,Search returns no results,Functional,Medium,Rainy,No matching data exists,Random keyword,"1. Call Search API
+2. Enter non-existing keyword","• Empty result returned
+• UI shows ""No results found""",,,
+TC-SP5-047,US-SP5-09,Product Search,Filter by flowers only,Functional,High,Rainy,Products exist,Keyword + filter = flowers,"1. Call Search API
+2. Set filter to ""flowers""","• Only product results returned
+• No vendor data included",,,
+TC-SP5-048,US-SP5-09,Product Search,Filter by vendors only,Functional,High,Rainy,Vendors exist,Keyword + filter = vendors,"1. Call Search API
+2. Set filter to ""vendors""","• Only vendor results returned
+• No product data included",,,
+TC-SP5-049,US-SP5-10,Product Search,Search with special characters / malicious input,Security,High,Rainy,None,"Keyword = ""' OR 1=1 --""","1. Call Search API
+2. Enter malicious input","• Input sanitized
+• No system crash
+• No unintended data returned",,,
+TC-SP5-050,US-SP5-10,Product Order Freq ,Retrieve best sellers sorted by order frequency,Functional,High,Sunny,Products have order history,None,"1. Call Best Sellers API
+2. Observe product list","• Products sorted by highest order count
+• Correct ranking displayed",,,
+TC-SP5-051,US-SP5-10,Product Order Freq ,No order data available,Functional,Medium,Rainy,No orders exist,None,1. Call Best Sellers API,"• Empty list OR fallback response
+• UI handles gracefully",,,
+TC-SP5-052,US-SP5-10,Product Order Freq ,Tie in order frequency,Functional,Low,Rainy,Multiple products have same order count,None,"1. Call Best Sellers API
+2. Observe sorting","• Secondary sorting applied
+• Order remains consistent",,,
+TC-SP5-053,US-SP5-10,Product Order Freq ,Product deleted but exists in order history,Functional,High,Rainy,Deleted product exists in past orders,None,"1. Call Best Sellers API
+2. Observe results","• Product excluded OR marked unavailable
+• No broken references",,,
+TC-SP5-054,US-SP5-11,Vendor Role Promotion Flow,New credential login succeeds,Functional,High,Sunny,User exists with non-vendor role and approved vendor application pending.,"userEmail:""test@email.com""; issuedCredentials: new password/token sent to email used in application","1. Admin opens vendor applications
+2. Admin approves application
+3. Admin triggers role promotion and credential issuance
+4. User logs out from old session (if active)
+5. User logs in with newly issued credentials","• New credentials are generated and delivered through secure channel
+• First login with new credentials succeeds
+• User is router to appropriate vendor dashboard
+• Activity log records approver, timestamp, and action",,Passed,
+TC-SP5-055,US-SP5-11,Vendor Role Promotion Flow,Customer retains access after vendor approval,Functional,Medium,Sunny,Customer account exists and has an approved vendor application,Customer user credentials,"1. Log out of all sessions.
+2. Log in using the customer account credentials.
+3. Navigate through customer pages such as dashboard, cart, and profile.","• Customer can still log in using the original customer account.
+• Customer is routed to the customer dashboard.
+• Customer-only features remain available.
+• No forced vendor-only routing occurs for the customer session.",,Passed,
+TC-SP5-056,US-SP5-11,Vendor Role Promotion Flow,Prevent non-admin from promoting user role,Security,High,Rainy,Non-admin user account exists and logged in. Vendor application exists for an applicant.,Test applicant for target user,"1. Non-admin attempts to access admin vendor approval page
+2. Non-admin attempts direct API call to promote role","• Access is denied for UI route
+• Backend blocks direct API request
+• No role change occurs
+• Activity logs capture unauthorized attempt",,Passed,
+TC-SP5-057,US-SP5-11,Vendor Role Promotion Flow,Customer role is not overwritten during approval,Functional,Medium,Rainy,Applicant has a customer account. Admin is able to approve vendor applications.,Initial role: customer; approved vendor application record,"1. Approve the applicant
+2. Inspect the user record after approval
+3. Log in as the customer again","• Customer role remains unchanged.
+• Vendor creation does not replace the customer account.
+• The applicant can still access the site as a customer.",,Passed,
+TC-SP5-058,US-SP5-11,Vendor Role Promotion Flow,Vendor credentials are rejected when using customer password,Security,Medium,Rainy,Customer and vendor access both exist for the same applicant email,existing user credential and newly issued vendor credential,"1. Try logging in to vendor access using the customer password
+2. Try logging in with the vendor password","• Customer password does not grant vendor access.
+• Vendor password only works for vendor access.
+• Credential separation is enforced.",,Passed,
+TC-SP5-059,US-SP5-11,Vendor Role Promotion Flow,Existing customer session remains valid after vendor account issuance,Functional,Medium,Rainy,Applicant is already logged in as a customer. Admin approves the vendor application while the customer session is active.,Active customer session,"1. Keep customer session open.
+2. Approve the applicant as a vendor from admin side.
+3. Return to the customer session and continue browsing.
+4. Refresh the page and navigate to customer features.","• Customer session remains valid.
+• Customer can continue using customer pages.
+• Vendor issuance does not invalidate the customer session.
+• No unexpected logout or redirect occurs.",,Passed,
+TC-SP5-060,US-SP5-11,Vendor Role Promotion Flow,Bulk approval issues vendor credentials to multiple applicants,Functional,Medium,Rainy,Multiple vendor applications are pending,Applicant A: a@example.com; Applicant B: b@example.com; Applicant C: c@example.com,"1. Select multiple pending applications.
+2. Click bulk approve.
+3. Verify email delivery for each applicant.
+4. Log in with one or more issued vendor accounts.","• All selected applicants are approved successfully.
+• Each customer email receives the correct vendor credential message.
+• No cross-account credential mix-up occurs.",,Passed,
+TC-SP5-061,US-SP5-11,Vendor Role Promotion Flow,Approval fails when vendor credential email cannot be delivered,Functional,Medium,Rainy,Credential delivery service is unavailable or configured to fail,"applicantEmail:""test@email.com""","1. Approve the application.
+2. Observe credential generation and delivery result.
+3. Retry or inspect system status.","• System reports delivery failure clearly.
+• Admin sees a meaningful error or retry state.
+• No silent approval occurs without a delivery record.
+• Vendor access is not left in an unknown state.",,Passed,
+TC-SP5-062,US-SP5-12,Pop-up scheduling and customer profile reflection,Vendor creates a valid pop-up schedule and the customer profile shows the same schedule,Integration,High,Sunny,"Vendor is logged in, vendor is approved, and both vendor schedule and customer profile pages are available",Date: 2026-04-18; Time: 2:00 PM to 5:00 PM; Location: Greenway Market; Notes: April bloom showcase,"1. Open the pop-up schedule page
+
+2. Click New Schedule
+
+3. Enter a valid date, time, location, and notes
+
+4. Save the schedule
+
+5. Open the customer profile page in a separate session
+
+6. Verify the newly saved schedule details","- Schedule is saved successfully
+
+- the vendor schedule view shows the new entry
+
+- and the customer profile reflects the same schedule details without mismatch",,,
+TC-SP5-063,US-SP5-12,Pop-up scheduling and customer profile reflection,Vendor creates a second valid schedule entry and the customer profile stays in sync,Integration,High,Sunny,Vendor is logged in and an initial schedule already exists,Date: 2026-04-25; Time: 9:00 AM to 12:00 PM; Location: Lakeside Plaza; Notes: Weekend pop-up,"1. Open the pop-up schedule page
+
+2. Add a second valid schedule entry
+
+3. Save the entry
+
+4. Open the customer profile page
+
+5. Compare the list of schedules shown there","- The new schedule is added once
+
+- the customer profile shows both entries in the expected order
+
+- and no stale schedule is removed",,,
+TC-SP5-064,US-SP5-12,Pop-up scheduling and customer profile reflection,Customer profile correctly shows a newly updated schedule after vendor edits the date,Integration,High,Sunny,Vendor is logged in and an existing schedule can be edited,Updated Date: 2026-04-19; Updated Time: 1:00 PM to 4:00 PM; Updated Location: Eastside Market,"1. Open an existing schedule on the vendor side
+
+2. Edit the schedule date, time, or location
+
+3. Save the changes
+
+4. Open the customer profile page
+
+5. Verify the reflected schedule details","- The customer profile reflects the edited schedule fields exactly as saved
+
+- and the previous values are no longer shown",,,
+TC-SP5-065,US-SP5-12,Pop-up scheduling and customer profile reflection,Schedule save is blocked when the date field is missing,Integration,High,Rainy, Vendor is logged in and on the pop-up schedule form,Time: 2:00 PM; Location: Greenway Market; Date: blank,"1. Open the pop-up schedule form
+
+2. Leave the date field empty
+
+3. Fill time and location with valid values
+
+4. Click Save","- Inline validation appears for the missing date
+
+- the form is not submitted
+
+- and no schedule row is created in the database",,,
+TC-SP5-066,US-SP5-12,Pop-up scheduling and customer profile reflection,Schedule save is blocked when the time field is invalid,Integration,High,Rainy,Vendor is logged in and on the pop-up schedule form,Date: 2026-04-18; Time: 25:61; Location: Greenway Market,"1. Open the pop-up schedule form
+
+2. Enter an invalid time value
+
+3. Keep the date and location valid
+
+4. Click Save","- The form rejects the invalid time format
+
+- the error message is visible
+
+- and the schedule is not persisted",,,
+TC-SP5-067,US-SP5-12,Pop-up scheduling and customer profile reflection,Duplicate schedule submission does not create duplicate rows,Integration,High,Rainy,Vendor is logged in and the same valid form is submitted twice quickly,Date: 2026-04-18; Time: 2:00 PM to 5:00 PM; Location: Greenway Market,"1. Open the pop-up schedule form
+
+2. Submit a valid schedule
+
+3. Immediately click Save again or resubmit the form
+
+4. Refresh the schedule list","- Only one schedule record exists in the database
+
+- the UI does not show duplicate cards
+
+- and the second submission is ignored or safely deduplicated",,,
+TC-SP5-068,US-SP5-12,Pop-up scheduling and customer profile reflection,Network timeout during schedule save preserves the user input,Integration,High,Rainy,1. Vendor is logged in and the network request is delayed or times out,"Valid schedule payload with date, time, and location","1. Open the pop-up schedule form
+
+2. Fill in valid data
+
+3. Submit while the request is forced to time out
+
+4. Observe the timeout state","- An error or timeout state is shown
+
+- entered values remain visible for retry
+
+- and no partial schedule is written",,,
+TC-SP5-069,US-SP5-12,Pop-up scheduling and customer profile reflection,Unauthorized customer session does not expose vendor-only schedule editing,Security,High,Rainy,1. User is logged in as a customer and tries to reach a vendor schedule editor,Direct URL to the pop-up schedule editor,"1. Log in as a customer
+
+2. Open the schedule management route directly
+
+3. Observe access behavior","- The customer is denied access or redirected appropriately
+
+- and no vendor schedule controls are visible or actionable",,,
+TC-SP5-070,US-SP5-12,Pop-up scheduling and customer profile reflection,Customer profile shows an empty schedule state when backend returns no records,Integration,Medium,Rainy,1. Customer account exists and the vendor has no schedules yet,No schedule records for the vendor,"1. Log in as the customer
+
+2. Open the customer profile page
+
+3. Refresh the page once more to confirm state consistency","- The profile shows a clear empty state
+
+- it does not display outdated schedule content
+
+- and refresh keeps the same result",,,
+TC-SP5-071,US-SP5-12,Pop-up scheduling and customer profile reflection,Validation error for overlapping schedules prevents conflicting booking,Integration,High,Rainy,1. Vendor is logged in and an existing schedule already occupies the same time slot,Date: 2026-04-18; Time: 2:00 PM to 5:00 PM; Location: Greenway Market,"1. Open the pop-up schedule form
+
+2. Enter a time range that overlaps an existing schedule
+
+3. Click Save","- The conflict is detected
+
+- the system rejects the save
+
+- and the user is informed that the time slot is already occupied",,,
+TC-SP5-072,US-SP5-12,Pop-up scheduling and customer profile reflection,Saving schedule with long notes does not truncate or corrupt the customer view,Integration,Medium,Rainy,1. Vendor is logged in and can save a schedule note longer than the default preview size,Notes field with 500+ characters,"1. Open the pop-up schedule form
+
+2. Enter a long note
+
+3. Save the schedule
+
+4. Open the customer profile schedule section","- The long note saves successfully or is intentionally constrained with a visible limit
+
+- and the customer profile shows the same text without corruption",,,
+TC-SP5-073,US-SP5-12,Pop-up scheduling and customer profile reflection,Editing one schedule leaves another vendor schedule unchanged,Integration,Medium,Rainy,1. Vendor has at least two schedules saved,Schedule A and Schedule B with different dates and locations,"1. Open Schedule A
+
+2. Change its time or location
+
+3. Save the change
+
+4. Check Schedule B in the list and on the customer profile","- Only the targeted schedule changes
+
+- other schedules remain unchanged
+
+- and the profile mirrors the correct record for each entry",,,
+TC-SP5-074,US-SP5-12,Pop-up scheduling and customer profile reflection,Rapid navigation away from the schedule form does not drop the in-progress draft unexpectedly,Integration,Low,Rainy,1. Vendor is logged in and has entered unsaved schedule data,Partially completed schedule form,"1. Open the schedule form
+
+2. Enter several fields
+
+3. Navigate away without saving
+
+4. Return to the form",- The app follows the intended draft behavior consistently: either it warns about unsaved changes or clearly resets the form without showing corrupted state,,,
+TC-SP5-075,US-SP5-13,Pop-up profile polishing and database integration,Vendor edits pop-up profile details and both vendor and customer views reflect the saved data,Integration,High,Sunny,"1. Vendor is logged in, vendor profile page is accessible, and customer-facing profile page is available",Shop name: Bloom Hero Pop-Up; Contact number: 0917-555-0123; Short description: Seasonal blooms for weekend markets,"1. Open the pop-up profile page
+
+2. Update the profile fields with valid values
+
+3. Save the changes
+
+4. Open the vendor profile again to confirm persistence
+
+5. Open the customer-facing profile page and compare the displayed details","- Profile changes are saved in the database
+
+- and they are shown consistently on both the vendor side and the customer-facing side",,,
+TC-SP5-076,US-SP5-13,Pop-up profile polishing and database integration,Vendor updates profile contact number and it is reflected in customer-facing view,Integration,High,Sunny,1. Vendor is logged in and customer-facing profile data is visible,Contact number: 0917-777-8888,"1. Open the pop-up profile page
+
+2. Change the contact number
+
+3. Save the profile
+
+4. Open the customer-facing page and verify the displayed contact number",- The new contact number is saved and displayed consistently across both views without showing the old value,,,
+TC-SP5-077,US-SP5-13,Pop-up profile polishing and database integration,Vendor updates profile description and the text persists after refresh,Integration,Medium,Sunny,1. Vendor is logged in and editing the profile text fields,Description: Same-day delivery for weekend pop-ups,"1. Open the profile editor
+
+2. Update the description
+
+3. Save changes
+
+4. Refresh the profile page
+
+5. Confirm the description remains present",- The updated description persists after refresh and is shown in the vendor view exactly as saved,,,
+TC-SP5-078,US-SP5-13,Pop-up profile polishing and database integration,Invalid phone number format is rejected before database save,Integration,High,Rainy,1. Vendor is logged in and on the pop-up profile edit form,Contact number: abc-123-xyz,"1. Open the pop-up profile form
+
+2. Enter a non-numeric phone value
+
+3. Keep all other fields valid
+
+4. Click Save","- The form shows a validation error for the contact number
+
+- the save is blocked
+
+- and the database is unchanged",,,
+TC-SP5-079,US-SP5-13,Pop-up profile polishing and database integration,Empty required shop name prevents save and keeps previous database value,Integration,High,Rainy,1. Vendor is logged in and has an existing saved shop name,Shop name: blank,"1. Open the profile editor
+
+2. Clear the shop name field
+
+3. Submit the form","- The form refuses to save
+
+- the previous shop name remains in the database
+
+- and the user sees an explanatory error",,,
+TC-SP5-080,US-SP5-13,Pop-up profile polishing and database integration,Image upload failure leaves previous profile photo intact,Integration,High,Rainy,1. Vendor has an existing profile image and upload is forced to fail,Unsupported file type or server-side image upload error,"1. Open the profile page
+
+2. Attempt to replace the profile photo
+
+3. Force the upload to fail
+
+4. Refresh the profile page","- The old photo remains visible
+
+- no broken image is shown
+
+- and the failed upload does not clear existing profile data",,,
+TC-SP5-081,US-SP5-13,Pop-up profile polishing and database integration,Partial save failure does not store mixed old and new profile fields,Integration,High,Rainy,1. Vendor is logged in and backend returns a failure after the request starts,New shop name plus new contact number and forced server error,"1. Change multiple profile fields
+
+2. Save while the backend fails midway
+
+3. Reopen the page and inspect the persisted values","- The profile is either fully saved or fully rejected
+
+- mixed state is not stored
+
+- and the UI matches the final database state",,,
+TC-SP5-082,US-SP5-13,Pop-up profile polishing and database integration,Concurrent edits from two sessions resolve to the latest successful save,Integration,High,Rainy,1. Vendor profile is open in two browser sessions,Session A and Session B editing different fields,"1. Update the profile in Session A but do not refresh Session B
+
+2. Save Session A
+
+3. Save Session B with a different field or older value
+
+4. Refresh the page in both sessions","- The system follows the intended conflict strategy
+
+- the final persisted profile is predictable
+
+- and the user is not left with corrupted merged data",,,
+TC-SP5-083,US-SP5-13,Pop-up profile polishing and database integration,Long profile text is stored and rendered without breaking layout,UI,Medium,Rainy,1. Vendor is logged in and can enter a long bio or description,Description with several paragraphs of text,"1. Open the profile editor
+
+2. Paste a long description
+
+3. Save
+
+4. Open the profile display view","- The long text is stored successfully or appropriately constrained
+
+- and it renders without breaking the card or page layout",,,
+TC-SP5-084,US-SP5-13,Pop-up profile polishing and database integration,Customer view does not expose vendor-only edit controls,Security,Medium,Rainy,1. Customer is logged in and opens a vendor profile page,Customer-facing profile route,"1. Open the vendor profile page as a customer
+
+2. Inspect the available controls
+
+3. Try to locate edit actions","- The customer sees read-only profile content
+
+- vendor edit controls are absent
+
+- and no database write action is available",,,
+TC-SP5-085,US-SP5-13,Pop-up profile polishing and database integration,Saving profile with unchanged data does not create redundant database writes,Integration,Low,Rainy,1. Vendor is logged in and profile data already matches the current form values,No changes made to the existing profile fields,"1. Open the profile page
+
+2. Leave all values unchanged
+
+3. Click Save
+
+4. Observe the request or final state","- The app either avoids unnecessary writes or completes a harmless no-op save
+
+- and the profile remains unchanged",,,
+TC-SP5-086,US-SP5-13,Pop-up profile polishing and database integration,Profile save after a failed request succeeds on retry without duplicating the record,Integration,Medium,Rainy,1. Vendor is logged in and the first profile save attempt is forced to fail,Valid updated shop name and contact number,"1. Edit the profile fields
+
+2. Force the first save attempt to fail
+
+3. Retry the same save
+
+4. Refresh the profile page","- The retry succeeds with one final saved profile state
+
+- the user does not end up with duplicated rows or repeated media attachments",,,
+TC-SP5-110,US-SP5-13,Pop-up profile polishing and database integration,Concurrent profile edit from a second session does not overwrite the latest valid change unexpectedly,Integration,High,Rainy,1. Vendor is logged in on two browser sessions and both can edit the profile,Session A updates shop name; Session B updates contact number,"1. Save a profile update in Session A
+
+2. Without refreshing Session B, save a different update
+
+3. Refresh both sessions","- The final saved profile reflects the expected conflict strategy
+
+- and the resulting database record is not corrupted or partially merged",,,
+TC-SP5-087,US-SP5-14,Vendor pop-up side navigation,"Active sidebar tab and route switching work across dashboard, products, profile, and schedule",UI,High,Sunny,1. Vendor is logged in and using a pop-up vendor account,"Routes: /pop-up/dashboard, /pop-up/products, /pop-up/profile, /pop-up/schedule","1. Open /pop-up/dashboard
+
+2. Click Products, then Profile, then Schedule from the sidebar
+
+3. Observe the highlighted active tab after each navigation","- The sidebar highlights the correct active tab on each page
+
+- navigation lands on the correct route
+
+- and no tab label or icon becomes misaligned",,,
+TC-SP5-088,US-SP5-14,Vendor pop-up side navigation,Sidebar preserves active state after browser refresh on every tab,UI,High,Sunny,1. Vendor is logged in and each route is reachable,"Routes: /pop-up/dashboard, /pop-up/products, /pop-up/profile, /pop-up/schedule","1. Open a pop-up route
+
+2. Refresh the browser
+
+3. Confirm the correct item remains active
+
+4. Repeat for each route","- After refresh, the active tab still matches the current route and the selected state is consistent across all sidebar destinations",,,
+TC-SP5-089,US-SP5-14,Vendor pop-up side navigation,Sidebar icons and labels remain aligned at desktop width,UI,Medium,Sunny,1. Vendor is logged in on a standard desktop viewport,Standard desktop viewport around 1440 px wide,"1. Open a pop-up vendor page
+
+2. Inspect the sidebar rows for all tabs
+
+3. Compare icon and label alignment across items","- All sidebar items align consistently
+
+- no icon or text shifts vertically
+
+- and the active item remains visually distinct",,,
+TC-SP5-090,US-SP5-14,Vendor pop-up side navigation,Mobile layout collapses and causes the sidebar to overflow horizontally,UI,High,Rainy,1. Vendor is logged in and browser width is reduced to mobile size,Viewport around 320 to 375 px wide,"1. Open a pop-up page
+
+2. Reduce the browser width to a mobile size
+
+3. Scroll horizontally and vertically
+
+4. Check the sidebar container","- The sidebar still fits within the viewport or uses the intended responsive pattern
+
+- no horizontal overflow or clipped controls are present",,,
+TC-SP5-091,US-SP5-14,Vendor pop-up side navigation,Long tab labels do not wrap in a way that breaks card height,UI,Medium,Rainy,1. Vendor is logged in and the sidebar is rendered at a narrow but usable width,Long tab labels plus narrow viewport,"1. Open the pop-up sidebar
+
+2. Resize the viewport until labels are close to wrapping
+
+3. Verify each row's height and text behavior","- Tab labels remain readable
+
+- row heights stay consistent
+
+- and the sidebar does not become misaligned or cut off",,,
+TC-SP5-092,US-SP5-14,Vendor pop-up side navigation,Direct deep link to schedule keeps the schedule tab highlighted,Integration,Medium,Rainy,1. Vendor is logged in and can access schedule directly,Direct URL to /pop-up/schedule,"1. Paste /pop-up/schedule into the browser
+
+2. Load the page directly
+
+3. Confirm the sidebar highlight",- The schedule tab is immediately highlighted and the page content corresponds to the schedule route,,,
+TC-SP5-093,US-SP5-14,Vendor pop-up side navigation,Unauthorized access to vendor route is redirected before menu interaction,Security,High,Rainy,1. User is logged out or has insufficient vendor permissions,Direct URL to /pop-up/products,"1. Open a pop-up vendor route without vendor privileges
+
+2. Wait for auth resolution
+
+3. Attempt to interact with the sidebar","- The user cannot interact with vendor sidebar items on the protected route
+
+- and is redirected or blocked as expected",,,
+TC-SP5-094,US-SP5-14,Vendor pop-up side navigation,Sidebar links continue to work when the page is already scrolled,UI,Low,Rainy,1. Vendor is logged in and on a long page with scroll position away from top,Any pop-up vendor page with substantial content,"1. Scroll down on a pop-up page
+
+2. Click a sidebar link
+
+3. Observe navigation and active state","- Navigation succeeds from a scrolled position
+
+- and the selected tab state updates correctly after the route changes",,,
+TC-SP5-095,US-SP5-14,Vendor pop-up side navigation,Repeated clicks on the same sidebar item do not trigger broken navigation state,UI,Low,Rainy,1. Vendor is logged in and already on a pop-up route,Same active route repeated clicks,"1. Click the currently active sidebar area or repeatedly click the same destination from another page
+
+2. Observe behavior","- The app remains stable
+
+- no duplicate navigation loops or console-breaking UI state appears
+
+- and the active route stays correct",,,
+TC-SP5-096,US-SP5-14,Vendor pop-up side navigation,Keyboard focus order reaches sidebar items in a usable sequence,UI,Medium,Rainy,1. Vendor is logged in and using keyboard navigation,Tab key navigation on desktop,"1. Open a pop-up vendor page
+
+2. Use Tab to move through focusable items
+
+3. Observe the order across sidebar items and sign out","- Keyboard focus moves in a logical order
+
+- sidebar links are reachable
+
+- and focus does not get trapped or skip items unexpectedly",,,
+TC-SP5-097,US-SP5-14,Vendor pop-up side navigation,Active state remains visible when the sidebar is scrolled inside a constrained viewport,UI,Low,Rainy,1. Vendor is logged in and the viewport height is reduced enough that the sidebar requires scrolling,Small viewport with long sidebar content,"1. Resize the browser so the sidebar is vertically constrained
+
+2. Scroll through the sidebar
+
+3. Verify the active item remains visible or identifiable","- The active tab remains visually identifiable even when the sidebar is scrolled, and the current route is not lost in the list",,,
+TC-SP5-098,US-SP5-14,Vendor pop-up side navigation,Sign Out button is reachable and does not change active page selection before logout completes,Security,Medium,Rainy,1. Vendor is logged in on a pop-up vendor page,Current route with active sidebar item,"1. Open any pop-up vendor page
+
+2. Click Sign Out in the sidebar
+
+3. Observe the page until logout completes","- The logout action is triggered successfully
+
+- the active navigation state does not jump to an unrelated route
+
+- and the user is redirected or signed out as designed",,,
+TC-SP5-099,US-SP5-14,Vendor pop-up side navigation,Back and forward browser navigation preserves the correct sidebar highlight,UI,Medium,Rainy,1. Vendor is logged in and has already moved between several pop-up routes,"History navigation between dashboard, products, and profile","1. Open the dashboard
+
+2. Navigate to products and then profile
+
+3. Use the browser Back button
+
+4. Use Forward again","- The sidebar highlight follows the browser history route correctly
+
+- and no stale active state remains after back/forward navigation",,,
+TC-SP5-100,US-SP5-15,Pop-up layout rendering consistency,All pop-up pages render the same shell with the navbar and consistent spacing,UI,High,Sunny,1. Vendor is logged in and can open each pop-up route,"Routes: /pop-up/dashboard, /pop-up/products, /pop-up/profile, /pop-up/schedule, /pop-up/add-product","1. Open each pop-up route one by one
+
+2. Compare the top navbar, page padding, and overall alignment
+
+3. Refresh one route and verify the shell remains stable","- The navbar appears consistently
+
+- spacing stays aligned across routes
+
+- and the layout shell does not shift between pages",,,
+TC-SP5-101,US-SP5-15,Pop-up layout rendering consistency,Navbar brand area remains aligned across all pop-up pages,UI,Medium,Sunny,1. Vendor is logged in and can switch between pop-up pages,Any standard desktop viewport,"1. Open the dashboard, products, profile, and schedule pages
+
+2. Compare the navbar brand placement and height on each page","- The navbar brand area keeps the same vertical alignment and height across routes
+
+- no page pushes the shell out of place",,,
+TC-SP5-102,US-SP5-15,Pop-up layout rendering consistency,Page shell retains consistent background and container width on route change,UI,Medium,Sunny,1. Vendor is logged in and the browser can move across routes quickly,Pop-up routes on desktop viewport,"1. Open one pop-up page
+
+2. Navigate to another pop-up page
+
+3. Compare background color, outer padding, and container width","- The same layout shell is reused
+
+- background and container width remain consistent
+
+- and route changes do not introduce visible layout jumps",,,
+TC-SP5-103,US-SP5-15,Pop-up layout rendering consistency,Long product names cause horizontal overflow in the product cards,UI,High,Rainy,1. Vendor is logged in and the product list contains a very long name,Product name exceeding the normal card width,"1. Open the products page
+
+2. Locate a product with a long name
+
+3. Inspect the card at desktop width and at a narrower width","- The layout should either wrap or truncate the long title gracefully
+
+- no horizontal scrolling or card overflow is introduced",,,
+TC-SP5-104,US-SP5-15,Pop-up layout rendering consistency,Heavy content on the dashboard pushes the main grid outside the viewport,UI,High,Rainy,1. Vendor is logged in and dashboard contains many cards or events,Many schedules and request cards in the dashboard,"1. Open the dashboard
+
+2. Populate or simulate many items
+
+3. Scroll through the main content area","- The grid remains intact
+
+- content scrolls inside the page as intended
+
+- and the sidebar and main layout do not overlap",,,
+TC-SP5-105,US-SP5-15,Pop-up layout rendering consistency,Nested route refresh on add-product preserves the correct vendor shell,UI,High,Rainy,1. Vendor is logged in and the add-product route is accessible,Direct refresh on /pop-up/add-product,"1. Navigate to the add-product page
+
+2. Refresh the browser
+
+3. Confirm the page still uses the vendor pop-up layout","- The page reloads with the correct pop-up shell
+
+- no incorrect layout is shown
+
+- and the route remains usable after refresh",,,
+TC-SP5-106,US-SP5-15,Pop-up layout rendering consistency,Missing data on dashboard does not collapse the page structure,UI,Medium,Rainy,1. Vendor is logged in and dashboard data sources return empty lists,"Empty most requested, recent requests, and upcoming events","1. Open the dashboard with empty data
+
+2. Verify each section placeholder
+
+3. Refresh the page","- The dashboard still preserves spacing and card structure
+
+- empty states are displayed cleanly
+
+- and the page does not collapse into a broken layout",,,
+TC-SP5-107,US-SP5-15,Pop-up layout rendering consistency,Very tall content scrolls without the navbar shifting off-pattern,UI,Medium,Rainy,1. Vendor is logged in and the page has enough content to require long scrolling,Multiple sections plus long lists on the schedule page,"1. Open a content-heavy pop-up page
+
+2. Scroll from top to bottom
+
+3. Observe whether the navbar or shell elements shift unexpectedly","- The navbar and shell remain visually stable during scroll
+
+- long content is accessible
+
+- and no stuck or jittery layout occurs",,,
+TC-SP5-108,US-SP5-15,Pop-up layout rendering consistency,Mobile viewport does not hide key action buttons behind the fold,UI,High,Rainy,1. Vendor is logged in and using a smaller mobile viewport,Viewport around 360 x 640 with a busy pop-up page,"1. Open a pop-up page in a mobile-sized viewport
+
+2. Check the top action buttons and content cards
+
+3. Scroll through the page","- Primary actions remain visible or reachable by scroll
+
+- no buttons are hidden behind the shell
+
+- and the page remains usable on mobile",,,
+TC-SP5-109,US-SP5-15,Pop-up layout rendering consistency,Text scaling or browser zoom does not break alignment in the layout,UI,Medium,Rainy,1. Vendor is logged in and browser zoom is increased,Browser zoom at 125 percent or 150 percent,"1. Increase browser zoom
+
+2. Open multiple pop-up routes
+
+3. Compare alignment of cards and headings","- Layout components still align cleanly
+
+- text remains readable
+
+- and no section overlaps or clipping appears due to zoom",,,
+TC-SP5-110,US-SP5-15,Pop-up layout rendering consistency,Error state on one pop-up page does not leak into other routes,UI,Low,Rainy,1. One pop-up route has an error while another route is healthy,Force an error on profile and then navigate to products or dashboard,"1. Trigger a visible error on one pop-up route
+
+2. Navigate to another pop-up page
+
+3. Verify the new page renders normally","- The error state is isolated to the failed route
+
+- other pop-up pages render normally
+
+- and the layout wrapper is not contaminated by the prior error",,,
+TC-SP5-111,US-SP5-15,Pop-up layout rendering consistency,Mixed content loading state keeps layout stable while data is still fetching,UI,Low,Rainy,1. Vendor is logged in and one or more pop-up pages fetch data asynchronously,Slow network or delayed API response,"1. Open a pop-up page with slow data fetching
+
+2. Observe the loading state
+
+3. Wait for the data to finish rendering","- The loading state stays inside the expected shell, layout dimensions remain stable, and the page does not jump or reflow excessively when content arrives",,,
+TC-SP5-112,US-SP5-15,Pop-up layout rendering consistency,Dashboard empty state keeps the card grid aligned when all data sets are empty,UI,Medium,Rainy,1. Vendor is logged in and the dashboard data sources return no records,"Empty most requested, recent requests, and upcoming events datasets","1. Open the dashboard with empty data
+
+2. Inspect all content sections
+
+3. Refresh the page","- Empty states render inside their cards
+
+- spacing remains aligned
+
+- and the overall layout does not collapse or jump",,,
