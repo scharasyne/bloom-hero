@@ -148,8 +148,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
 
   const moderationQueue = [...applicationItems, ...reviewItems]
     .sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime())
-    .slice(0, 6)
-    .map(({ sortAt: _sortAt, ...item }) => item);
+    .slice(0, 6);
 
   const suspendedVendors: AdminDashboardSuspendedVendor[] = (suspendedVendorsResult.data ?? []).map(
     (row) => ({

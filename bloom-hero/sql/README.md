@@ -9,7 +9,7 @@ Historical drafts, archives, and the full schema dump stay in `sql-changes/`.
 | Step | File | Required? |
 |------|------|-------------|
 | 1 | `01-rls-helpers.sql` | **Yes** — fixes `permission denied for function is_admin` |
-| 2 | `02-rls-policies.sql` | **Yes** — vendor/customer RLS the app expects |
+| 2 | `02-rls-policies.sql` | **Yes** — vendor/customer RLS the app expects (now also **enables RLS** on all affected tables; fixes advisor “Policy Exists RLS Disabled”) |
 | 3 | `03-fk-indexes.sql` | Recommended — FK covering indexes |
 | 4 | `04-database-hardening.sql` | Recommended — trigger `search_path`, anon table revokes |
 | 5 | `05-postgrest-timezone.sql` | Optional — less `pg_timezone_names` load on schema reload |
@@ -138,7 +138,7 @@ SELECT business_type, count(*) FROM public.vendors GROUP BY 1;
 | Symptom | Action |
 |---------|--------|
 | `permission denied for function is_admin` | Re-run `01-rls-helpers.sql` |
-| Login works but catalog empty for guests | Re-run `02-rls-policies.sql` |
+| `permission denied` / empty catalog after policies | Re-run **`01` then `02`** — `02` now runs `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on every table that has consolidated policies |
 | Checkout mentions missing columns | Compare DB to `sql-changes/all-schema.sql` `orders` table |
 | Slow Supabase stats / schema reload | Run `05-postgrest-timezone.sql` |
 

@@ -4,6 +4,18 @@
 -- One permissive RLS policy per action (vendor/customer/admin/catalog rules).
 -- Clears linter: multiple_permissive_policies, auth_rls_initplan (uses (select ...) helpers).
 
+-- RLS must be ON for policies to take effect (advisor: "Policy Exists RLS Disabled").
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.popup_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.popup_location_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vendor_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vendor_suspension_appeals ENABLE ROW LEVEL SECURITY;
+
 -- ─── orders ───────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "Customers can create own orders" ON public.orders;

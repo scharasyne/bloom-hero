@@ -76,7 +76,7 @@ function matchesQuery(value: string | null | undefined, query: string) {
 }
 
 export async function getFlowerBestSellers(
-  supabase: ServerClient,
+  supabase: SearchClient,
   options?: { query?: string; price?: string; limit?: number }
 ) {
   const query = options?.query?.trim() ?? "";
