@@ -143,3 +143,45 @@ SELECT business_type, count(*) FROM public.vendors GROUP BY 1;
 | Slow Supabase stats / schema reload | Run `05-postgrest-timezone.sql` |
 
 Do **not** put these under `supabase/migrations/` unless you intentionally version them for CI; they are manual hosted-DB scripts.
+
+---
+
+## Production cutover (from `migrations_backup/20260510000100_remote_schema.sql`)
+
+Your production mirror is **not** the same as a sandbox that already ran `sql/01`–`02`. Expect these gaps on prod:
+
+| Area | Production mirror | After `sql/` apply |
+|------|-------------------|-------------------|
+| `business_type` | `vendor_type` enum | `registered` / `unregistered` (`optional/01`) |
+| RLS on catalog | **Off** on `vendors`, `products`, `reviews`, `popup_locations` (GRANT ALL to anon) | **On** — approved-vendor catalog rules |
+| RLS helpers | `public.is_admin` only, broad GRANT | `private.*` + public wrappers |
+| Appeals table | Missing | `optional/02` + re-run `02` |
+| Checkout columns | `payment_method`, `to_pay` already present | No extra migration |
+
+**Do not** run `all-schema.sql` or the full remote dump on production — use incremental `sql/` scripts only.
+
+### Recommended prod order
+
+1. **Backup** — Supabase dashboard backup or `pg_dump` before any change.
+2. **Pre-check** (SQL editor on prod):
+
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'vendors' AND column_name IN ('vendor_type', 'business_type');
+SELECT relrowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relname IN ('vendors', 'products', 'orders');
+```
+
+3. **`optional/01-vendor-business-type.sql`** — if still on `vendor_type`.
+4. **`optional/02-vendor-suspension-appeals.sql`** — if appeals feature is live.
+5. **`01-rls-helpers.sql`** then **`02-rls-policies.sql`** — schedule a quiet window; this changes who can read what.
+6. **`03-fk-indexes.sql`**, **`04-database-hardening.sql`**, **`05-postgrest-timezone.sql`**.
+7. **Deploy app** with `SUPABASE_SERVICE_ROLE_KEY` on the server (public catalog reads) and `business_type` code.
+8. **Smoke test** — anon home/map, customer login, cart checkout, vendor own dashboard, admin.
+
+### Deploy pairing
+
+- Run **`optional/01` before** (or in the same release as) app code that reads `business_type`.
+- Run **`01` + `02` before or with** the app build that assumes vendor/customer RLS (not wide-open GRANT ALL).
+
+Keep `20260510000100_remote_schema.sql` as the rollback reference snapshot, not as something to re-apply.
