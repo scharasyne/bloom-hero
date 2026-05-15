@@ -9,7 +9,7 @@ import Footer from "@/components/footer";
 import SearchBar from "@/components/SearchBar";
 import PopUpMap from "@/features/pop-up/components/PopUpMap";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
-import { getPopUpMapVendors } from "@/app/map/actions";
+import { getPopUpMapVendors } from "@/features/pop-up/queries/getPopUpMapVendors";
 // import { mockBouquets } from "@/lib/mockData";
 import { PopUpMapVendor } from "@/types";
 

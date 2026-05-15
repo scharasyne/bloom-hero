@@ -82,7 +82,7 @@ export function VendorProfileHeader({ profile, previewHref }: Props) {
   };
 
   return (
-    <div className="rounded-3xl border border-[#ebe5de] bg-[#fbf9f6] px-5 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-6 sm:py-7 lg:px-8">
+    <div className="profile-card">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4 sm:gap-6">
           {profile.profilePhotoUrl ? (
@@ -209,19 +209,19 @@ export function VendorProfileHeader({ profile, previewHref }: Props) {
             className="w-full rounded-xl border border-[#d9d2ca] px-3 py-2 text-sm"
           />
           {message ? <p className="text-xs text-[#b03030]">{message}</p> : null}
-          <div className="flex gap-2 pt-1">
+          <div className="flex flex-col gap-2 pt-1 sm:flex-row">
             <button
               type="button"
               disabled={isPending}
               onClick={saveProfile}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white disabled:opacity-60"
+              className="btn-mobile inline-flex h-9 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white disabled:opacity-60"
             >
               {isPending ? "Saving..." : "Save changes"}
             </button>
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="inline-flex h-9 items-center justify-center rounded-full border border-[#d9d2ca] px-4 text-xs font-semibold text-[#4a453f]"
+              className="btn-mobile inline-flex h-9 items-center justify-center rounded-full border border-[#d9d2ca] px-4 text-xs font-semibold text-[#4a453f]"
             >
               Cancel
             </button>

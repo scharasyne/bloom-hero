@@ -1,8 +1,9 @@
 // Source: `src/app/(vendor)/_components/VendorOrdersTable.tsx`
 
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
+import { getCachedVendorCommonProfile } from "@/features/vendors/queries/getCachedVendorCommonProfile";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
-import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
 
 type VendorOrderItemRow = {
   order_id: string;
@@ -55,26 +56,19 @@ const PAYMENT_PROOF_BUCKET = "order-payment-proofs";
 export async function getVendorOrdersPage(
   statusFilter: "to_pay" | "to_ship" | "to_receive" | "all" = "all"
 ): Promise<GetVendorOrdersPageResult> {
-  const supabase = await createSupabaseServerClient();
+  const user = await getAuthUser();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  if (!user) {
     return { authenticated: false };
   }
 
-  const { data: vendor } = await supabase
-    .from("vendors")
-    .select("id, business_type")
-    .eq("owner_id", session.user.id)
-    .maybeSingle<{ id: string; business_type: "registered" | "unregistered" }>();
-
-  const businessType = normalizeBusinessType(vendor?.business_type) ?? "unregistered";
-  if (!vendor || !canManageCatalog(businessType)) {
+  const vendorProfile = await getCachedVendorCommonProfile(user.id);
+  if (!vendorProfile || !canManageCatalog(vendorProfile.businessType)) {
     return { authenticated: true, vendorFound: false };
   }
+
+  const supabase = await createSupabaseServerClient();
+  const vendor = { id: vendorProfile.vendorId, businessType: vendorProfile.businessType };
 
   const allowedStatuses = new Set(["to_pay", "to_ship", "to_receive"]);
   const statusList = allowedStatuses.has(statusFilter)

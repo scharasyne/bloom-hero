@@ -30,7 +30,7 @@ export function SectionHeader({
   desc: string;
 }) {
   return (
-    <div className="flex items-center gap-3 px-6 py-4 border-b border-[#f0ece8]">
+    <div className="flex items-center gap-3 px-4 py-4 border-b border-[#f0ece8] sm:px-6">
       <div className="w-8 h-8 rounded-lg bg-[#eef4f0] flex items-center justify-center text-[#2f5d3a] shrink-0">
         <Icon icon={icon} width={16} height={16} />
       </div>
@@ -54,7 +54,7 @@ export function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 px-6 py-3.5 border-b border-[#f0ece8] last:border-b-0 hover:bg-[#f4f8f5] transition-colors duration-150">
+    <div className="flex flex-col gap-3 px-4 py-3.5 border-b border-[#f0ece8] last:border-b-0 hover:bg-[#f4f8f5] transition-colors duration-150 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-[#1e2a22]">{label}</p>
         {hint && <p className="text-[11.5px] text-[#6b7a6f] mt-0.5 leading-snug">{hint}</p>}
@@ -339,12 +339,12 @@ export function SettingsShell({
 
   return (
     <div className="flex flex-col h-full" style={{ fontFamily: "'Quicksand', sans-serif" }}>
-      <div className="px-7 pt-7 pb-1">
+      <div className="page-x pt-6 pb-1 sm:pt-7">
         <h1 className="text-[20px] font-bold text-[#1e2a22] tracking-[-0.4px]">Settings</h1>
         <p className="text-[13px] text-[#6b7a6f] mt-0.5">{subtitle}</p>
       </div>
 
-      <div className="flex gap-0.5 border-b border-[#edeae6] px-7 mt-5">
+      <div className="page-x mt-5 flex gap-0.5 overflow-x-auto border-b border-[#edeae6]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -364,11 +364,11 @@ export function SettingsShell({
         {panels[activeTab]}
       </div>
 
-      <div className="border-t border-[#edeae6] bg-white px-7 py-3.5 flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(47,93,58,0.07)]">
+      <div className="flex flex-col gap-3 border-t border-[#edeae6] bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(47,93,58,0.07)] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-3.5">
         <p className="text-[12.5px] text-[#6b7a6f]">
           <span className="font-bold text-[#1e2a22]">Unsaved changes</span> — don&apos;t forget to save before leaving
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Btn variant="ghost">Discard</Btn>
           <Btn variant="primary" onClick={handleSave}>
             <Icon icon="mdi:content-save-outline" width={14} height={14} />

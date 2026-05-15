@@ -1,6 +1,6 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import type { createSearchSupabaseClient } from "@/features/search/utils/searchSupabase";
 
-type ServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+type SearchClient = Awaited<ReturnType<typeof createSearchSupabaseClient>>;
 
 export type ProductImageRow = {
   image_url: string;
@@ -139,7 +139,6 @@ export async function getFlowerBestSellers(
     soldCountByProductId.set(row.product_id, currentCount + (Number(row.quantity) || 0));
   }
 
-  // Get product average ratings from reviews table
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
     .select("vendor_id, rating")
@@ -195,7 +194,8 @@ export async function getFlowerBestSellers(
       const soldCount = soldCountByProductId.get(product.id) ?? 0;
       const vendor = vendorMap.get(product.vendor_id);
       const vendorRatings = ratingsByVendorId.get(product.vendor_id) ?? [];
-      const averageRating = vendorRatings.length > 0 ? vendorRatings.reduce((a, b) => a + b, 0) / vendorRatings.length : null;
+      const averageRating =
+        vendorRatings.length > 0 ? vendorRatings.reduce((a, b) => a + b, 0) / vendorRatings.length : null;
 
       return {
         ...product,
@@ -216,7 +216,7 @@ export async function getFlowerBestSellers(
 }
 
 export async function getVendorBestSellers(
-  supabase: ServerClient,
+  supabase: SearchClient,
   options?: { query?: string; limit?: number }
 ) {
   const query = options?.query?.trim() ?? "";

@@ -11,8 +11,8 @@ interface SearchBarProps {
   onSearch?: () => void;
 }
 
-type SearchScope = "all" | "flowers" | "vendors";
-type SearchType = "All" | "Flowers" | "Vendors";
+type SearchScope = "all" | "flowers" | "vendors" | "popups";
+type SearchType = "All" | "Flowers" | "Vendors" | "Pop Ups";
 const CATEGORY_VALUES = new Set([
   "graduation",
   "in-loving-memory",
@@ -27,22 +27,25 @@ const CATEGORY_VALUES = new Set([
   "get-well",
   "florists-picks",
 ]);
-const searchTypes: SearchType[] = ["All", "Flowers", "Vendors"];
+const searchTypes: SearchType[] = ["All", "Flowers", "Vendors", "Pop Ups"];
 const placeholders: Record<SearchType, string> = {
-  All: "Search bouquets, vendors, or occasions...",
+  All: "Search bouquets, vendors, pop-ups, or occasions...",
   Flowers: "Search flowers or bouquets...",
   Vendors: "Search local florists or shops...",
+  "Pop Ups": "Search pop-up locations or vendors...",
 };
 
 function scopeToType(scope?: string): SearchType {
   if (scope === "flowers") return "Flowers";
   if (scope === "vendors") return "Vendors";
+  if (scope === "popups") return "Pop Ups";
   return "All";
 }
 
 function typeToScope(type: SearchType): SearchScope {
   if (type === "Flowers") return "flowers";
   if (type === "Vendors") return "vendors";
+  if (type === "Pop Ups") return "popups";
   return "all";
 }
 

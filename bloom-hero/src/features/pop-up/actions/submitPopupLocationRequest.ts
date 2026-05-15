@@ -1,3 +1,4 @@
+import { requireCustomerSession } from "@/features/auth/utils/require-customer";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 export async function submitPopUpLocationRequest(
@@ -9,13 +10,14 @@ export async function submitPopUpLocationRequest(
   startTime?: string,
   endTime?: string
 ) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "You must be logged in." };
+  const auth = await requireCustomerSession();
+  if (!auth.ok) {
+    return { success: false, error: auth.error };
+  }
 
-  // Ensure FK target exists for popup_location_requests.customer_id.
+  const supabase = await createSupabaseServerClient();
+  const user = auth.session.user;
+
   const customerEnsure = await supabase
     .from("customers")
     .upsert({ user_id: user.id }, { onConflict: "user_id" });

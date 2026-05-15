@@ -2,15 +2,17 @@
 
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { revalidatePath } from "next/cache";
 
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
+import { revalidateUserCache } from "@/features/auth/utils/revalidateUserCache";
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+
 export async function updateCustomerProfile(formData: FormData) {
+  const user = await getAuthUser();
+  if (!user) return { error: "Not authenticated" };
+
   const supabase = await createSupabaseServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) return { error: "Not authenticated" };
-
   const fullName = formData.get("full_name") as string;
   const phone = formData.get("phone") as string;
 
@@ -20,6 +22,7 @@ export async function updateCustomerProfile(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  await revalidateUserCache(user.id);
   revalidatePath("/customer/profile");
   return { success: true };
 }

@@ -1,32 +1,49 @@
-// components/Modal.tsx
-"use client"
+"use client";
 
-import { type ReactNode } from "react"
-
+import { type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type ModalProps = {
-  isOpen: boolean
-  onCloseAction: () => void
-  children: ReactNode
-}
+  isOpen: boolean;
+  onCloseAction: () => void;
+  children: ReactNode;
+  className?: string;
+  panelClassName?: string;
+  maxWidthClass?: string;
+};
 
-export function Modal({ isOpen, onCloseAction, children }: ModalProps) {
-  if (!isOpen) return null
+export function Modal({
+  isOpen,
+  onCloseAction,
+  children,
+  className,
+  panelClassName,
+  maxWidthClass = "max-w-lg",
+}: ModalProps) {
+  if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onCloseAction} // click backdrop to close
-    >
+    <div className={cn("modal-overlay", className)} onClick={onCloseAction}>
       <div
-        className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl"
-        onClick={e => e.stopPropagation()} // prevent close when clicking inside
+        className={cn(
+          "scrollbar-thin-oval relative w-full max-h-[85dvh] overflow-y-auto overscroll-contain rounded-xl bg-white p-4 pt-10 shadow-xl sm:p-6 sm:pt-12",
+          maxWidthClass,
+          panelClassName
+        )}
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
-        <button onClick={onCloseAction} className="float-right text-gray-400 hover:text-gray-600">
+        <button
+          type="button"
+          onClick={onCloseAction}
+          className="absolute right-3 top-3 rounded-lg p-1 text-[#8a847d] hover:bg-[#f3eee8] hover:text-[#4a453f]"
+          aria-label="Close"
+        >
           ✕
         </button>
         {children}
       </div>
     </div>
-  )
+  );
 }

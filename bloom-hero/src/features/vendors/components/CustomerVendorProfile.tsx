@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel";
 import { Star } from "lucide-react";
+import { CenteredScrollModal } from "@/components/CenteredScrollModal";
 import PopUpLocationRequest from "@/features/pop-up/components/PopUpLocationRequest";
 import type { BusinessType } from "@/features/vendors/types";
 import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
@@ -48,6 +49,7 @@ interface CustomerVendorProfileProps {
     location: string | null;
     event_name: string | null;
   }[];
+  canRequestLocation?: boolean;
 }
 
 export default function CustomerVendorProfile({
@@ -57,6 +59,7 @@ export default function CustomerVendorProfile({
   reviews = [],
   businessType,
   galleryPhotos = [],
+  canRequestLocation = false,
 }: CustomerVendorProfileProps) {
   const canListProducts = canManageCatalog(businessType);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -112,7 +115,7 @@ export default function CustomerVendorProfile({
   return (
     <>
       <div className="w-full">
-        <div className="rounded-3xl border border-[#ebe5de] bg-[#fbf9f6] px-5 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-6 sm:py-7 lg:px-8">
+        <div className="profile-card">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4 sm:gap-6">
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#d9e7da] text-3xl font-bold text-[#2f5d3a] sm:h-24 sm:w-24 sm:text-4xl">
@@ -144,12 +147,14 @@ export default function CustomerVendorProfile({
               </div>
             </div>
 
-            <button
-              onClick={() => setShowLocationModal(true)}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f]"
-            >
-              Request location
-            </button>
+            {canRequestLocation ? (
+              <button
+                onClick={() => setShowLocationModal(true)}
+                className="inline-flex h-10 items-center justify-center rounded-full bg-[#2f5d3a] px-4 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f]"
+              >
+                Request location
+              </button>
+            ) : null}
           </div>
 
           <div className="mt-6 border-t border-[#ece4dc] pt-3">
@@ -372,7 +377,7 @@ export default function CustomerVendorProfile({
         <p className="mt-3 text-xs text-[#6f6a65]">{requestMessage}</p>
       ) : null}
 
-      {showLocationModal && (
+      {canRequestLocation && showLocationModal && (
         <PopUpLocationRequest
           vendorName={vendor.shop_name}
           onSubmit={handleLocationSubmit}
@@ -380,23 +385,20 @@ export default function CustomerVendorProfile({
         />
       )}
 
-      {showAllReviewsModal ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
-          onClick={() => setShowAllReviewsModal(false)}
-        >
-          <div
-            className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-7"
-            onClick={(event) => event.stopPropagation()}
-          >
+      <CenteredScrollModal
+        isOpen={showAllReviewsModal}
+        onClose={() => setShowAllReviewsModal(false)}
+        maxWidthClass="max-w-3xl"
+        panelClassName="p-6 sm:p-7"
+      >
             <button
               type="button"
               onClick={() => setShowAllReviewsModal(false)}
-              className="absolute right-4 top-4 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
+              className="absolute right-4 top-4 z-10 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
             >
               Close
             </button>
-            <h3 className="text-lg font-semibold tracking-tight text-[#262321]">All Reviews</h3>
+            <h3 className="section-title pr-16">All Reviews</h3>
             <div className="mt-5 grid grid-cols-1 gap-4">
               {reviews.map((review) => (
                 <article
@@ -429,27 +431,24 @@ export default function CustomerVendorProfile({
                 </article>
               ))}
             </div>
-          </div>
-        </div>
-      ) : null}
+      </CenteredScrollModal>
 
-      {selectedGalleryPhoto ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
-          onClick={() => setSelectedGalleryPhotoId(null)}
-        >
-          <div
-            className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-6"
-            onClick={(event) => event.stopPropagation()}
-          >
+      <CenteredScrollModal
+        isOpen={Boolean(selectedGalleryPhoto)}
+        onClose={() => setSelectedGalleryPhotoId(null)}
+        maxWidthClass="max-w-3xl"
+        panelClassName="p-5 sm:p-6"
+      >
             <button
               type="button"
               onClick={() => setSelectedGalleryPhotoId(null)}
-              className="absolute right-4 top-4 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
+              className="absolute right-4 top-4 z-10 rounded-full border border-[#e7dfd7] px-2.5 py-1 text-xs font-semibold text-[#6f6a65] hover:bg-[#f3eee8]"
             >
               Close
             </button>
 
+        {selectedGalleryPhoto ? (
+          <>
             <div className="overflow-hidden rounded-2xl bg-[#e8dfd5]">
               <img
                 src={selectedGalleryPhoto.image_url}
@@ -469,9 +468,9 @@ export default function CustomerVendorProfile({
                 {selectedGalleryPhoto.event_name?.trim() || "Event not set"}
               </p>
             </div>
-          </div>
-        </div>
-      ) : null}
+          </>
+        ) : null}
+      </CenteredScrollModal>
     </>
   );
 }

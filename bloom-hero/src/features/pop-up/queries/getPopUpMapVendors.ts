@@ -50,11 +50,12 @@ export async function getPopUpMapVendors(): Promise<PopUpMapVendor[]> {
 
       return {
         id: row.id,
+        vendorId: row.vendor_id,
         displayNumber: index + 1,
         name: row.vendors?.shop_name?.trim() || "Pop-up Store",
         address: row.location,
         scheduledDate: row.scheduled_date,
-        endRaw: row.end_time ?? row.scheduled_date, 
+        endRaw: row.end_time ?? row.scheduled_date,
         startDate: formatShortDate(startSource),
         endDate: formatShortDate(endSource),
         lat,

@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 
 export interface VendorReview {
   id: string;
@@ -9,7 +9,7 @@ export interface VendorReview {
 }
 
 export async function getVendorReviews(vendorId: string): Promise<VendorReview[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
   const { data: reviewRows, error: reviewError } = await supabase
     .from("reviews")
     .select("id, customer_id, rating, comment, review_date")

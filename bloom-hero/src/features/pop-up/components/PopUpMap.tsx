@@ -7,6 +7,7 @@ import PopUpVendorModal from "./PopUpVendorModal";
 
 interface PopUpMapProps {
   initialVendors: PopUpMapVendor[];
+  showProfileLink?: boolean;
 }
 
 function getToday() {
@@ -24,7 +25,7 @@ function parseDate(value: string | null | undefined) {
   return null;
 }
 
-export default function PopUpMap({ initialVendors }: PopUpMapProps) {
+export default function PopUpMap({ initialVendors, showProfileLink = true }: PopUpMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const [activeVendor, setActiveVendor] = useState<PopUpMapVendor | null>(null);
@@ -203,6 +204,7 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
                   <PopUpVendorModal
                     vendor={activeVendor}
                     onClose={() => setActiveVendor(null)}
+                    showProfileLink={showProfileLink}
                   />
                 )}
               </div>

@@ -50,7 +50,7 @@ export function CustomerOrdersPageView({ activeTab, orders }: CustomerOrdersPage
 
   return (
     <>
-      <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="min-h-screen bg-[#fbf7f4] page-x pb-16 pt-4 sm:pt-6">
         <div className="mx-auto w-full max-w-230 pt-8">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#2f2f2f] tracking-tight">

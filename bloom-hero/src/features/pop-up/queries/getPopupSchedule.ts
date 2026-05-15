@@ -1,8 +1,8 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import { PopUpSchedule } from "../types";
 
 export async function getPopUpSchedule(vendorId: string): Promise<PopUpSchedule[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 

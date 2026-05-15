@@ -9,7 +9,7 @@ import type {
   VendorDashboardRecentOrder,
   VendorDashboardTrendPoint,
   VendorDashboardUpcomingOrder,
-} from "@/lib/mockData";
+} from "@/features/vendors/types/dashboard";
 
 export type VendorDashboardData = {
   kpis: VendorDashboardKPIItem[];

@@ -36,6 +36,7 @@ export type VendorSuspensionState = {
 };
 export type VendorStatus = "pending" | "approved" | "rejected";
 export type VendorProfileByOwnerRow = {
+  id: string;
   business_type: BusinessType | null;
   shop_name: string | null;
 };

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getFlowerBestSellers, getVendorBestSellers } from "@/lib/best-sellers";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { normalizeSearchScope } from "@/lib/utils/search";
+import { getFlowerBestSellers, getVendorBestSellers } from "@/features/search/queries/bestSellers";
+import { createSearchSupabaseClient } from "@/features/search/utils/searchSupabase";
+import { normalizeSearchScope } from "@/features/search/utils/scope";
+
+export const dynamic = "force-dynamic";
 
 function normalizeLimit(value: string | null) {
   const parsed = Number(value);
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
   const price = searchParams.get("price") ?? "Any";
   const limit = normalizeLimit(searchParams.get("limit"));
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSearchSupabaseClient();
   const wantsFlowers = scope === "all" || scope === "flowers";
   const wantsVendors = scope === "all" || scope === "vendors";
 

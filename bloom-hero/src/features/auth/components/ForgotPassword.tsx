@@ -6,6 +6,8 @@ import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import Image from "next/image";
 
+import { resolvePostLoginDestination } from "@/features/auth/actions/actions";
+
 export default function ForgotPassword() {
     const router = useRouter();
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
@@ -47,40 +49,6 @@ export default function ForgotPassword() {
             subscription.unsubscribe();
         };
     }, [supabase]);
-
-    async function getRedirectPathForCurrentUser() {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-            return "/";
-        }
-
-        const { data: roleData } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", user.id)
-            .maybeSingle();
-
-        const role = roleData?.role as string | undefined;
-
-        if (role === "admin") {
-            return "/admin/dashboard";
-        }
-
-        if (role === "vendor") {
-            const { data: vendorData } = await supabase
-                .from("vendors")
-                .select("id")
-                .eq("owner_id", user.id)
-                .maybeSingle();
-
-            return vendorData ? "/vendor/dashboard" : "/";
-        }
-
-        return "/";
-    }
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -136,7 +104,8 @@ export default function ForgotPassword() {
             return;
         }
 
-        const redirectPath = await getRedirectPathForCurrentUser();
+        const destination = await resolvePostLoginDestination();
+        const redirectPath = destination.ok ? destination.path : "/";
 
         setNewPassword("");
         setConfirmPassword("");

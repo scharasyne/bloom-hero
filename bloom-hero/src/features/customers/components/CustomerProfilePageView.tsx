@@ -43,7 +43,7 @@ export function CustomerProfilePageView({ profile }: CustomerProfilePageViewProp
 
   return (
     <>
-      <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="min-h-screen bg-[#fbf7f4] page-x pb-16 pt-4 sm:pt-6">
         <div className="mx-auto w-full max-w-230 pt-8 space-y-6">
           <div className="bg-white rounded-2xl border border-[#e6e2dd] px-6 sm:px-8 py-8 relative overflow-hidden shadow-sm">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#f8f5f0] pointer-events-none" />

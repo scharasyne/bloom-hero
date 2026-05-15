@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { cn } from "@/lib/utils";
 import type { BusinessType } from "@/features/vendors/types";
 import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
 
@@ -33,6 +34,16 @@ const tabRoutes: Partial<Record<TabId, string>> = {
 
 const catalogTabs = new Set<TabId>(["products", "orders"]);
 
+function mobileTabOrderClass(tabId: TabId): string {
+  if (tabId === "settings") return "hidden md:flex";
+  if (tabId === "profile") return "order-5 md:order-none";
+  if (tabId === "schedule") return "order-4 md:order-none";
+  if (tabId === "orders") return "order-3 md:order-none";
+  if (tabId === "products") return "order-2 md:order-none";
+  if (tabId === "dashboard") return "order-1 md:order-none";
+  return "md:order-none";
+}
+
 export function VendorDashboardSidebarCard({
   activeTab,
   businessType,
@@ -41,7 +52,7 @@ export function VendorDashboardSidebarCard({
 
   return (
     <aside
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#edeae6] bg-[#fbf7f4] md:static md:z-auto md:flex md:h-full md:border-t-0 md:border-r md:w-48 md:min-w-48 lg:w-52 lg:min-w-52 xl:w-60 xl:min-w-60"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#edeae6] bg-[#fbf7f4] pb-[max(0.5rem,env(safe-area-inset-bottom))] md:static md:z-auto md:flex md:h-full md:border-t-0 md:border-r md:pb-0 md:w-48 md:min-w-48 lg:w-52 lg:min-w-52 xl:w-60 xl:min-w-60"
       style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
       <nav
@@ -52,6 +63,7 @@ export function VendorDashboardSidebarCard({
           const isActive = tab.id === activeTab;
           const route = tabRoutes[tab.id];
           const isCatalogLocked = catalogTabs.has(tab.id) && !catalogUnlocked;
+          const orderClass = mobileTabOrderClass(tab.id);
 
           const activeContent = (
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2f5d3a] shadow-md shadow-[#2f5d3a]/20 md:h-10 md:w-full md:justify-start md:gap-2 md:rounded-lg md:px-2 lg:h-11 lg:gap-2.5 lg:px-3 xl:h-12 xl:gap-3 xl:rounded-xl xl:px-4">
@@ -76,12 +88,16 @@ export function VendorDashboardSidebarCard({
           );
 
           if (isActive) {
-            return <div key={tab.id}>{activeContent}</div>;
+            return (
+              <div key={tab.id} className={orderClass}>
+                {activeContent}
+              </div>
+            );
           }
 
           if (isCatalogLocked && route) {
             return (
-              <Link key={tab.id} href={route} className={lockedClassName}>
+              <Link key={tab.id} href={route} className={cn(lockedClassName, orderClass)}>
                 {inactiveContent}
               </Link>
             );
@@ -89,14 +105,14 @@ export function VendorDashboardSidebarCard({
 
           if (route) {
             return (
-              <Link key={tab.id} href={route} className={inactiveClassName}>
+              <Link key={tab.id} href={route} className={cn(inactiveClassName, orderClass)}>
                 {inactiveContent}
               </Link>
             );
           }
 
           return (
-            <div key={tab.id} className={inactiveClassName}>
+            <div key={tab.id} className={cn(inactiveClassName, orderClass)}>
               {inactiveContent}
             </div>
           );

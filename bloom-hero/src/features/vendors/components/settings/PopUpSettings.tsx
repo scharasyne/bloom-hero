@@ -36,7 +36,7 @@ function AppearanceTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Profile Details" hint="Shown on your public pop-up listing">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Display Name" type="text" defaultValue="Petal Pop-up" />
             <FieldInput label="Tagline"      type="text" placeholder="e.g. Blooms wherever we go" />
             <div className="col-span-2">
@@ -45,7 +45,7 @@ function AppearanceTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Contact Info" hint="How customers can reach you">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Contact Email" type="email" defaultValue="hello@petalpopup.ph" />
             <FieldInput label="Phone / Viber" type="tel"   defaultValue="+63 917 000 0000" />
           </div>
@@ -101,13 +101,13 @@ function ScheduleTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Preferred Setup Areas" hint="Locations you're willing to travel to">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="City / Municipality" type="text" defaultValue="Cebu City" />
             <FieldInput label="Max travel radius"   type="text" placeholder="e.g. 30 km" />
           </div>
         </SettingRowFull>
         <SettingRowFull label="Booth Requirements" hint="Space and logistics needs shared with organizers upfront">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Min. booth size" type="text" placeholder="e.g. 2m × 2m" />
             <FieldSelect label="Power outlet">
               <option>Not required</option>

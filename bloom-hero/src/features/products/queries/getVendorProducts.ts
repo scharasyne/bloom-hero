@@ -1,8 +1,8 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import { Product } from "../types";
 
 export async function getVendorProducts(vendorId: string): Promise<Product[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
 
   const { data, error } = await supabase
     .from("products")

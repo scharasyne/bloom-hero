@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { getRegisteredVendorCatalogAccess } from "@/features/vendors/queries/getRegisteredVendorCatalogAccess";
 
 type VendorScopedOrder = {
@@ -16,15 +17,13 @@ type VendorScopedOrder = {
 
 async function getSessionUserId() {
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const user = await getAuthUser();
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     throw new Error("Please sign in to continue.");
   }
 
-  return { supabase, userId: session.user.id };
+  return { supabase, userId: user.id };
 }
 
 async function getVendorScopedOrder(

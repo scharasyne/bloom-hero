@@ -1,11 +1,13 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import { PopUpLocationRow } from "../types";
 
 export async function getPopupLocationsWithVendor() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
   const { data, error } = await supabase
     .from("popup_locations")
-    .select("id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(shop_name)")
+    .select(
+      "id, vendor_id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(id, shop_name, business_type)"
+    )
     .order("scheduled_date", { ascending: true })
     .order("start_time", { ascending: true });
 

@@ -245,12 +245,18 @@ export default function PopUpScheduleClient({
   return (
     <>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <div className="mb-8 flex items-end justify-between">
-        <div>
+      <div className="mb-10 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <div className="space-y-2">
           <h1 className="text-[28px] font-bold tracking-[-0.64px] text-[#1f1f1f]">Pop Ups</h1>
-          <p className="mt-1 text-[15px] font-medium text-[#6f6a65]">Manage your schedules and view customer requests</p>
+          <p className="text-[15px] font-medium leading-relaxed text-[#6f6a65]">
+            Manage your schedules and view customer requests
+          </p>
         </div>
-        <button onClick={() => setShowNewSchedule(true)} className="mr-1 flex items-center gap-2 rounded-2xl bg-[#2f5d3a] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#264d30]">
+        <button
+          type="button"
+          onClick={() => setShowNewSchedule(true)}
+          className="btn-mobile flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#2f5d3a] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#264d30] sm:mr-1"
+        >
           <Icon icon="mdi:plus" width={18} height={18} />
           New Schedule
         </button>
@@ -347,7 +353,7 @@ export default function PopUpScheduleClient({
       </div>
 
       {showRanking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-xl rounded-2xl bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-[#1f1f1f]">Location Request Ranking</h3>
@@ -366,7 +372,7 @@ export default function PopUpScheduleClient({
       )}
 
       {selectedMapLocation ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#2a2724]">{toPinnedLabel(selectedMapLocation)}</h3>
@@ -392,7 +398,7 @@ export default function PopUpScheduleClient({
       ) : null}
 
       {showNewSchedule && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="modal-overlay">
           <div className="flex max-h-[92vh] w-full max-w-3xl flex-col rounded-2xl bg-white">
             <div className="flex items-center justify-between border-b border-[#ece4dc] px-6 py-4">
               <h3 className="text-lg font-semibold text-[#2c2825]">New Schedule</h3>

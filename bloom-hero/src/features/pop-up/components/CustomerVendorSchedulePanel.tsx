@@ -84,7 +84,7 @@ export default function CustomerVendorSchedulePanel({
   };
 
   return (
-    <div className="rounded-3xl border border-[#ebe5de] bg-[#fbf9f6] px-5 py-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:px-6 sm:py-7 lg:px-8">
+    <div className="profile-card">
       <h2 className="mb-6 text-lg font-semibold tracking-tight text-[#262321]">
         Pop-up Schedule
       </h2>
@@ -143,12 +143,9 @@ export default function CustomerVendorSchedulePanel({
       )}
 
       {selectedMap ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
-          onClick={() => setSelectedMap(null)}
-        >
+        <div className="modal-overlay" onClick={() => setSelectedMap(null)}>
           <div
-            className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-5"
+            className="w-full max-w-3xl rounded-xl bg-white p-4 shadow-[0_20px_70px_rgba(15,23,42,0.35)] sm:p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -161,7 +158,7 @@ export default function CustomerVendorSchedulePanel({
                 Close
               </button>
             </div>
-            <div className="h-[380px] overflow-hidden rounded-xl border border-[#ece5dd]">
+            <div className="h-64 overflow-hidden rounded-xl border border-[#ece5dd] sm:h-[380px]">
               <iframe
                 title="Pop-up location map"
                 src={getMapEmbedUrl(selectedMap)}

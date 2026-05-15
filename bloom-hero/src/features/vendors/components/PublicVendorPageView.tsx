@@ -4,13 +4,14 @@ import type { PublicVendorPageData } from "@/features/vendors/queries/getPublicV
 
 type PublicVendorPageViewProps = {
   data: PublicVendorPageData;
+  canRequestLocation?: boolean;
 };
 
-export function PublicVendorPageView({ data }: PublicVendorPageViewProps) {
+export function PublicVendorPageView({ data, canRequestLocation = true }: PublicVendorPageViewProps) {
   const { vendor, products, schedule, galleryPhotos, reviews, businessType } = data;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="page-shell min-h-screen">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <CustomerVendorProfile
@@ -20,6 +21,7 @@ export function PublicVendorPageView({ data }: PublicVendorPageViewProps) {
             reviews={reviews}
             galleryPhotos={galleryPhotos}
             businessType={businessType}
+            canRequestLocation={canRequestLocation}
           />
         </div>
         <aside className="lg:col-span-1">

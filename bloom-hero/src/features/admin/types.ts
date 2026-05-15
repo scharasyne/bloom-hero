@@ -1,4 +1,5 @@
-import type { DetailLine } from "@/types";
+import type { ActivityLog, DetailLine } from "@/types";
+import type { BusinessType } from "@/features/vendors/types";
 
 export type AdminActionResult<T = undefined> = {
   ok: boolean;
@@ -77,6 +78,36 @@ export type AdminDashboardData = {
   moderationQueue: AdminDashboardModerationItem[];
   suspendedVendors: AdminDashboardSuspendedVendor[];
   reviewQueueHref: string;
+};
+
+export type AdminVendorStatus = "active" | "suspended";
+
+export type AdminVendorAppealSummary = {
+  id: string;
+  status: "pending" | "approved" | "rejected";
+  appealMessage: string;
+  adminResponse: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+};
+
+export type AdminVendorRecord = {
+  id: string;
+  storeName: string;
+  ownerName: string;
+  businessType: BusinessType;
+  status: AdminVendorStatus;
+  location: string;
+  joinedAt: string;
+  createdAtIso: string;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
+  phoneNumber: string | null;
+  about: string | null;
+  totalOrders: number;
+  email: string;
+  appeals: AdminVendorAppealSummary[];
+  pendingAppeal: AdminVendorAppealSummary | null;
 };
 
 export type ActivityLogInput = {
