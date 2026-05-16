@@ -67,6 +67,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  if (user && hasPrefix(pathname, '/cart')) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle<{ role: string | null }>()
+
+    if (profile?.role === 'vendor') {
+      return NextResponse.redirect(new URL('/vendor/dashboard', request.url))
+    }
+  }
+
   if (isPublicPath) {
     return response
   }

@@ -1,6 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { getSession } from "@/lib/auth/getSession";
-import { logAdminLogin } from "@/app/admin/actions/activity-log";
+import { revalidateUserCache } from "@/features/auth/utils/revalidateUserCache";
 import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -69,15 +67,14 @@ export async function GET(request: NextRequest) {
 
   let path = "/";
   if (role === "admin") {
-    path = "/admin/vendor-applications";
+    path = "/admin/dashboard";
   } else if (role === "vendor") {
     const { data: vendor } = await supabase
       .from("vendors")
-      .select("vendor_type")
+      .select("id")
       .eq("owner_id", user.id)
       .maybeSingle();
-    const vendorType = vendor?.vendor_type as string | undefined;
-    if (!vendorType) {
+    if (!vendor) {
       const msg = encodeURIComponent(
         "Your account is not registered as a vendor. Please contact support or sign up as a vendor."
       );
@@ -85,8 +82,10 @@ export async function GET(request: NextRequest) {
       applyAuthCookies(redirect);
       return redirect;
     }
-    path = vendorType === "market" ? "/market/dashboard" : "/pop-up/dashboard";
+    path = "/vendor/dashboard";
   }
+
+  await revalidateUserCache(user.id);
 
   const redirect = NextResponse.redirect(`${origin}${path}`);
   applyAuthCookies(redirect);

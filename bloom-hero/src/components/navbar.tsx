@@ -20,13 +20,13 @@ type SessionData =
         role?: string;
         name?: string | null;
         email?: string | null;
-        vendor_type?: string | null;
+        business_type?: string | null;
         vendor_shop_name?: string | null;
         username?: string | null; //newly added for nav bar enhancement, allows displaying username in nav bar if available
       };
     };
 
-type navTypes = 'market' | 'pop-up' | 'customer';
+type NavAudience = "customer" | "default";
 
 const navLinks = {
   'customer': [
@@ -61,7 +61,7 @@ export default function NavBar({
   
   const user = session?.user || null;
   const role = session?.profile?.role;
-  const vendor_type = session?.profile?.vendor_type;
+  const business_type = session?.profile?.business_type;
   const vendor_name = session?.profile?.vendor_shop_name;
 
   const displayName =
@@ -70,17 +70,20 @@ export default function NavBar({
     "Customer"; //newly added for nav bar enhancement, falls back to email prefix or "Customer" if no name available
 
   const isVendor = role === "vendor";
-    let resolvedType: navTypes | "default" = "default";
-  if (role === "customer") resolvedType = "customer";
+  const isAdmin = role === "admin";
+  const hidePublicNav = isVendor || isAdmin;
+  const logoHref = isAdmin ? "/admin/dashboard" : "/";
 
-  const items = navLinks[resolvedType]
-  const showSearchBar = pathname !== "/" && !pathname.startsWith("/search") && !!user && !isVendor;
+  const navAudience: NavAudience = role === "customer" ? "customer" : "default";
+  const items = navLinks[navAudience];
+  const showSearchBar =
+    pathname !== "/" && !pathname.startsWith("/search") && !!user && !hidePublicNav;
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login');
+    await supabase.auth.signOut();
+    router.push("/login");
     router.refresh();
-  }
+  };
 
   const handleNavSearch = (e: React.FormEvent) => { // 👈 add this
     e.preventDefault();
@@ -92,13 +95,13 @@ export default function NavBar({
   if (role === "admin" || role === "vendor") return null;
   
   return (
-  <nav className="relative w-full bg-[#FBF7F4] border-b border-[#edeae6]">
+  <nav className="relative z-50 w-full bg-[#FBF7F4] border-b border-[#edeae6]">
     {/* ── Desktop row ─────────────────────────────────────────── */}
     <div className="hidden md:flex items-center gap-6 px-8 py-3 relative">
 
       {/* LEFT: logo + signed-in */}
       <div className="flex items-center gap-3 shrink-0">
-        <Link href="/" className="relative h-11 w-8 shrink-0 overflow-hidden">
+        <Link href={logoHref} className="relative h-11 w-8 shrink-0 overflow-hidden">
           <img
             alt="BloomHero Logo"
             className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]"
@@ -110,7 +113,12 @@ export default function NavBar({
           <>
             <span className="w-px h-5 bg-[#ddd9d4] shrink-0" />
             <p className="text-[14px] text-[#7a7a7a] whitespace-nowrap">
-              {isVendor ? (
+              {isAdmin ? (
+                <>
+                  Signed in as{" "}
+                  <span className="font-semibold text-[#3f6f52]">Admin</span>
+                </>
+              ) : isVendor ? (
                 <>
                   You're{" "}
                   <span className="font-semibold text-[#1f1f1f]">blooming</span>
@@ -150,7 +158,7 @@ export default function NavBar({
 
       {/* RIGHT: nav links + auth */}
       <div className="flex items-center gap-7 ml-auto shrink-0">
-        {!isVendor && (
+        {!hidePublicNav && (
           items.map(({ href, label }) => (
             <Link
               key={href}
@@ -186,7 +194,7 @@ export default function NavBar({
 
     {/* ── Mobile row ──────────────────────────────────────────── */}
     <div className="flex md:hidden items-center justify-between px-5 py-3">
-      <Link href="/" className="relative h-11 w-8 shrink-0 overflow-hidden">
+      <Link href={logoHref} className="relative h-11 w-8 shrink-0 overflow-hidden">
         <img
           alt="BloomHero Logo"
           className="absolute h-[137.5%] left-[-64.58%] max-w-none top-[-18.75%] w-[229.17%]"
@@ -210,8 +218,8 @@ export default function NavBar({
     {menuOpen && (
       <div className="md:hidden border-t border-[#edeae6] bg-white shadow-lg flex flex-col py-3">
 
-        {/* Greeting */}
-        {user && (
+        {/* Greeting — hidden for admin (menu is sign-out only) */}
+        {user && !isAdmin && (
           <div className="px-5 py-3 border-b border-[#f0ece8] mb-1">
             <p className="text-[13px] text-[#7a7a7a]">
               {isVendor ? (
@@ -247,7 +255,7 @@ export default function NavBar({
         )}
 
         {/* Links */}
-        {!isVendor && (
+        {!hidePublicNav && (
           items.map(({ href, label }) => (
             <Link
               key={href}

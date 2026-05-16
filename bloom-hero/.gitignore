@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/tests/playwright/.auth/
 
 # next.js
 /.next/
@@ -39,3 +43,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Only the CLI project dir at repo root (not src/lib/supabase/*)
+/supabase/

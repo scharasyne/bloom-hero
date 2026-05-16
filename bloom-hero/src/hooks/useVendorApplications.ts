@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  approveVendorApplication,
-  getSubmittedVendorApplications,
-  type IssuedVendorCredentials,
-  rejectVendorApplication,
-} from "@/app/admin/vendor-applications/actions";
-import { VendorApplicationRecord } from "@/typess";
+import { approveVendorApplication } from "@/features/admin/actions/approveVendorApplication";
+import { rejectVendorApplication } from "@/features/admin/actions/rejectVendorApplication";
+import { getSubmittedVendorApplications } from "@/features/admin/queries/getSubmittedVendorApplications";
+import type { IssuedVendorCredentials } from "@/features/admin/types";
+import { VendorApplicationRecord } from "@/types";
 
 export function useVendorApplications() {
   const [data, setData] = useState<VendorApplicationRecord[]>([]);

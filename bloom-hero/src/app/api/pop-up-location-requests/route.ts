@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { submitPopUpLocationRequest } from "@/lib/vendors/vendor-actions";
+import { requireCustomerSession } from "@/features/auth/utils/require-customer";
+import { submitPopUpLocationRequest } from "@/features/pop-up/actions/submitPopupLocationRequest";
 
 export async function POST(request: Request) {
+  const auth = await requireCustomerSession();
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 403 });
+  }
+
   try {
     const body = (await request.json()) as {
       vendorId?: string;
