@@ -42,14 +42,14 @@ function ReviewCard({ name, review, rating, date, approved = false }: ReviewCard
     .toUpperCase();
 
   return (
-    <div className="rounded-[24px] border border-[#edeae6] bg-[#f6f1ee] p-[24px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)]">
+    <div className="rounded-2xl border border-[#edeae6] bg-[#f6f1ee] p-4 shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)] sm:rounded-[24px] sm:p-6">
       <div className="flex items-center gap-3">
-        <div className="flex size-[56px] items-center justify-center rounded-full bg-[#edeae6] text-[16px] font-semibold text-[#5f5f5f]">
+        <div className="flex size-12 items-center justify-center rounded-full bg-[#edeae6] text-sm font-semibold text-[#5f5f5f] sm:size-14 sm:text-base">
           {initials || "C"}
         </div>
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <p className="text-[16px] font-bold text-[#1f1f1f]">{name}</p>
+            <p className="text-sm font-bold text-[#1f1f1f] sm:text-base">{name}</p>
             {approved ? (
               <Icon
                 icon="mdi:check-decagram"
@@ -61,10 +61,10 @@ function ReviewCard({ name, review, rating, date, approved = false }: ReviewCard
           <Stars rating={rating} />
         </div>
       </div>
-      <p className="mt-4 text-[16px] leading-7 text-[#4f4b47]">
+      <p className="mt-3 text-sm leading-7 text-[#4f4b47] sm:mt-4 sm:text-base">
         {review || "No comment provided."}
       </p>
-      <p className="mt-3 text-[14px] text-[#6b6b6b]">{date}</p>
+      <p className="mt-2 text-xs text-[#6b6b6b] sm:mt-3 sm:text-sm">{date}</p>
     </div>
   );
 }
@@ -89,24 +89,25 @@ export function ProductDetailReviewsSection({ reviews }: { reviews: ProductRevie
   const totalReviews = reviews.length;
 
   return (
-    <section className="w-full max-w-[1200px] px-[64px] pb-[64px]">
-      <div className="flex items-end justify-between gap-4">
-        <h2 className="text-[32px] font-bold text-[#1f1f1f]">Customer Reviews</h2>
+    <section className="page-x mx-auto w-full max-w-[1200px] pb-10 sm:pb-16">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+        <h2 className="text-2xl font-bold text-[#1f1f1f] sm:text-3xl">Customer Reviews</h2>
         {totalReviews > 0 && (
           <button
+            type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-[16px] font-medium text-[#1f1f1f] hover:text-[#D24B46] underline cursor-pointer transition"
+            className="w-fit cursor-pointer text-left text-sm font-medium text-[#1f1f1f] underline transition hover:text-[#D24B46] sm:text-base"
           >
             {isExpanded ? "Show less" : `View all ${totalReviews} reviews`}
           </button>
         )}
       </div>
       {totalReviews === 0 ? (
-        <p className="mt-[24px] rounded-[24px] border border-[#edeae6] bg-[#f6f1ee] px-[24px] py-[28px] text-[16px] text-[#4f4b47]">
+        <p className="mt-5 rounded-2xl border border-[#edeae6] bg-[#f6f1ee] px-4 py-6 text-sm text-[#4f4b47] sm:mt-6 sm:rounded-[24px] sm:px-6 sm:py-7 sm:text-base">
           No reviews yet for this product.
         </p>
       ) : (
-        <div className="mt-[24px] grid gap-[20px] lg:grid-cols-3">
+        <div className="mt-5 grid gap-4 sm:mt-6 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
           {displayedReviews.map((review) => (
             <ReviewCard
               key={review.id}

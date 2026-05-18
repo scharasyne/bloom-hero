@@ -5,6 +5,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Footer from "@/components/footer";
 import CartSummary from "@/components/CartSummary";
 import VendorCard from "@/components/VendorCard";
+import { CART_ORDER_STATUS } from "@/features/orders/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { Icon } from "@iconify/react";
 import { ShoppingCart } from "lucide-react";
@@ -296,9 +297,8 @@ export default function CartPageView() {
       const orderIdToNewPendingId = new Map<string, string>();
       for (const [orderId, items] of itemsByOrderId) {
         const vendorTotal = items.reduce((sum, item) => sum + (item.price * item.qty || 0), 0) + 40;
-        const nextStatus = selectedPaymentMethod === "online" ? "to_pay" : "to_ship";
         const updatePayload: Record<string, unknown> = {
-          status: nextStatus,
+          status: "to_pay",
           payment_method: selectedPaymentMethod,
           total_amount: vendorTotal,
         };
@@ -320,7 +320,7 @@ export default function CartPageView() {
               .insert({
                 customer_id: customerId,
                 vendor_id: vendorId,
-                status: "pending",
+                status: CART_ORDER_STATUS,
                 total_amount: unselectedTotal,
               })
               .select("id")
@@ -396,8 +396,7 @@ export default function CartPageView() {
       
       // Add a small delay to ensure database updates propagate
       setTimeout(() => {
-        const nextTab = selectedPaymentMethod === "online" ? "to-pay" : "to-ship";
-        window.location.href = `/orders?tab=${nextTab}`;
+        window.location.href = "/orders?tab=to-pay";
       }, 500);
     } catch (error) {
       console.error("Checkout failed:", error);

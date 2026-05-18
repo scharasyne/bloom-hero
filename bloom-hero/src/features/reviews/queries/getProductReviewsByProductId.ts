@@ -1,10 +1,10 @@
 // Origin: src/lib/products.ts
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import type { ProductReviewRow } from "../types";
 
 export async function getProductReviewsByProductId(productId: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
 
   if (!productId || productId.trim() === "") {
     console.warn("getProductReviewsByProductId: productId is empty or missing");

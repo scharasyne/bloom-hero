@@ -7,6 +7,7 @@
   It's a bit of a mess and could use some cleanup.
 */
 
+import { confirmCustomerCodOrder } from "@/features/orders/actions/confirmCustomerCodOrder";
 import type { OrderGroup } from "@/features/orders/types";
 import { STATUS_BADGE } from "@/features/orders/constants";
 import type { TabKey } from "@/features/orders/constants";
@@ -84,18 +85,24 @@ function IconPackageCheck({ className = "" }: { className?: string }) {
 /* ------------------------------------------------------------------ */
 function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab: TabKey }) {
   const hasReceipt = Boolean(order.receiptProofUrl);
+  const isCod = order.paymentMethod === "cod";
 
   if (activeTab === "to-pay") {
     return (
       <div className="flex flex-col gap-3 w-full sm:w-auto">
         {/* FIX 7: Countdown left-aligned, actions right-aligned — no more floating center */}
-        {hasReceipt ? null : <PaymentCountdown orderDate={order.orderDate} />}
-        <div className="flex items-center gap-2.5 justify-end flex-wrap">
+        {!isCod && !hasReceipt ? <PaymentCountdown orderDate={order.orderDate} /> : null}
+        {isCod ? (
+          <p className="text-xs font-medium text-[#6D6863]">
+            Cash on delivery — confirm to send this order to the vendor.
+          </p>
+        ) : null}
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
           <div className="flex items-baseline gap-1.5">
             <span className="text-xs text-[#A39E96] font-semibold uppercase tracking-wider">Amount Due</span>
             <span className="text-lg font-bold text-[#2f2f2f] tabular-nums">{formatPeso(order.total)}</span>
           </div>
-          {hasReceipt ? (
+          {!isCod && hasReceipt ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
               Receipt uploaded
             </span>
@@ -105,7 +112,7 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
             solid red bg instead of just a red outline, so it reads as
             "this is irreversible" not just a secondary option.
           */}
-          {hasReceipt ? (
+          {hasReceipt && !isCod ? (
             <span
               aria-disabled="true"
               className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#e6e2dd] bg-[#f6f3ef] px-5 py-2 text-xs font-bold text-[#b4ada5] cursor-not-allowed"
@@ -120,14 +127,25 @@ function OrderFooterActions({ order, activeTab }: { order: OrderGroup; activeTab
               Cancel Order
             </a>
           )}
-          {/* FIX 2: Pay Now → solid red, customer primary CTA */}
-          <a
-            href={`/orders/${order.id}/pay`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
-          >
-            <IconCreditCard />
-            Pay Now
-          </a>
+          {isCod ? (
+            <form action={confirmCustomerCodOrder}>
+              <input type="hidden" name="orderId" value={order.id} />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+              >
+                Confirm Order
+              </button>
+            </form>
+          ) : (
+            <a
+              href={`/orders/${order.id}/pay`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#D24B46] px-5 py-2 text-xs font-bold text-white hover:bg-[#A53A35] shadow-sm hover:shadow-md hover:-translate-y-px transition-all"
+            >
+              <IconCreditCard />
+              Pay Now
+            </a>
+          )}
         </div>
       </div>
     );

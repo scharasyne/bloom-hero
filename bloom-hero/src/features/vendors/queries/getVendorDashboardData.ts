@@ -88,7 +88,8 @@ export async function getVendorDashboardData(): Promise<
     .eq("vendor_id", vendor.id)
     .gte("order_date", previousStart.toISOString())
     .lt("order_date", currentEnd.toISOString())
-    .neq("status", "cancelled");
+    .neq("status", "cancelled")
+    .neq("status", "pending");
 
   if (ordersError) return { ok: false, error: "Failed to load order metrics." };
   const orders = orderRows ?? [];
@@ -235,7 +236,8 @@ export async function getVendorDashboardData(): Promise<
     .eq("vendor_id", vendor.id)
     .gte("order_date", upcomingStart.toISOString())
     .lt("order_date", upcomingEnd.toISOString())
-    .neq("status", "cancelled");
+    .neq("status", "cancelled")
+    .neq("status", "pending");
 
   const upcomingMap = new Map<string, number>();
   for (const row of upcomingRows ?? []) {

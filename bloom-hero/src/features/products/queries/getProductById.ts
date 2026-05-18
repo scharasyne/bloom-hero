@@ -1,15 +1,16 @@
 // Origin: src/lib/products.ts
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import type { ProductDetailRow } from "../types";
 
 type ProductCategoryRow = { product_id: string; category: { category_name: string } | null };
+type ProductRowWithCategoryId = ProductDetailRow & { category_id?: string | null };
 
 export async function getProductById(id: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createPublicCatalogSupabaseClient();
 
-  // Try to include product_images relation if it exists
-  const selectWithImages = "id, vendor_id, product_name, product_image_url, price, description, created_at, stocks, product_images(image_url, display_order)";
+  const selectWithImages =
+    "id, vendor_id, category_id, product_name, product_image_url, price, description, created_at, stocks, product_images(image_url, display_order)";
   const { data: productRowsWithImages, error: productsError } = await supabase
     .from("products")
     .select(selectWithImages)
@@ -22,7 +23,9 @@ export async function getProductById(id: string) {
     // Attempt fallback without images relation
     const { data: productRowsNoImages, error: fallbackError } = await supabase
       .from("products")
-      .select("id, vendor_id, product_name, product_image_url, price, description, created_at, stocks")
+      .select(
+        "id, vendor_id, category_id, product_name, product_image_url, price, description, created_at, stocks"
+      )
       .eq("id", id)
       .limit(1)
       .maybeSingle();
@@ -36,21 +39,30 @@ export async function getProductById(id: string) {
 
   if (!productRows) return { data: null as ProductDetailRow | null, error: null };
 
-  const product = productRows as ProductDetailRow;
+  const product = productRows as ProductRowWithCategoryId;
 
-  // Categories
+  const categories: string[] = [];
   const { data: categoryRows, error: categoryError } = await supabase
     .from("product_categories")
     .select("product_id, category:categories(category_name)")
     .eq("product_id", id);
 
   if (categoryError) {
-    return { data: null as ProductDetailRow | null, error: categoryError };
+    console.warn("getProductById: product_categories lookup failed:", categoryError.message);
+  } else {
+    for (const row of (categoryRows ?? []) as unknown as ProductCategoryRow[]) {
+      const name = row.category?.category_name?.trim();
+      if (name) categories.push(name);
+    }
   }
 
-  const categories: string[] = [];
-  for (const row of (categoryRows ?? []) as unknown as ProductCategoryRow[]) {
-    const name = row.category?.category_name?.trim();
+  if (categories.length === 0 && product.category_id) {
+    const { data: categoryRow } = await supabase
+      .from("categories")
+      .select("category_name")
+      .eq("id", product.category_id)
+      .maybeSingle();
+    const name = categoryRow?.category_name?.trim();
     if (name) categories.push(name);
   }
 
@@ -74,20 +86,24 @@ export async function getProductById(id: string) {
     }
   }
 
-  // Sold count (completed orders only)
-  const { data: soldRows } = await supabase
+  let sold_count = 0;
+  const { data: soldRows, error: soldError } = await supabase
     .from("order_items")
     .select("product_id, quantity, orders!inner(status)")
     .eq("orders.status", "completed")
     .eq("product_id", id);
 
-  let sold_count = 0;
-  for (const r of soldRows ?? []) {
-    sold_count += Number((r as any).quantity) || 0;
+  if (soldError) {
+    console.warn("getProductById: sold count unavailable:", soldError.message);
+  } else {
+    for (const r of soldRows ?? []) {
+      sold_count += Number((r as { quantity?: number }).quantity) || 0;
+    }
   }
 
+  const { category_id: _categoryId, ...productFields } = product;
   const result: ProductDetailRow = {
-    ...product,
+    ...productFields,
     categories,
     shop_name,
     business_type,
