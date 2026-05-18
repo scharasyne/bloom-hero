@@ -155,6 +155,12 @@ CREATE POLICY vendors_select ON public.vendors FOR SELECT
       (select private.can_read_public_vendor_catalog())
       AND status = 'approved'::public.vendor_status
     )
+    OR EXISTS (
+      SELECT 1
+      FROM public.orders o
+      WHERE o.vendor_id = vendors.id
+        AND o.customer_id = (select auth.uid())
+    )
   );
 
 CREATE POLICY vendors_insert ON public.vendors FOR INSERT
@@ -186,6 +192,13 @@ CREATE POLICY products_select ON public.products FOR SELECT
     OR (
       (select private.can_read_public_vendor_catalog())
       AND (select private.is_approved_vendor_id(vendor_id))
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM public.order_items oi
+      INNER JOIN public.orders o ON o.id = oi.order_id
+      WHERE oi.product_id = products.id
+        AND o.customer_id = (select auth.uid())
     )
   );
 

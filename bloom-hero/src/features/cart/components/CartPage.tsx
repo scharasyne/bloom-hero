@@ -63,31 +63,39 @@ export default function CartPageView() {
     return parts.length > 0 ? parts.join(" | ") : "Unknown database error.";
   };
 
-  // Group flat cartItems array by vendorName
-  const groupedItems = cartItems.reduce<Record<string, typeof cartItems>>((acc, item) => {
-    const vendor = item.vendorName || "BloomHero Vendor";
-    if (!acc[vendor]) acc[vendor] = [];
-    acc[vendor].push(item);
-    return acc;
-  }, {});
+  type CartVendorGroup = { vendorId: string; vendorName: string; items: typeof cartItems };
+
+  const vendorGroups: CartVendorGroup[] = (() => {
+    const map = new Map<string, CartVendorGroup>();
+    for (const item of cartItems) {
+      const vendorId = item.vendorId ?? item.vendorName ?? "unknown";
+      const vendorName = item.vendorName || "BloomHero Vendor";
+      if (!map.has(vendorId)) {
+        map.set(vendorId, { vendorId, vendorName, items: [] });
+      }
+      map.get(vendorId)!.items.push(item);
+    }
+    return Array.from(map.values());
+  })();
 
   const toggleSelectAll = () => {
     if (allSelected) setSelectedIds(new Set());
     else setSelectedIds(new Set(cartItems.map((i) => i.id)));
   };
 
-  const getVendorItemIds = (vendorName: string) => groupedItems[vendorName]?.map((i) => i.id) ?? [];
+  const getVendorItemIds = (vendorId: string) =>
+    vendorGroups.find((g) => g.vendorId === vendorId)?.items.map((i) => i.id) ?? [];
 
-  const isVendorSelected = (vendorName: string) => {
-    const ids = getVendorItemIds(vendorName);
+  const isVendorSelected = (vendorId: string) => {
+    const ids = getVendorItemIds(vendorId);
     return ids.length > 0 && ids.every((id) => selectedIds.has(id));
   };
 
-  const toggleVendorSelect = (vendorName: string) => {
-    const ids = getVendorItemIds(vendorName);
+  const toggleVendorSelect = (vendorId: string) => {
+    const ids = getVendorItemIds(vendorId);
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (isVendorSelected(vendorName)) ids.forEach((id) => next.delete(id));
+      if (isVendorSelected(vendorId)) ids.forEach((id) => next.delete(id));
       else ids.forEach((id) => next.add(id));
       return next;
     });
@@ -114,7 +122,7 @@ export default function CartPageView() {
       try {
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
-          .select("id, vendor_id, order_date")
+          .select("id, vendor_id, order_date, vendors(id, shop_name)")
           .eq("customer_id", custId)
           .eq("status", "pending")
           .order("order_date", { ascending: false });
@@ -124,10 +132,13 @@ export default function CartPageView() {
         const orderList = orders ?? [];
         const orderIds = orderList.map((o: any) => o.id);
         const vendorByOrder: Record<string, string> = {};
-        for (const order of orderList as Array<{ id: string; vendor_id: string }>) {
-          if (order.id && order.vendor_id) {
-            vendorByOrder[order.id] = order.vendor_id;
-          }
+        const vendorNameByOrder: Record<string, string> = {};
+        for (const order of orderList) {
+          if (!order.id || !order.vendor_id) continue;
+          vendorByOrder[order.id] = order.vendor_id;
+          const vendor = order.vendors as { shop_name?: string | null } | { shop_name?: string | null }[] | null;
+          const shopName = Array.isArray(vendor) ? vendor[0]?.shop_name : vendor?.shop_name;
+          vendorNameByOrder[order.id] = shopName ?? "BloomHero Vendor";
         }
 
         if (orderIds.length === 0) {
@@ -149,11 +160,13 @@ export default function CartPageView() {
         const mappedItems = items?.map((row: any) => {
           const product = row.products || {};
           const stocks = product.stocks ?? 0;
+          const orderId = row.order_id as string;
           return {
             id: row.product_id,
-            orderId: row.order_id,
+            orderId,
+            vendorId: vendorByOrder[orderId] ?? null,
             productName: product.product_name ?? "",
-            vendorName: product.vendor_name ?? "BloomHero Vendor",
+            vendorName: vendorNameByOrder[orderId] ?? "BloomHero Vendor",
             price: product.price ?? 0,
             qty: row.quantity ?? 0,
             maxQty: stocks || row.quantity || 0,
@@ -484,15 +497,15 @@ export default function CartPageView() {
                 <EmptyCart />
               </div>
             ) : (
-              <div className="space-y-4 sm:space-y-5">
-                {Object.entries(groupedItems).map(([vendorName, items]) => (
+              <div className="space-y-6">
+                {vendorGroups.map((group) => (
                   <VendorCard
-                    key={vendorName}
-                    vendorName={vendorName}
-                    items={items}
+                    key={group.vendorId}
+                    vendorName={group.vendorName}
+                    items={group.items}
                     selectedIds={selectedIds}
-                    isVendorSelected={isVendorSelected(vendorName)}
-                    onVendorSelect={() => toggleVendorSelect(vendorName)}
+                    isVendorSelected={isVendorSelected(group.vendorId)}
+                    onVendorSelect={() => toggleVendorSelect(group.vendorId)}
                     onItemSelect={toggleSelectItem}
                     onIncrease={handleIncrease}
                     onDecrease={handleDecrease}

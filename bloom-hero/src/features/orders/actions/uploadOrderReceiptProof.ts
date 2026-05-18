@@ -63,7 +63,6 @@ export async function uploadOrderReceiptProof(formData: FormData) {
       .update({
         receipt_proof_url: filePath,
         receipt_submitted_at: new Date().toISOString(),
-        status: "to_ship",
       })
       .eq("id", orderId);
 
@@ -74,7 +73,9 @@ export async function uploadOrderReceiptProof(formData: FormData) {
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
     revalidatePath("/vendor/orders");
-    redirect("/orders?tab=to-ship&success=Receipt+uploaded");
+    redirect(
+      "/orders?tab=to-pay&success=Receipt+uploaded.+Waiting+for+vendor+to+confirm+payment."
+    );
   } catch (error) {
     unstable_rethrow(error);
 
