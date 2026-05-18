@@ -44,10 +44,11 @@ export function groupOrders(rows: OrderItemRow[]): OrderGroup[] {
     const key = row.orders.id;
     if (!ordersMap.has(key)) {
       ordersMap.set(key, {
-        id: row.order_id,
+        id: row.orders.id,
         vendorId: row.orders.vendors?.id ?? null,
         vendorName: row.orders.vendors?.shop_name ?? "Bloom & Co.",
         status: row.orders.status,
+        paymentMethod: row.orders.payment_method ?? null,
         orderDate: row.orders.order_date,
         total: Number(row.orders.total_amount) || 0,
         receiptProofUrl: row.orders.receipt_proof_url,

@@ -1,12 +1,10 @@
-// Source: `src/app/actions/order-status.ts`
-
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { getOrderSessionUserId } from "@/features/orders/utils/getOrderSessionUserId";
 
-export async function cancelCustomerOrder(formData: FormData) {
+export async function confirmCustomerCodOrder(formData: FormData) {
   const orderId = String(formData.get("orderId") || "");
 
   if (!orderId) {
@@ -18,7 +16,7 @@ export async function cancelCustomerOrder(formData: FormData) {
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, customer_id, status")
+      .select("id, customer_id, status, payment_method")
       .eq("id", orderId)
       .single();
 
@@ -27,16 +25,16 @@ export async function cancelCustomerOrder(formData: FormData) {
     }
 
     if (order.customer_id !== userId) {
-      throw new Error("You are not allowed to cancel this order.");
+      throw new Error("You are not allowed to update this order.");
     }
 
-    if (order.status !== "to_pay") {
-      throw new Error("Only orders awaiting payment can be cancelled.");
+    if (order.status !== "to_pay" || order.payment_method !== "cod") {
+      throw new Error("Only cash-on-delivery orders awaiting confirmation can be submitted.");
     }
 
     const { error: updateError } = await supabase
       .from("orders")
-      .update({ status: "cancelled" })
+      .update({ status: "to_ship" })
       .eq("id", orderId);
 
     if (updateError) {
@@ -46,7 +44,7 @@ export async function cancelCustomerOrder(formData: FormData) {
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
     revalidatePath("/vendor/orders");
-    redirect("/orders?tab=to-pay&success=Order+cancelled");
+    redirect("/orders?tab=to-ship&success=Order+confirmed");
   } catch (error) {
     unstable_rethrow(error);
 

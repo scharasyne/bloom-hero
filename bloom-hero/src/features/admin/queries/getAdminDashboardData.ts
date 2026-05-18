@@ -43,7 +43,8 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
       .from("orders")
       .select("total_amount, status, order_date")
       .gte("order_date", monthStart)
-      .neq("status", "cancelled"),
+      .neq("status", "cancelled")
+      .neq("status", "pending"),
     adminClient.client
       .from("vendor_applications")
       .select("id, shop_name, shop_address, email, submitted_at, created_at")

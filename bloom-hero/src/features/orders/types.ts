@@ -15,6 +15,7 @@ export type OrderItemRow = {
     id: string;
     order_date: string;
     status: string;
+    payment_method: "online" | "cod" | null;
     total_amount: number;
     receipt_proof_url: string | null;
     receipt_submitted_at: string | null;
@@ -30,6 +31,7 @@ export type OrderGroup = {
   vendorId: string | null;
   vendorName: string;
   status: string;
+  paymentMethod: "online" | "cod" | null;
   orderDate: string;
   total: number;
   receiptProofUrl: string | null;

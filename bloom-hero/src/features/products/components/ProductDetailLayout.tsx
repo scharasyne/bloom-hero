@@ -10,14 +10,10 @@ import type { ProductReviewRow } from "@/features/reviews/types";
 import { addToCart } from "@/features/orders/actions/addToCart";
 import { ProductDetailReviewsSection } from "@/features/reviews/components/ProductDetailReviewsSection";
 
-function MainPicture({ src }: { src: string }) {
+function MainPicture({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="shrink-0 overflow-hidden rounded-[24px] size-[420px] bg-[#f4f0eb]">
-      <img
-        alt="Product"
-        className="size-full object-cover pointer-events-none"
-        src={src}
-      />
+    <div className="relative mx-auto aspect-square w-full max-w-[420px] shrink-0 overflow-hidden rounded-2xl bg-[#f4f0eb] sm:rounded-[24px]">
+      <img alt={alt} className="size-full object-cover pointer-events-none" src={src} />
     </div>
   );
 }
@@ -28,9 +24,9 @@ function ChevronButton({ direction, onClick }: { direction: "left" | "right"; on
       type="button"
       onClick={onClick}
       aria-label={direction === "left" ? "Previous image" : "Next image"}
-      className="flex items-center justify-center text-[#5f5f5f] transition hover:text-[#D24B46] shrink-0"
+      className="flex shrink-0 items-center justify-center text-[#5f5f5f] transition hover:text-[#D24B46]"
     >
-      <span className="text-[40px] leading-none">{direction === "left" ? "‹" : "›"}</span>
+      <span className="text-3xl leading-none sm:text-[40px]">{direction === "left" ? "‹" : "›"}</span>
     </button>
   );
 }
@@ -57,7 +53,7 @@ function Thumbnail({ src, alt, active = false, onClick }: { src: string; alt: st
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 overflow-hidden rounded-[16px] size-[116px] border transition cursor-pointer ${
+      className={`size-[72px] shrink-0 cursor-pointer overflow-hidden rounded-xl border transition sm:size-[96px] sm:rounded-[16px] lg:size-[116px] ${
         active ? "border-[#D24B46] ring-2 ring-[#D24B46]/20" : "border-transparent hover:border-[#d9d4cd]"
       }`}
     >
@@ -86,14 +82,16 @@ function Gallery({ product }: { product: ProductDetailRow | null }) {
   const handleDotClick = (index: number) => setCurrentIndex(index);
   const handleThumbnailClick = (index: number) => setCurrentIndex(index);
 
-  return (
-    <div className="flex flex-col items-center w-[560px]">
-      <MainPicture src={imageUrls[currentIndex] ?? null} />
+  const mainSrc = imageUrls[currentIndex] ?? imageUrls[0] ?? "/bloom-icon.png";
 
-      <div className="mt-4 flex items-center gap-3">
+  return (
+    <div className="flex w-full max-w-[560px] flex-col items-center">
+      <MainPicture src={mainSrc} alt={product?.product_name ?? "Product"} />
+
+      <div className="mt-3 flex w-full items-center gap-2 sm:mt-4 sm:gap-3">
         <ChevronButton direction="left" onClick={handlePrevious} />
 
-        <div className="flex gap-3 overflow-hidden">
+        <div className="scrollbar-thin-oval flex min-w-0 flex-1 gap-2 overflow-x-auto px-0.5 sm:gap-3">
           {imageUrls.slice(0, 4).map((src, index) => (
             <Thumbnail
               key={src + index}
@@ -121,28 +119,30 @@ function Headline({ product, reviewCount, reviews }: { product: ProductDetailRow
   const safeRating = Math.max(0, Math.min(5, Math.round(averageRating ?? 0)));
 
   return (
-    <div className="flex flex-col gap-[12px]">
-      <h1 className="text-[36px] font-semibold leading-tight text-[#1f1f1f]">
+    <div className="flex flex-col gap-3">
+      <h1 className="text-2xl font-semibold leading-tight text-[#1f1f1f] sm:text-3xl lg:text-[36px]">
         {product?.product_name ?? "Product"}
       </h1>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
-          <div className="flex gap-0.5">
+          <div className="flex gap-0.5 text-sm sm:text-base">
             {Array.from({ length: 5 }).map((_, index) => (
               <span key={index} className={index < safeRating ? "text-[#f4b740]" : "text-[#d9d4cd]"}>
                 ★
               </span>
             ))}
           </div>
-          <span className="text-[16px] font-semibold text-[#1f1f1f]">
+          <span className="text-sm font-semibold text-[#1f1f1f] sm:text-base">
             {averageRating !== null ? Number(averageRating).toFixed(1) : "—"}
           </span>
         </div>
-        <span className="text-[16px] text-[#6b6b6b]">({reviewCount} {reviewCount === 1 ? "review" : "reviews"})</span>
+        <span className="text-sm text-[#6b6b6b] sm:text-base">
+          ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+        </span>
       </div>
-      <div className="flex items-center gap-1 text-[16px] text-[#6b6b6b]">
-        <Icon icon="mdi:map-marker-outline" className="size-[20px] shrink-0" />
-        <span>{product?.shop_name ?? "Unknown vendor"}</span>
+      <div className="flex items-start gap-1 text-sm text-[#6b6b6b] sm:text-base">
+        <Icon icon="mdi:map-marker-outline" className="mt-0.5 size-5 shrink-0" />
+        <span className="min-w-0 break-words">{product?.shop_name ?? "Unknown vendor"}</span>
       </div>
     </div>
   );
@@ -162,11 +162,11 @@ function Tags({ categories }: { categories: string[] }) {
 
 function PriceStock({ product }: { product: ProductDetailRow | null }) {
   return (
-    <div className="flex items-center gap-4">
-      <strong className="text-[24px] font-semibold text-[#2f5d3a]">₱{product?.price ?? "—"}</strong>
-      <div className="bg-[#2f5d3a] flex gap-[6px] items-center px-[12px] py-[6px] rounded-[999px]">
-        <Icon icon="mdi:check" className="size-[18px] text-white shrink-0" />
-        <span className="font-medium text-[14px] text-white whitespace-nowrap">
+    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+      <strong className="text-xl font-semibold text-[#2f5d3a] sm:text-2xl">₱{product?.price ?? "—"}</strong>
+      <div className="flex items-center gap-1.5 rounded-full bg-[#2f5d3a] px-3 py-1.5 sm:px-3 sm:py-1.5">
+        <Icon icon="mdi:check" className="size-[18px] shrink-0 text-white" />
+        <span className="text-xs font-medium text-white sm:text-sm">
           In Stock ({product?.stocks ?? 0} available)
         </span>
       </div>
@@ -181,21 +181,23 @@ function Quantity({ quantity, onQuantityChange }: { quantity: number; onQuantity
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-[16px] font-medium text-[#1f1f1f]">Quantity:</span>
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-sm font-medium text-[#1f1f1f] sm:text-base">Quantity:</span>
       <div className="flex items-center rounded-full border border-[#edeae6] bg-white">
         <button
+          type="button"
           onClick={handleDecrement}
-          className="px-4 py-2 text-[18px] text-[#1f1f1f] hover:text-[#D24B46] transition"
+          className="px-3 py-2 text-lg text-[#1f1f1f] transition hover:text-[#D24B46] sm:px-4"
         >
           −
         </button>
-        <span className="min-w-10 px-3 text-center text-[16px] text-[#1f1f1f]">
+        <span className="min-w-10 px-3 text-center text-sm text-[#1f1f1f] sm:text-base">
           {quantity}
         </span>
         <button
+          type="button"
           onClick={handleIncrement}
-          className="px-4 py-2 text-[18px] text-[#1f1f1f] hover:text-[#D24B46] transition"
+          className="px-3 py-2 text-lg text-[#1f1f1f] transition hover:text-[#D24B46] sm:px-4"
         >
           +
         </button>
@@ -212,7 +214,7 @@ function AddToCartButton({ onClick, loading }: { onClick: () => void; loading: b
         onClick();
       }}
       disabled={loading}
-      className="w-full rounded-full border-2 border-[#e6e1dc] px-5 py-3 text-[16px] font-semibold text-[#D24B46] transition hover:border-[#D24B46] hover:bg-[#fff5f3] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#e6e1dc] px-5 py-3 text-sm font-semibold text-[#D24B46] transition hover:border-[#D24B46] hover:bg-[#fff5f3] disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
     >
       <Icon icon="mdi:cart-outline" className="size-[20px]" />
       {loading ? "Adding..." : "Add to cart"}
@@ -228,7 +230,7 @@ function BuyNow({ onClick, loading }: { onClick: () => void; loading: boolean })
         onClick();
       }}
       disabled={loading}
-      className="w-full rounded-full bg-[#D24B46] px-5 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-[#b03d33] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#D24B46] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#b03d33] disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
     >
       <Icon icon="mdi:shopping-outline" className="size-[20px] text-white shrink-0" />
       {loading ? "Processing..." : "Buy now"}
@@ -249,11 +251,11 @@ function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, o
   const categories = product?.categories ?? [];
 
   return (
-    <div className="flex max-w-[560px] flex-col gap-[32px]">
+    <div className="flex w-full min-w-0 max-w-[560px] flex-col gap-6 sm:gap-8 lg:flex-1">
       <Headline product={product} reviewCount={reviewCount} reviews={reviews} />
       <Tags categories={categories} />
       <PriceStock product={product} />
-      <p className="text-[16px] leading-7 text-[#3a3733]">
+      <p className="text-sm leading-7 text-[#3a3733] sm:text-base">
         {product?.description ?? "No description available for this product."}
       </p>
       <Quantity quantity={quantity} onQuantityChange={onQuantityChange} />
@@ -264,8 +266,8 @@ function Text({ product, reviewCount, quantity, onQuantityChange, onAddToCart, o
 
 function ProductDetails({ product, reviewCount, quantity, onQuantityChange, onAddToCart, onBuyNow, addingLoading, buyingLoading, reviews }: { product: ProductDetailRow | null; reviewCount: number; quantity: number; onQuantityChange: (q: number) => void; onAddToCart: () => void; onBuyNow: () => void; addingLoading: boolean; buyingLoading: boolean; reviews?: ProductReviewRow[] }) {
   return (
-    <section className="w-full max-w-[1200px] px-[64px] pt-[64px] pb-[32px]">
-      <div className="flex items-start gap-[48px]">
+    <section className="page-x mx-auto w-full max-w-[1200px] pb-6 pt-5 sm:pb-8 sm:pt-8 lg:pt-16">
+      <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-12">
         <Gallery product={product} />
         <Text product={product} reviewCount={reviewCount} quantity={quantity} onQuantityChange={onQuantityChange} onAddToCart={onAddToCart} onBuyNow={onBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} reviews={reviews} />
       </div>
@@ -329,9 +331,9 @@ export function ProductDetailLayout({ product, reviews = [] }: { product?: Produ
   }, [product, quantity, router]);
 
   return (
-    <div className="flex w-full flex-col items-center bg-[#fbf7f4]">
+    <main className="flex min-h-screen w-full flex-col items-center bg-[#fbf7f4] pb-20 sm:pb-10">
       <ProductDetails product={product ?? null} reviewCount={reviews.length} quantity={quantity} onQuantityChange={setQuantity} onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} addingLoading={addingLoading} buyingLoading={buyingLoading} reviews={reviews} />
       <ProductDetailReviewsSection reviews={reviews} />
-    </div>
+    </main>
   );
 }

@@ -5,7 +5,7 @@ import { getPopUpMapVendors } from "@/features/pop-up/queries/getPopUpMapVendors
 import { canViewPublicVendorProfiles } from "@/features/vendors/utils/publicVendorAccess";
 
 export const metadata = {
-  title: "Pop-up Map | Bloom Hero",
+  title: "Pop-up Map",
   description: "Find scheduled pop-up flower shops near you.",
 };
 

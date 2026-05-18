@@ -1,5 +1,6 @@
 // Source: `src/app/actions/order-status.ts`
 
+import { CART_ORDER_STATUS } from "@/features/orders/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import type { CustomerPayPageResult } from "@/features/orders/types";
 
@@ -24,7 +25,7 @@ export async function loadCustomerPayPage(orderId: string): Promise<CustomerPayP
     throw new Error(`Failed to load payment page: ${error.message}`);
   }
 
-  if (!order) {
+  if (!order || order.status === CART_ORDER_STATUS) {
     return { status: "not-found" };
   }
 

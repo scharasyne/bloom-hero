@@ -2,6 +2,7 @@
 
 "use server";
 
+import { CART_ORDER_STATUS } from "@/features/orders/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { redirect } from "next/navigation";
 
@@ -21,7 +22,7 @@ export async function addToCart(productId: string, vendorId: string, price: numb
       .select("id, total_amount")
       .eq("customer_id", user.id)
       .eq("vendor_id", vendorId)
-      .eq("status", "pending")
+      .eq("status", CART_ORDER_STATUS)
       .maybeSingle();
 
     let orderId: string;
