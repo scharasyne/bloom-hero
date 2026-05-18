@@ -31,11 +31,11 @@ export default function PopUpMapSidebar({
 
   return (
     <div
-      className="w-full md:w-[300px] flex-shrink-0 flex flex-col border-b md:border-b-0 md:border-r border-[#edeae6]"
+      className="flex w-full max-h-[45%] min-h-0 shrink-0 flex-col border-b border-[#edeae6] md:h-full md:max-h-none md:w-[300px] md:border-b-0 md:border-r"
       style={{ background: "#fdfaf7" }}
     >
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-[#ede9e2] flex flex-col gap-3">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-[#ede9e2] px-4 pb-3 pt-4">
 
         {/* Title + count */}
         <div className="flex items-center justify-between">
@@ -82,8 +82,8 @@ export default function PopUpMapSidebar({
 
       </div>
 
-      {/* Vendor list */}
-      <div className="flex-1 overflow-y-auto py-2 px-2">
+      {/* Vendor list — scroll inside sidebar so the map stays visible */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2 px-2">
         {totalCount === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-1 text-center px-4">
             <p className="text-[13px] font-medium text-[#a09a94]">No pop-ups found.</p>
@@ -127,7 +127,7 @@ export default function PopUpMapSidebar({
       </div>
 
       {/* CTA */}
-      <div className="px-4 py-4 border-t border-[#edeae6] flex-shrink-0">
+      <div className="shrink-0 border-t border-[#edeae6] px-4 py-4">
         <button className="w-full h-10 rounded-xl bg-[#d24b46] text-white font-semibold text-[13px] tracking-[0.3px] hover:bg-[#b93e3a] active:scale-[0.98] transition-all duration-150 shadow-sm shadow-[#d24b46]/20">
           Request a Pop-up
         </button>

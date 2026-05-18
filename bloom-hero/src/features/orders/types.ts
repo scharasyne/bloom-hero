@@ -3,6 +3,7 @@
 import type { TabKey } from "@/features/orders/constants";
 
 export type OrderItemRow = {
+  id: string;
   order_id: string;
   quantity: number;
   subtotal: number;
@@ -13,6 +14,7 @@ export type OrderItemRow = {
   } | null;
   orders: {
     id: string;
+    vendor_id: string;
     order_date: string;
     status: string;
     payment_method: "online" | "cod" | null;
@@ -38,6 +40,18 @@ export type OrderGroup = {
   receiptSubmittedAt: string | null;
   items: OrderItemRow[];
   hasReview: boolean;
+};
+
+export type OrderItemCardModel = {
+  itemId: string;
+  row: OrderItemRow;
+  order: OrderGroup;
+};
+
+export type VendorOrderSection = {
+  vendorId: string | null;
+  vendorName: string;
+  cards: OrderItemCardModel[];
 };
 
 // Source: `src/app/(customer)/orders/page.tsx`
