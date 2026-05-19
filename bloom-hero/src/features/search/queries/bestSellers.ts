@@ -259,7 +259,9 @@ export async function getVendorBestSellers(
     soldCountByVendorId.set(vendorId, currentCount + (Number(row.quantity) || 0));
   }
 
-  let vendorQuery = supabase.from("vendors").select("id, shop_name, business_type, average_rating");
+  let vendorQuery = supabase
+    .from("vendors")
+    .select("id, shop_name, business_type, holds_popups, average_rating");
   if (query) {
     vendorQuery = vendorQuery.ilike("shop_name", `%${query}%`);
   }

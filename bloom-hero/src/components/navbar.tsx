@@ -61,7 +61,6 @@ export default function NavBar({
   
   const user = session?.user || null;
   const role = session?.profile?.role;
-  const business_type = session?.profile?.business_type;
   const vendor_name = session?.profile?.vendor_shop_name;
 
   const displayName =
@@ -72,7 +71,11 @@ export default function NavBar({
   const isVendor = role === "vendor";
   const isAdmin = role === "admin";
   const hidePublicNav = isVendor || isAdmin;
-  const logoHref = isAdmin ? "/admin/dashboard" : "/";
+  const logoHref = isAdmin
+    ? "/admin/dashboard"
+    : isVendor
+      ? "/vendor/dashboard"
+      : "/";
 
   const navAudience: NavAudience = role === "customer" ? "customer" : "default";
   const items = navLinks[navAudience];
@@ -91,9 +94,10 @@ export default function NavBar({
     if (query) router.push(`/search?q=${encodeURIComponent(query)}`);
     else router.push("/search");
   };
-  
-  if (role === "admin" || role === "vendor") return null;
-  
+
+  // Admins use AdminSidebarNav on /admin/* (NavBarShell skips those routes).
+  if (role === "admin") return null;
+
   return (
   <nav className="relative z-50 w-full bg-[#FBF7F4] border-b border-[#edeae6]">
     {/* ── Desktop row ─────────────────────────────────────────── */}
@@ -158,7 +162,7 @@ export default function NavBar({
 
       {/* RIGHT: nav links + auth */}
       <div className="flex items-center gap-7 ml-auto shrink-0">
-        {!hidePublicNav && (
+        {!hidePublicNav &&
           items.map(({ href, label }) => (
             <Link
               key={href}
@@ -171,8 +175,7 @@ export default function NavBar({
             >
               {label}
             </Link>
-          ))
-        )}
+          ))}
 
         {user ? (
           <button
@@ -255,7 +258,7 @@ export default function NavBar({
         )}
 
         {/* Links */}
-        {!hidePublicNav && (
+        {!hidePublicNav &&
           items.map(({ href, label }) => (
             <Link
               key={href}
@@ -269,8 +272,7 @@ export default function NavBar({
             >
               {label}
             </Link>
-          ))
-        )}
+          ))}
 
         {/* Auth */}
         <div className="px-5 pt-3 mt-1 border-t border-[#f0ece8]">

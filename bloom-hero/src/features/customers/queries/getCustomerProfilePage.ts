@@ -1,5 +1,6 @@
 // Source: `src/app/(customer)/profile/page.tsx`
 
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import type {
@@ -19,31 +20,23 @@ function isLinkedVendorCredentialsActive(issuedAt: string | null | undefined) {
 }
 
 export async function getCustomerProfilePage(): Promise<CustomerProfilePageResult> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  const user = await getAuthUser();
+  if (!user) {
     return { authenticated: false };
   }
 
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  const currentAuthUser = authUser ?? session.user;
+  const supabase = await createSupabaseServerClient();
 
   const { data: orderItems } = await supabase
     .from("order_items")
     .select("quantity, orders!inner(status, total_amount, vendor_id)")
-    .eq("orders.customer_id", session.user.id)
+    .eq("orders.customer_id", user.id)
     .eq("orders.status", "completed");
 
   const { count: reviewCount } = await supabase
     .from("reviews")
     .select("*", { count: "exact", head: true })
-    .eq("customer_id", session.user.id);
+    .eq("customer_id", user.id);
 
   const items = orderItems ?? [];
   const totalStems = items.reduce((sum, i) => sum + (i.quantity || 0), 0);
@@ -68,7 +61,6 @@ export async function getCustomerProfilePage(): Promise<CustomerProfilePageResul
     topVendorName = vendor?.shop_name ?? "Unknown Shop";
   }
 
-  const user = currentAuthUser;
   const displayName = user.user_metadata?.name ?? "";
   const phone = user.user_metadata?.phone ?? "";
   const linkedVendorCredentials =

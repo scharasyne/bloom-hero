@@ -2,15 +2,22 @@
 
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { RateLimitError, enforceRateLimit } from "@/lib/security/enforce-rate-limit";
+import { requireAuthUser } from "@/lib/security/require-auth-user";
 import { uploadVendorDocument } from "@/features/vendors/actions/uploadVendorDocument";
 
 export async function uploadVendorApplicationDocument(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { ok: false as const, error: "You need to log in again." };
+  const auth = await requireAuthUser();
+  if (!auth.ok) return { ok: false as const, error: auth.error };
+
+  try {
+    await enforceRateLimit("upload-api", auth.userId);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return { ok: false as const, error: error.message };
+    }
+    throw error;
+  }
 
   const file = formData.get("file");
   const documentType = formData.get("documentType");
@@ -19,7 +26,7 @@ export async function uploadVendorApplicationDocument(formData: FormData) {
   }
 
   try {
-    const publicUrl = await uploadVendorDocument(session.user.id, file, documentType);
+    const publicUrl = await uploadVendorDocument(auth.userId, file, documentType);
     return { ok: true as const, publicUrl };
   } catch (error) {
     return {

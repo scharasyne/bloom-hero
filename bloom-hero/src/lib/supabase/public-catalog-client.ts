@@ -2,14 +2,19 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 /**
- * Server reads for public catalog, auth profile, map, and vendor pages.
- * Prefers service role when SUPABASE_SERVICE_ROLE_KEY is set (RLS cannot block);
- * falls back to the cookie session client.
+ * Server reads for public catalog, map, and vendor pages.
+ * Uses the cookie session client (anon or authenticated) so RLS applies.
+ * Set SUPABASE_CATALOG_USE_SERVICE_ROLE=true only if a legacy deployment still
+ * requires bypassing RLS for catalog reads.
  */
 export async function createPublicCatalogSupabaseClient() {
-  try {
-    return createSupabaseAdminClient();
-  } catch {
-    return createSupabaseServerClient();
+  if (process.env.SUPABASE_CATALOG_USE_SERVICE_ROLE === "true") {
+    try {
+      return createSupabaseAdminClient();
+    } catch {
+      // Fall through to session client when service role is misconfigured.
+    }
   }
+
+  return createSupabaseServerClient();
 }

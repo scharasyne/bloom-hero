@@ -3,6 +3,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAuthUser } from "@/lib/security/require-auth-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { getOrderReviewEligibility } from "@/features/reviews/queries/getOrderReviewEligibility";
 import { saveReviewByCustomer } from "@/features/reviews/actions/saveReviewByCustomer";
@@ -22,14 +23,12 @@ type SubmitReviewResult = {
 };
 
 export async function submitCustomerReview(input: SubmitReviewInput): Promise<SubmitReviewResult> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    return { ok: false, error: "You must be logged in." };
+  const auth = await requireAuthUser();
+  if (!auth.ok) {
+    return { ok: false, error: auth.error };
   }
+
+  const supabase = await createSupabaseServerClient();
 
   if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
     return { ok: false, error: "Rating must be between 1 and 5." };
@@ -41,7 +40,7 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
 
   let order;
   try {
-    order = await getOrderReviewEligibility(input.orderId, session.user.id);
+    order = await getOrderReviewEligibility(input.orderId, auth.userId);
   } catch {
     return { ok: false, error: "Unable to validate this order right now." };
   }
@@ -66,7 +65,7 @@ export async function submitCustomerReview(input: SubmitReviewInput): Promise<Su
   try {
     await saveReviewByCustomer({
       reviewId: input.reviewId,
-      customerId: session.user.id,
+      customerId: auth.userId,
       vendorId: input.vendorId,
       orderId: input.orderId,
       productId: input.productId,

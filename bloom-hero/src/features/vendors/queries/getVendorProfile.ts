@@ -15,7 +15,7 @@ export async function getVendorProfile(
   let query = supabase
     .from("vendors")
     .select(
-      "id, shop_name, business_type, about, location_text, phone_number, opens_at, closes_at, status"
+      "id, shop_name, business_type, holds_popups, about, location_text, phone_number, opens_at, closes_at, status"
     )
     .eq("id", vendorId);
 

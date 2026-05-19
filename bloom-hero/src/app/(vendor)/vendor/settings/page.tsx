@@ -14,7 +14,10 @@ export default async function VendorSettingsPage() {
       businessType={commonProfile.businessType}
       fixedMain
     >
-      <PopUpSettings />
+      <PopUpSettings
+        businessType={commonProfile.businessType}
+        holdsPopups={commonProfile.holdsPopups}
+      />
     </VendorPageShell>
   );
 }

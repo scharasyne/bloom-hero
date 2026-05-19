@@ -1,10 +1,12 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { ensureAdmin } from "@/features/admin/utils/ensureAdmin";
 import type { ActivityLogInput } from "@/features/admin/types";
 
-async function getAdminName(adminUserId: string) {
-  const supabase = await createSupabaseServerClient();
+async function getAdminName(
+  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server-client").createSupabaseServerClient>>,
+  adminUserId: string,
+) {
   const { data, error } = await supabase
     .from("users")
     .select("name, email")
@@ -19,11 +21,15 @@ async function getAdminName(adminUserId: string) {
 }
 
 export async function logActivity(input: ActivityLogInput) {
-  const supabase = await createSupabaseServerClient();
-  const adminName = await getAdminName(input.adminUserId);
+  const { supabase, adminId, error: authError } = await ensureAdmin();
+  if (authError || !adminId) {
+    throw new Error(authError ?? "Only admins can perform this action.");
+  }
+
+  const adminName = await getAdminName(supabase, adminId);
 
   const { error } = await supabase.from("activity_logs").insert({
-    admin_user_id: input.adminUserId,
+    admin_user_id: adminId,
     admin_name: adminName,
     action_type: input.actionType,
     action_title: input.actionTitle,

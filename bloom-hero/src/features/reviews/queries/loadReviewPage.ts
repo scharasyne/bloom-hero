@@ -1,18 +1,17 @@
 // Source: `src/app/(customer)/review/actions.ts` (loadReviewPage only)
 
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { getExistingReviewByCustomerAndOrder } from "@/features/reviews/queries/getExistingReview";
 import type { ReviewOrder, ReviewPageData, ReviewPageResult } from "@/features/reviews/types";
 
 export async function loadReviewPage(orderId: string): Promise<ReviewPageResult> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  const user = await getAuthUser();
+  if (!user) {
     return { status: "unauthenticated" };
   }
+
+  const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("orders")
@@ -32,7 +31,7 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
     `
     )
     .eq("id", orderId)
-    .eq("customer_id", session.user.id)
+    .eq("customer_id", user.id)
     .maybeSingle();
 
   if (error) {
@@ -52,7 +51,7 @@ export async function loadReviewPage(orderId: string): Promise<ReviewPageResult>
 
   let existingReview: ReviewPageData["existingReview"] = null;
   if (productId) {
-    const review = await getExistingReviewByCustomerAndOrder(session.user.id, data.id, productId);
+    const review = await getExistingReviewByCustomerAndOrder(user.id, data.id, productId);
     existingReview = review ? { id: review.id, rating: review.rating, comment: review.comment } : null;
   }
 

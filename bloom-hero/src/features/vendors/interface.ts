@@ -29,6 +29,7 @@ export interface Vendor {
   id: string;
   shop_name: string;
   business_type?: "registered" | "unregistered" | null;
+  holds_popups?: boolean | null;
   about?: string | null;
   location_text?: string | null;
   phone_number?: string | null;

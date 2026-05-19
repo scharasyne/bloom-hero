@@ -24,6 +24,7 @@ export type SearchVendorRow = {
   id: string;
   shop_name: string | null;
   business_type: string | null;
+  holds_popups?: boolean | null;
   average_rating: number | null;
 };
 

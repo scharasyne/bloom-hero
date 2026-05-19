@@ -3,7 +3,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { requireAuthUser } from "@/lib/security/require-auth-user";
 import { upsertVendorApplicationByOwnerId } from "@/features/vendors/actions/upsertVendorApplication";
 import { normalizeToPhilippineE164 } from "@/features/vendors/utils/phone";
 import type { BusinessType, VendorApplicationVatStatus } from "@/features/vendors/types";
@@ -26,20 +26,16 @@ type ActionResult = {
 };
 
 export async function saveVendorApplicationDraft(input: DraftInput): Promise<ActionResult> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const auth = await requireAuthUser();
+  if (!auth.ok) return { ok: false, error: auth.error };
 
-  if (!session) return { ok: false, error: "You need to log in again." };
-
-  const stepOneError = validateVendorApplicationStepOne(input, session.user.email);
+  const stepOneError = validateVendorApplicationStepOne(input, auth.email);
   if (stepOneError) return { ok: false, error: stepOneError };
 
   const isUnregistered = input.businessType === "unregistered";
 
   try {
-    await upsertVendorApplicationByOwnerId(session.user.id, {
+    await upsertVendorApplicationByOwnerId(auth.userId, {
       shop_name: input.shopName.trim() || null,
       shop_address: input.shopAddress.trim() || null,
       email: input.email.trim() || null,

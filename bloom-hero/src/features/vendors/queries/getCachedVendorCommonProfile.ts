@@ -9,12 +9,15 @@ async function loadVendorCommonProfile(ownerId: string): Promise<VendorCommonPro
 
   const { data: vendor, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, shop_name, business_type, location_text, phone_number, opens_at, closes_at, about")
+    .select(
+      "id, shop_name, business_type, holds_popups, location_text, phone_number, opens_at, closes_at, about",
+    )
     .eq("owner_id", ownerId)
     .maybeSingle<{
       id: string;
       shop_name: string | null;
       business_type: BusinessType;
+      holds_popups: boolean | null;
       location_text: string | null;
       phone_number: string | null;
       opens_at: string | null;
@@ -37,9 +40,12 @@ async function loadVendorCommonProfile(ownerId: string): Promise<VendorCommonPro
       ? `${scheduleStart.slice(0, 5)} - ${scheduleEnd.slice(0, 5)}`
       : "See schedule tab";
 
+  const businessType = normalizeBusinessType(vendor.business_type) ?? "unregistered";
+
   return {
     vendorId: vendor.id,
-    businessType: normalizeBusinessType(vendor.business_type) ?? "unregistered",
+    businessType,
+    holdsPopups: businessType === "unregistered" ? true : Boolean(vendor.holds_popups ?? true),
     shopName: vendor.shop_name?.trim() || "Vendor Shop",
     location: vendor.location_text?.trim() || "",
     phoneNumber: vendor.phone_number?.trim() || "",
