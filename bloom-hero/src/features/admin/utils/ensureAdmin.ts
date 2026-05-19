@@ -1,4 +1,3 @@
-import { createPublicCatalogSupabaseClient } from "@/lib/supabase/public-catalog-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 export type EnsureAdminResult =
@@ -24,8 +23,7 @@ export async function ensureAdmin(): Promise<EnsureAdminResult> {
     return { supabase, adminId: null, error: "You must be logged in as an admin." };
   }
 
-  const readClient = await createPublicCatalogSupabaseClient();
-  const { data: profile, error: roleError } = await readClient
+  const { data: profile, error: roleError } = await supabase
     .from("users")
     .select("role")
     .eq("id", user.id)

@@ -5,6 +5,7 @@ import { getVendorProducts } from "@/features/products/queries/getVendorProducts
 import { getVendorReviews } from "@/features/reviews/actions/getVendorReviews";
 import type { BusinessType } from "@/features/vendors/types";
 import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
+import { getVendorOfferings } from "@/features/vendors/utils/vendorOfferings";
 import type { PopUpGalleryPhoto, PopUpSchedule, Product, Vendor, VendorReview } from "@/features/vendors/interface";
 import { getVendorProfile } from "./getVendorProfile";
 import { getVendorProfileByOwnerId } from "./getVendorProfileByOwnerId";
@@ -16,6 +17,8 @@ export type PublicVendorPageData = {
   galleryPhotos: PopUpGalleryPhoto[];
   reviews: VendorReview[];
   businessType: BusinessType;
+  holdsPopups: boolean;
+  offersOnlineOrders: boolean;
 };
 
 async function canIncludeUnapprovedVendor(vendorId: string): Promise<boolean> {
@@ -46,12 +49,20 @@ export async function getPublicVendorPageData(
 
   if (!vendor) return null;
 
+  const businessType = normalizeBusinessType(vendor.business_type) ?? "unregistered";
+  const offerings = getVendorOfferings({
+    businessType,
+    holdsPopups: vendor.holds_popups,
+  });
+
   return {
     vendor,
-    products,
-    schedule,
-    galleryPhotos,
+    products: offerings.offersOnlineOrders ? products : [],
+    schedule: offerings.holdsPopups ? schedule : [],
+    galleryPhotos: offerings.holdsPopups ? galleryPhotos : [],
     reviews,
-    businessType: normalizeBusinessType(vendor.business_type) ?? "unregistered",
+    businessType,
+    holdsPopups: offerings.holdsPopups,
+    offersOnlineOrders: offerings.offersOnlineOrders,
   };
 }

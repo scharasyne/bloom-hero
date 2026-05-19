@@ -72,7 +72,7 @@ export async function fetchPopUpResults(
   let builder = supabase
     .from("popup_locations")
     .select(
-      "id, vendor_id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(id, shop_name, business_type)"
+      "id, vendor_id, location, scheduled_date, start_time, end_time, latitude, longitude, vendors!inner(id, shop_name, business_type, holds_popups)"
     );
 
   if (normalizedTiming === "upcoming") {
@@ -102,7 +102,12 @@ export async function fetchPopUpResults(
   }
 
   let rows = ((data ?? []) as unknown as PopUpLocationRow[])
-    .filter((row) => row.vendor_id)
+    .filter((row) => {
+      if (!row.vendor_id) return false;
+      const vendor = row.vendors as { business_type?: string | null; holds_popups?: boolean | null } | null;
+      if (vendor?.business_type === "unregistered") return true;
+      return Boolean(vendor?.holds_popups ?? true);
+    })
     .map((row) => {
       const endRaw = row.end_time ?? row.scheduled_date;
       const happening = isPopUpHappening(row.scheduled_date, endRaw, today);

@@ -7,8 +7,14 @@ export async function upsertVendorByOwnerId(
   businessType: BusinessType
 ) {
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("vendors")
-    .upsert({ owner_id: ownerId, shop_name: shopName, business_type: businessType }, { onConflict: "owner_id" });
+  const { error } = await supabase.from("vendors").upsert(
+    {
+      owner_id: ownerId,
+      shop_name: shopName,
+      business_type: businessType,
+      holds_popups: true,
+    },
+    { onConflict: "owner_id" },
+  );
   if (error) throw new Error(error.message);
 }

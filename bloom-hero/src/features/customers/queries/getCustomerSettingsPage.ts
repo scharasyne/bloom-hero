@@ -1,29 +1,25 @@
 // Source: `src/app/(customer)/settings/page.tsx`
 
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { getCustomerSettingsByUserId } from "@/features/customers/queries/getCustomerSetting";
 import { getUserBasicProfileById } from "@/features/users/queries/getUserBasicProfile";
 import type { CustomerSettingsPageData } from "@/features/customers/types";
 
 export async function getCustomerSettingsPage(): Promise<CustomerSettingsPageData | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  const user = await getAuthUser();
+  if (!user) {
     return null;
   }
 
   const [userProfile, customerProfile] = await Promise.all([
-    getUserBasicProfileById(session.user.id),
-    getCustomerSettingsByUserId(session.user.id),
+    getUserBasicProfileById(user.id),
+    getCustomerSettingsByUserId(user.id),
   ]);
 
   return {
     initialName: userProfile?.name ?? "",
-    initialEmail: session.user.email ?? userProfile?.email ?? "",
+    initialEmail: user.email ?? userProfile?.email ?? "",
     initialContactNumber: userProfile?.contact_number ?? "",
     initialShippingAddress: customerProfile?.shipping_address ?? "",
     initialProfilePhotoUrl: customerProfile?.profile_photo_url ?? "",

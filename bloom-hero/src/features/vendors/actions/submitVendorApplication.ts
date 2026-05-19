@@ -3,6 +3,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAuthUser } from "@/lib/security/require-auth-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { upsertVendorApplicationByOwnerId } from "@/features/vendors/actions/upsertVendorApplication";
 import { updateUserRoleAndContact } from "@/features/users/actions/updateUserRoleAndContact";
@@ -34,14 +35,11 @@ type ActionResult = {
 };
 
 export async function submitVendorApplication(input: SubmitInput): Promise<ActionResult> {
+  const auth = await requireAuthUser();
+  if (!auth.ok) return { ok: false, error: auth.error };
+
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) return { ok: false, error: "You need to log in again." };
-
-  const stepOneError = validateVendorApplicationStepOne(input, session.user.email);
+  const stepOneError = validateVendorApplicationStepOne(input, auth.email);
   if (stepOneError) return { ok: false, error: stepOneError };
 
   const stepTwoError = validateVendorApplicationStepTwo(input);
@@ -50,7 +48,7 @@ export async function submitVendorApplication(input: SubmitInput): Promise<Actio
   const isUnregistered = input.businessType === "unregistered";
 
   try {
-    await upsertVendorApplicationByOwnerId(session.user.id, {
+    await upsertVendorApplicationByOwnerId(auth.userId, {
       shop_name: input.shopName.trim(),
       shop_address: input.shopAddress.trim(),
       email: input.email.trim(),
@@ -67,8 +65,8 @@ export async function submitVendorApplication(input: SubmitInput): Promise<Actio
       submission_status: "submitted",
       submitted_at: new Date().toISOString(),
     });
-    await updateUserRoleAndContact(session.user.id, normalizeToPhilippineE164(input.phoneNumber));
-    await upsertVendorByOwnerId(session.user.id, input.shopName.trim(), input.businessType);
+    await updateUserRoleAndContact(auth.userId, normalizeToPhilippineE164(input.phoneNumber));
+    await upsertVendorByOwnerId(auth.userId, input.shopName.trim(), input.businessType);
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to submit application." };
   }

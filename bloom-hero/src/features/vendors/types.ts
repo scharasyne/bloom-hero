@@ -3,6 +3,7 @@ export type BusinessType = "registered" | "unregistered";
 export type VendorCommonProfile = {
   vendorId: string;
   businessType: BusinessType;
+  holdsPopups: boolean;
   shopName: string;
   location: string;
   phoneNumber: string;

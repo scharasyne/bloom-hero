@@ -6,8 +6,6 @@ import { Star } from "lucide-react";
 import { CenteredScrollModal } from "@/components/CenteredScrollModal";
 import PopUpLocationRequest from "@/features/pop-up/components/PopUpLocationRequest";
 import type { BusinessType } from "@/features/vendors/types";
-import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
-import { formatBusinessTypeLabel } from "@/features/vendors/utils/normalizeBusinessType";
 
 interface Product {
   id: string;
@@ -42,6 +40,7 @@ interface CustomerVendorProfileProps {
   products: Product[];
   reviews?: Review[];
   businessType: BusinessType;
+  offersOnlineOrders: boolean;
   galleryPhotos?: {
     id: string;
     image_url: string;
@@ -58,10 +57,12 @@ export default function CustomerVendorProfile({
   products,
   reviews = [],
   businessType,
+  offersOnlineOrders,
   galleryPhotos = [],
   canRequestLocation = false,
 }: CustomerVendorProfileProps) {
-  const canListProducts = canManageCatalog(businessType);
+  const canListProducts = offersOnlineOrders;
+  const showGallerySection = !offersOnlineOrders || galleryPhotos.length > 0;
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
   const [selectedGalleryPhotoId, setSelectedGalleryPhotoId] = useState<string | null>(null);
@@ -167,12 +168,14 @@ export default function CustomerVendorProfile({
                   Bouquets
                 </a>
               ) : null}
-              <a
-                href="#gallery"
-                className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
-              >
-                Gallery
-              </a>
+              {showGallerySection ? (
+                <a
+                  href="#gallery"
+                  className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
+                >
+                  Gallery
+                </a>
+              ) : null}
               <a
                 href="#reviews"
                 className="border-b-2 border-transparent pb-1 transition-colors hover:border-[#d2cbc3] hover:text-[#4a453f]"
@@ -189,6 +192,7 @@ export default function CustomerVendorProfile({
           </div>
         </div>
 
+        {showGallerySection ? (
         <section id="gallery" className="mt-8 scroll-mt-20">
             <h2 className="text-lg font-semibold tracking-tight text-[#262321]">Gallery</h2>
             {galleryPhotos.length === 0 ? (
@@ -225,6 +229,7 @@ export default function CustomerVendorProfile({
               </div>
             )}
           </section>
+        ) : null}
 
         {/* Bouquets */}
         {canListProducts ? (

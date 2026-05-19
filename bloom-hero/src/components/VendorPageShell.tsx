@@ -1,18 +1,10 @@
 import { cn } from "@/lib/utils";
 import { VendorDashboardSidebarCard } from "@/features/vendors/components/VendorDashboardSidebarCard";
 import type { BusinessType } from "@/features/vendors/types";
-
-type VendorTabId =
-  | "dashboard"
-  | "products"
-  | "orders"
-  | "messages"
-  | "profile"
-  | "schedule"
-  | "settings";
+import type { VendorNavItemId } from "@/features/vendors/utils/vendorNavConfig";
 
 type VendorPageShellProps = {
-  activeTab: VendorTabId;
+  activeTab: VendorNavItemId;
   businessType: BusinessType;
   children: React.ReactNode;
   className?: string;

@@ -29,6 +29,12 @@ import {
   canViewPublicVendorProfiles,
   type ViewerRole,
 } from "@/features/vendors/utils/publicVendorAccess";
+import { VendorOfferingBadges } from "@/components/VendorOfferingBadges";
+import { normalizeBusinessType } from "@/features/vendors/utils/normalizeBusinessType";
+import {
+  getVendorOfferingBadges,
+  getVendorOfferings,
+} from "@/features/vendors/utils/vendorOfferings";
 
 function scopeLabel(scope: SearchScope) {
   if (scope === "flowers") return "Flowers";
@@ -45,6 +51,14 @@ function VendorResultCard({
 }) {
   const rating =
     typeof vendor.average_rating === "number" ? vendor.average_rating.toFixed(1) : null;
+  const businessType = normalizeBusinessType(vendor.business_type) ?? "unregistered";
+  const offeringBadges = getVendorOfferingBadges(
+    getVendorOfferings({
+      businessType,
+      holdsPopups: vendor.holds_popups,
+    }),
+  );
+  const offersOnlineOrders = businessType === "registered";
   const profileHref = vendor.id
     ? publicVendorProfilePath(vendor.id)
     : `/search?scope=vendors&q=${encodeURIComponent(vendor.shop_name ?? "")}`;
@@ -53,9 +67,7 @@ function VendorResultCard({
     <div className="group flex w-full flex-col overflow-hidden rounded-[22px] border border-[#edeae6] bg-white shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0px_12px_30px_0px_rgba(0,0,0,0.08)]">
       <div className="flex items-start justify-between gap-3 px-5 py-5">
         <div className="flex flex-col gap-2">
-          <span className="inline-flex w-fit rounded-full bg-[#f3eee8] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a7a7a]">
-            {vendor.business_type ?? "Vendor"}
-          </span>
+          <VendorOfferingBadges badges={offeringBadges} />
           <h3 className="text-[20px] font-semibold leading-tight text-[#1f1f1f]">
             {vendor.shop_name ?? "Untitled vendor"}
           </h3>
@@ -87,12 +99,14 @@ function VendorResultCard({
             View vendor
           </Link>
         ) : null}
-        <Link
-          href={`/search?scope=flowers&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
-          className={`inline-flex items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4] ${showProfileLink ? "" : "flex-1"}`}
-        >
-          View products
-        </Link>
+        {offersOnlineOrders ? (
+          <Link
+            href={`/search?scope=flowers&q=${encodeURIComponent(vendor.shop_name ?? "")}`}
+            className={`inline-flex items-center justify-center rounded-full border border-[#e1dbd4] px-4 py-3 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#faf7f4] ${showProfileLink ? "" : "flex-1"}`}
+          >
+            View products
+          </Link>
+        ) : null}
       </div>
     </div>
   );
@@ -131,7 +145,6 @@ export default function SearchPageView() {
 
   const supabase = React.useMemo(() => createSupabaseBrowserClient(), []);
   const [showProfileLink, setShowProfileLink] = React.useState(true);
-  const customerProfileEnsuredRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     void (async () => {
@@ -146,15 +159,6 @@ export default function SearchPageView() {
       setShowProfileLink(canViewPublicVendorProfiles(data?.role as ViewerRole));
     })();
   }, [supabase]);
-
-  const ensureCustomerProfile = React.useCallback(
-    async (userId: string) => {
-      if (customerProfileEnsuredRef.current === userId) return;
-      await supabase.from("customers").upsert({ user_id: userId }, { onConflict: "user_id" });
-      customerProfileEnsuredRef.current = userId;
-    },
-    [supabase]
-  );
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -212,41 +216,7 @@ export default function SearchPageView() {
           return;
         }
 
-        await ensureCustomerProfile(user.id);
-
-        const priceValue = Number(product.price) || 0;
-
-        const { data: newOrder, error: insertOrderError } = await supabase
-          .from("orders")
-          .insert({
-            customer_id: user.id,
-            vendor_id: product.vendor_id,
-            total_amount: priceValue,
-            status: "completed",
-          })
-          .select("id")
-          .single();
-
-        if (insertOrderError || !newOrder) {
-          console.error("buy now - create order error:", insertOrderError);
-          alert("Unable to place order right now.");
-          return;
-        }
-
-        const { error: itemError } = await supabase.from("order_items").insert({
-          order_id: newOrder.id,
-          product_id: product.id,
-          quantity: 1,
-          subtotal: priceValue,
-        });
-
-        if (itemError) {
-          console.error("buy now - create order item error:", itemError);
-          alert("Unable to place order right now.");
-          return;
-        }
-
-        window.location.href = "/orders";
+        window.location.href = "/cart";
       } catch (err) {
         console.error("Buy now failed:", err);
         alert("Failed to add to cart. Please try again.");
@@ -254,7 +224,7 @@ export default function SearchPageView() {
         setBuyingId(null);
       }
     },
-    [ensureCustomerProfile, supabase]
+    [supabase]
   );
 
   const flowerResults = results.flowers;

@@ -197,7 +197,9 @@ async function fetchVendorResults(supabase: SearchClient, query: string, sort: s
     }
   }
 
-  let builder = supabase.from("vendors").select("id, shop_name, business_type, average_rating");
+  let builder = supabase
+    .from("vendors")
+    .select("id, shop_name, business_type, holds_popups, average_rating");
 
   if (query) {
     builder = builder.ilike("shop_name", `%${query}%`);

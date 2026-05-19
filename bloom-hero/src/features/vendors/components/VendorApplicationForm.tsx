@@ -439,7 +439,7 @@ export default function VendorApplicationForm({
               <Info className="mt-0.5 shrink-0 text-[#D24B46]" size={16} />
               <p className="leading-relaxed">
                 {isUnregisteredBusiness
-                  ? "Unregistered businesses only need a valid government ID at this stage."
+                  ? "Pop-up vendors only need a valid government ID at this stage."
                   : "Accurate details ensure smooth payouts and compliance with local tax regulations."}
               </p>
             </div>
@@ -663,8 +663,16 @@ export default function VendorApplicationForm({
 }
 
 const BUSINESS_TYPE_OPTIONS: Array<{ value: BusinessType; title: string; description: string }> = [
-  { value: "registered", title: "Registered", description: "Can list products and receive orders" },
-  { value: "unregistered", title: "Unregistered", description: "Pop-up schedule and requests only" },
+  {
+    value: "registered",
+    title: "Shop with online orders",
+    description: "Sell bouquets from your shop; optionally host pop-up events",
+  },
+  {
+    value: "unregistered",
+    title: "Pop-up vendor",
+    description: "Schedule pop-ups and accept location requests only",
+  },
 ];
 
 function BusinessTypePicker({
@@ -676,7 +684,7 @@ function BusinessTypePicker({
 }) {
   return (
     <div className="space-y-2">
-      <label className="block text-xs font-semibold text-[#2D2926]">Business registration *</label>
+      <label className="block text-xs font-semibold text-[#2D2926]">How do you sell? *</label>
       <div className="grid grid-cols-2 gap-3">
         {BUSINESS_TYPE_OPTIONS.map((option) => (
           <button

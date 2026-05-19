@@ -6,6 +6,28 @@ import { toIsoDateTime } from "../utils/toIsoDateTime";
 
 export async function createPopUpSchedule(input: CreatePopUpScheduleInput) {
   const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "You must be logged in." };
+  }
+
+  const { data: vendor, error: vendorError } = await supabase
+    .from("vendors")
+    .select("id")
+    .eq("owner_id", user.id)
+    .maybeSingle<{ id: string }>();
+
+  if (vendorError || !vendor) {
+    return { success: false, error: vendorError?.message ?? "Vendor profile not found." };
+  }
+
+  if (input.vendorId !== vendor.id) {
+    return { success: false, error: "You can only create schedules for your vendor account." };
+  }
+
   const cleanLandmark = input.landmark?.trim();
   const cleanLocation = input.location.trim();
   const finalLocation = cleanLandmark
@@ -22,7 +44,7 @@ export async function createPopUpSchedule(input: CreatePopUpScheduleInput) {
   const { data, error } = await supabase
     .from("popup_locations")
     .insert({
-      vendor_id: input.vendorId,
+      vendor_id: vendor.id,
       location: finalLocation,
       scheduled_date: scheduledDateIso,
       start_time: startTimeIso,

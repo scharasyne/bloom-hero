@@ -1,24 +1,20 @@
 // Source: `src/app/(customer)/vendor-application/page.tsx`
 
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { getUserBasicProfileById } from "@/features/users/queries/getUserBasicProfile";
 import type { CustomerVendorApplicationPageData } from "@/features/vendors/types";
 
 export async function getCustomerVendorApplicationPage(): Promise<CustomerVendorApplicationPageData | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  const user = await getAuthUser();
+  if (!user) {
     return null;
   }
 
-  const userProfile = await getUserBasicProfileById(session.user.id);
+  const userProfile = await getUserBasicProfileById(user.id);
 
   return {
-    initialEmail: userProfile?.email ?? session.user.email ?? "",
+    initialEmail: userProfile?.email ?? user.email ?? "",
     initialPhoneNumber: userProfile?.contact_number ?? "",
   };
 }

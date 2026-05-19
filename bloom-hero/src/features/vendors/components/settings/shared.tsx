@@ -89,9 +89,11 @@ export function SettingRowFull({
 export function Toggle({
   checked,
   onChange,
+  disabled = false,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
   /*
     Props must be serializable for components in the "use client" entry file. "onChange" is a function that's not a Server Action. 
     Rename "onChange" either to "action" or have its name end with "Action" e.g. "onChangeAction" to indicate it is a Server Action.
@@ -99,12 +101,14 @@ export function Toggle({
 }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-[42px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5d3a] focus-visible:ring-offset-2 ${
-        checked ? "bg-[#2f5d3a]" : "bg-[#ddd]"
-      }`}
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)}
+      className={`relative inline-flex h-6 w-[42px] shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5d3a] focus-visible:ring-offset-2 ${
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+      } ${checked ? "bg-[#2f5d3a]" : "bg-[#ddd]"}`}
     >
       <span
         className={`pointer-events-none inline-block h-4.5 w-4.5 rounded-full bg-white shadow-sm mt-0.75 transition-transform duration-200 ${

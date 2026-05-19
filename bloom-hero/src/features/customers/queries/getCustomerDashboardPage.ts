@@ -1,24 +1,20 @@
 // Source: `src/app/(customer)/dashboard/page.tsx`
 
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { getUserNameById } from "@/features/users/queries/getUserName";
 import type { CustomerDashboardPageData } from "@/features/customers/types";
 
 export async function getCustomerDashboardPage(): Promise<CustomerDashboardPageData | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+  const user = await getAuthUser();
+  if (!user) {
     return null;
   }
 
-  const userName = await getUserNameById(session.user.id);
+  const userName = await getUserNameById(user.id);
 
   return {
-    welcomeName: userName || session.user.email || "",
+    welcomeName: userName || user.email || "",
   };
 }
 
