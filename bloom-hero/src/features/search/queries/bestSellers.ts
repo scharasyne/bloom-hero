@@ -129,14 +129,14 @@ export async function getFlowerBestSellers(
     .eq("orders.status", "completed")
     .in("product_id", productIds);
 
-  if (soldError) {
-    return { data: [] as BestSellerFlowerRow[], error: soldError };
-  }
-
   const soldCountByProductId = new Map<string, number>();
-  for (const row of (soldRows ?? []) as unknown as OrderItemQuantityRow[]) {
-    const currentCount = soldCountByProductId.get(row.product_id) ?? 0;
-    soldCountByProductId.set(row.product_id, currentCount + (Number(row.quantity) || 0));
+  if (soldError) {
+    console.warn("Best sellers: could not load sold counts:", soldError.message);
+  } else {
+    for (const row of (soldRows ?? []) as unknown as OrderItemQuantityRow[]) {
+      const currentCount = soldCountByProductId.get(row.product_id) ?? 0;
+      soldCountByProductId.set(row.product_id, currentCount + (Number(row.quantity) || 0));
+    }
   }
 
   const { data: reviewRows, error: reviewError } = await supabase
@@ -246,17 +246,17 @@ export async function getVendorBestSellers(
     .eq("orders.status", "completed")
     .in("product_id", productIds);
 
-  if (soldError) {
-    return { data: [] as BestSellerVendorRow[], error: soldError };
-  }
-
   const soldCountByVendorId = new Map<string, number>();
-  for (const row of (soldRows ?? []) as unknown as OrderItemQuantityRow[]) {
-    const vendorId = vendorIdByProductId.get(row.product_id);
-    if (!vendorId) continue;
+  if (soldError) {
+    console.warn("Best sellers: could not load vendor sold counts:", soldError.message);
+  } else {
+    for (const row of (soldRows ?? []) as unknown as OrderItemQuantityRow[]) {
+      const vendorId = vendorIdByProductId.get(row.product_id);
+      if (!vendorId) continue;
 
-    const currentCount = soldCountByVendorId.get(vendorId) ?? 0;
-    soldCountByVendorId.set(vendorId, currentCount + (Number(row.quantity) || 0));
+      const currentCount = soldCountByVendorId.get(vendorId) ?? 0;
+      soldCountByVendorId.set(vendorId, currentCount + (Number(row.quantity) || 0));
+    }
   }
 
   let vendorQuery = supabase

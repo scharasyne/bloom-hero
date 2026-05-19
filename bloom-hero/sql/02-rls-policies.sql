@@ -29,6 +29,7 @@ CREATE POLICY orders_select ON public.orders FOR SELECT
     (select private.is_admin())
     OR customer_id = (select auth.uid())
     OR vendor_id = (select private.current_vendor_id())
+    OR status = 'completed'::public.order_status
   );
 
 CREATE POLICY orders_insert ON public.orders FOR INSERT
@@ -63,6 +64,11 @@ CREATE POLICY order_items_select ON public.order_items FOR SELECT
     OR order_id IN (
       SELECT o.id FROM public.orders o
       WHERE o.vendor_id = (select private.current_vendor_id())
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.orders o
+      WHERE o.id = order_items.order_id
+        AND o.status = 'completed'::public.order_status
     )
   );
 

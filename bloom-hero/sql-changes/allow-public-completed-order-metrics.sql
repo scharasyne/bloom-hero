@@ -1,0 +1,2 @@
+-- Use sql-changes/fix-orders-table-access.sql instead (includes GRANT + policies).
+-- This file only updated policies and missed the REVOKE ALL from step 04.
