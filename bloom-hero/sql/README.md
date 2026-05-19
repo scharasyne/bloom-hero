@@ -139,6 +139,7 @@ SELECT business_type, count(*) FROM public.vendors GROUP BY 1;
 |---------|--------|
 | `permission denied for function is_admin` | Re-run `01-rls-helpers.sql` |
 | `permission denied` / empty catalog after policies | Re-run **`01` then `02`** — `02` now runs `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on every table that has consolidated policies |
+| `permission denied for table orders` (often twice on home/search) | Run **`sql-changes/fix-orders-table-access.sql`** — step **`04`** used to `REVOKE ALL` on `orders` from `anon`, which blocks RLS entirely; best-sellers needs `GRANT SELECT` + completed-order policies |
 | Checkout mentions missing columns | Compare DB to `sql-changes/all-schema.sql` `orders` table |
 | Slow Supabase stats / schema reload | Run `05-postgrest-timezone.sql` |
 

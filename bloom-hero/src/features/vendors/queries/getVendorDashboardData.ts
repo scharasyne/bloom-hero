@@ -76,7 +76,7 @@ export async function getVendorDashboardData(): Promise<
   const previousStart = addDays(currentStart, -7);
   const fulfilmentStatuses = ["to_pay", "to_ship", "to_receive"];
 
-  const { count: pendingCount } = await supabase
+  const { count: pendingCount, error: pendingCountError } = await supabase
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("vendor_id", vendor.id)
@@ -91,7 +91,16 @@ export async function getVendorDashboardData(): Promise<
     .neq("status", "cancelled")
     .neq("status", "pending");
 
-  if (ordersError) return { ok: false, error: "Failed to load order metrics." };
+  const ordersAccessError = pendingCountError ?? ordersError;
+  if (ordersAccessError) {
+    return {
+      ok: false,
+      error:
+        ordersAccessError.message.includes("permission denied")
+          ? "Could not load orders. Run sql/01-rls-helpers.sql and sql/02-rls-policies.sql in Supabase (see sql/README.md)."
+          : ordersAccessError.message,
+    };
+  }
   const orders = orderRows ?? [];
 
   const currentOrders = orders.filter((row) => {

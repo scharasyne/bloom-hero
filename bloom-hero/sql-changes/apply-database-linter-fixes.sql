@@ -124,8 +124,9 @@ REVOKE EXECUTE ON FUNCTION public.set_vendor_applications_updated_at() FROM PUBL
 
 REVOKE ALL ON TABLE public.activity_logs FROM anon;
 REVOKE ALL ON TABLE public.customers FROM anon;
-REVOKE ALL ON TABLE public.order_items FROM anon;
-REVOKE ALL ON TABLE public.orders FROM anon;
 REVOKE ALL ON TABLE public.popup_location_requests FROM anon;
 REVOKE ALL ON TABLE public.vendor_applications FROM anon;
 REVOKE ALL ON TABLE public.vendor_suspension_appeals FROM anon;
+
+GRANT SELECT ON TABLE public.orders TO anon, authenticated;
+GRANT SELECT ON TABLE public.order_items TO anon, authenticated;
