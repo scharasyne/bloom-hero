@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 // import Link from "next/link";
@@ -199,13 +199,14 @@ function ShopByCategory() {
   );
 }
 
-export default function DesktopClient() {
+export default function DesktopClient({ extraSection }: { extraSection?: ReactNode }) {
   return (
     <div className="content-stretch flex flex-col items-start px-4 sm:px-8 lg:px-16 relative size-full">
       <Hero />
       <BestSellersSection />
       <PopUpMapSection />
       <ShopByCategory />
+      {extraSection}
       <Footer />
     </div>
   );
