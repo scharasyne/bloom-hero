@@ -1,54 +1,60 @@
+import { Icon } from "@iconify/react";
 import DesktopClient from "../_components/DesktopClient";
 
 type PackageTier = {
   price: string;
   name: string;
+  icon: string;
   summary: string;
-  features: string[];
+  pros: string[];
+  cons: string[];
 };
 
 const packages: PackageTier[] = [
   {
-    price: "₱99",
+    price: "FREE",
     name: "Starter",
-    summary: "Post pop-ups only with a weekly cap. Ideal for testing demand.",
-    features: [
-      "Posting of pop ups only",
-      "Limited to 3 pop ups per week",
-      "Basic listing visibility",
-    ],
+    icon: "mdi:seed-outline",
+    summary: "Lightweight entry for testing demand.",
+    pros: ["1 listing per week"],
+    cons: ["Can't view customer requests", "Can't see reviews"],
   },
   {
-    price: "₱150",
+    price: "₱169",
     name: "Plus",
-    summary: "Receive pop-up requests with no listing limit.",
-    features: [
-      "Receive pop up requests",
-      "No pop up listing limit",
-      "Priority placement in pop-up search",
+    icon: "mdi:sprout-outline",
+    summary: "Full request visibility with unlimited listings.",
+    pros: [
+      "Unlimited listings",
+      "See and receive customer requests",
+      "See reviews",
     ],
+    cons: [],
   },
   {
-    price: "₱249",
+    price: "₱299",
     name: "Pro",
-    summary: "Post products and schedules plus unlimited pop-up listings.",
-    features: [
+    icon: "mdi:flower-outline",
+    summary: "Products, listings, requests, and reviews included.",
+    pros: [
       "Post products",
-      "List pop up schedule",
-      "Receive pop up requests",
-      "No pop up listing limit",
-      "No analytics about what's trending",
+      "Manage listings",
+      "Receive customer requests",
+      "See reviews",
     ],
+    cons: ["No analytics about what flowers people love"],
   },
   {
-    price: "₱349",
+    price: "₱399",
     name: "Pro Max",
-    summary: "Everything included, plus analytics for what’s trending.",
-    features: [
-      "Complete with everything",
-      "Includes analytics",
-      "Trend and demand snapshots",
+    icon: "mdi:crown-outline",
+    summary: "Everything included with insights and highlights.",
+    pros: [
+      "Everything included",
+      "Analytics",
+      "Priority placement (highlights)",
     ],
+    cons: [],
   },
 ];
 
@@ -70,28 +76,63 @@ function PackageSection() {
           {packages.map((tier) => (
             <div
               key={tier.name}
-              className="flex flex-col gap-4 rounded-2xl border border-[#edeae6] bg-white p-6 shadow-[0_16px_40px_rgba(31,31,31,0.08)]"
+              className="flex flex-col gap-4 rounded-2xl border border-[#edeae6] bg-white p-6 shadow-[0_16px_40px_rgba(31,31,31,0.08)] h-full"
             >
               <div className="flex items-baseline justify-between">
                 <div>
-                  <p className="font-semibold text-[#1f1f1f] text-[20px] tracking-[0.2px]">
-                    {tier.name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-8 items-center justify-center rounded-full bg-[#f3efe8]">
+                      <Icon icon={tier.icon} width={18} height={18} className="text-[#2f5d3a]" />
+                    </span>
+                    <p className="font-semibold text-[#1f1f1f] text-[20px] tracking-[0.2px]">
+                      {tier.name}
+                    </p>
+                  </div>
                   <p className="font-medium text-[#7a7a7a] text-[14px]">{tier.summary}</p>
                 </div>
                 <span className="font-bold text-[#2f5d3a] text-[22px]">{tier.price}</span>
               </div>
               <div className="h-px bg-[#edeae6]" />
-              <ul className="flex flex-col gap-2 text-[#3f3a35] text-[14px]">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex gap-2">
-                    <span className="mt-[6px] inline-block size-1.5 rounded-full bg-[#d24b46]" />
+              <ul className="flex flex-col gap-2 text-[#3f3a35] text-[14px] flex-1">
+                {tier.pros.map((feature) => (
+                  <li key={`pro-${feature}`} className="flex gap-2 items-start">
+                    <Icon
+                      icon="mdi:check-circle-outline"
+                      width={18}
+                      height={18}
+                      className="text-[#2f5d3a] mt-[2px] shrink-0"
+                    />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+                {tier.cons.map((feature) => (
+                  <li key={`con-${feature}`} className="flex gap-2 items-start">
+                    <Icon
+                      icon="mdi:close-circle-outline"
+                      width={18}
+                      height={18}
+                      className="text-[#d24b46] mt-[2px] shrink-0"
+                    />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
+              <button
+                type="button"
+                className="cursor-pointer mt-auto rounded-full border border-[#2f5d3a] px-4 py-2 text-[13px] font-semibold text-[#2f5d3a] hover:bg-[#2f5d3a] hover:text-white transition-colors"
+              >
+                Get Started
+              </button>
             </div>
           ))}
+        </div>
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            className="cursor-pointer rounded-full bg-[#2f5d3a] px-6 py-3 text-[14px] font-semibold text-white hover:bg-[#264c30] transition-colors"
+          >
+            View All Packages
+          </button>
         </div>
       </div>
     </section>
