@@ -4,15 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { createSupabaseRecoveryClient } from "@/lib/supabase/recovery-client";
 import Image from "next/image";
 
-import { resolvePostLoginDestination } from "@/features/auth/actions/actions";
 
 export default function ForgotPassword() {
     const router = useRouter();
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+    const recoverySupabase = useMemo(() => createSupabaseRecoveryClient(), []);
 
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [hasRecoverySession, setHasRecoverySession] = useState(false);
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,7 +35,7 @@ export default function ForgotPassword() {
 
         function applySession(session: { user: unknown } | null) {
             if (isMounted) {
-                setIsAuthenticated(Boolean(session?.user));
+                setHasRecoverySession(Boolean(session?.user));
             }
         }
 
@@ -49,26 +50,21 @@ export default function ForgotPassword() {
 
         const hash = window.location.hash.substring(1);
         if (hash && (hash.includes("type=recovery") || hash.includes("access_token"))) {
-            supabase.auth.getSession().then(({ data: { session } }) => {
+            recoverySupabase.auth.getSession().then(({ data: { session } }) => {
                 applySession(session);
                 if (session?.user) {
                     window.history.replaceState(null, "", window.location.pathname);
                 }
             });
         } else {
-            supabase.auth.getSession().then(({ data: { session } }) => {
+            recoverySupabase.auth.getSession().then(({ data: { session } }) => {
                 applySession(session);
             });
         }
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "PASSWORD_RECOVERY") {
-                if (isMounted) {
-                    setIsAuthenticated(true);
-                }
-            }
+        } = recoverySupabase.auth.onAuthStateChange((_event, session) => {
             applySession(session);
         });
 
@@ -76,7 +72,7 @@ export default function ForgotPassword() {
             isMounted = false;
             subscription.unsubscribe();
         };
-    }, [supabase, router]);
+    }, [recoverySupabase, router]);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -116,7 +112,7 @@ export default function ForgotPassword() {
         setIsSubmitting(true);
 
         try {
-            const { error } = await supabase.auth.updateUser({
+            const { error } = await recoverySupabase.auth.updateUser({
                 password: newPassword,
                 data: {
                     must_change_password: false,
@@ -128,27 +124,14 @@ export default function ForgotPassword() {
                 return;
             }
 
-            await supabase.auth.getSession();
-
-            let redirectPath = "/";
-            try {
-                const destination = await resolvePostLoginDestination();
-                if (destination.ok) {
-                    redirectPath = destination.path;
-                } else if (destination.message) {
-                    setStatus(destination.message);
-                    redirectPath = "/";
-                }
-            } catch {
-                redirectPath = "/";
-            }
+            await recoverySupabase.auth.signOut();
 
             setNewPassword("");
             setConfirmPassword("");
-            setStatus("Password updated! Redirecting…");
+            setStatus("Password updated! Redirecting to sign in…");
 
             // Hard navigation so server cookies and navbar stay in sync
-            window.location.assign(redirectPath);
+            window.location.assign("/login?message=" + encodeURIComponent("Password updated. Please sign in."));
         } finally {
             setIsSubmitting(false);
         }
@@ -159,7 +142,7 @@ export default function ForgotPassword() {
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
                 <button
                     type="button"
-                    onClick={() => router.push(isAuthenticated ? "/" : "/login")}
+                    onClick={() => router.push(hasRecoverySession ? "/" : "/login")}
                     aria-label="Go back"
                     className="absolute top-6 left-6 text-gray-500 hover:text-gray-700"
                 >
@@ -191,15 +174,15 @@ export default function ForgotPassword() {
                 </div>
 
                 <h2 className="text-xl font-semibold text-gray-800 text-center mb-2">
-                    {isAuthenticated ? "Change password" : "Forgot password"}
+                    {hasRecoverySession ? "Change password" : "Forgot password"}
                 </h2>
                 <p className="text-sm text-gray-600 text-center mb-6">
-                    {isAuthenticated
+                    {hasRecoverySession
                         ? "Set a new password for your account right away."
                         : "Enter your email and we'll send you a link to reset your password."}
                 </p>
 
-                {status && !isAuthenticated && isErrorStatus ? (
+                {status && !hasRecoverySession && isErrorStatus ? (
                     <div
                         role="alert"
                         className="mb-4 rounded-lg border border-[#f0c4c0] bg-[#fff5f4] px-4 py-3 text-sm text-[#8b2e26] text-center"
@@ -208,7 +191,7 @@ export default function ForgotPassword() {
                     </div>
                 ) : null}
 
-                {isAuthenticated ? (
+                {hasRecoverySession ? (
                     <form onSubmit={handlePasswordUpdate} className="space-y-5">
                         <div>
                             <label className="block text-sm text-gray-700 mb-1">
@@ -246,7 +229,7 @@ export default function ForgotPassword() {
                             </button>
                         </div>
 
-                        {status && isAuthenticated ? (
+                        {status && hasRecoverySession ? (
                             <p className="text-sm text-center text-gray-700">
                                 {status}
                             </p>
@@ -287,7 +270,7 @@ export default function ForgotPassword() {
                 )}
 
                 <p className="text-sm text-center text-gray-600 mt-6">
-                    {isAuthenticated ? (
+                    {hasRecoverySession ? (
                         <>You&apos;ll be sent to your account once the password update is complete.</>
                     ) : (
                         <>

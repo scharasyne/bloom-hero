@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { createSupabaseRecoveryClient } from "@/lib/supabase/recovery-client";
 import Image from "next/image";
 
 export function ConfirmRecoveryPage() {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const supabase = useMemo(() => createSupabaseRecoveryClient(), []);
   const [message, setMessage] = useState("Verifying your reset link…");
 
   useEffect(() => {
@@ -31,8 +31,7 @@ export function ConfirmRecoveryPage() {
           );
           return;
         }
-        router.replace("/forgot-password");
-        router.refresh();
+        router.replace("/forgot-password?recovery=1");
         return;
       }
 
@@ -45,8 +44,7 @@ export function ConfirmRecoveryPage() {
           );
           return;
         }
-        router.replace("/forgot-password");
-        router.refresh();
+        router.replace("/forgot-password?recovery=1");
         return;
       }
 
