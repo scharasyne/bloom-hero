@@ -44,6 +44,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  if (isRecovery) {
+    const confirm = new URLSearchParams(searchParams);
+    confirm.delete("next");
+    const qs = confirm.toString();
+    return NextResponse.redirect(`${origin}/auth/confirm${qs ? `?${qs}` : ""}`);
+  }
+
   const { supabase, applyAuthCookies } = createSupabaseOAuthCallbackClient(request);
 
   if (code) {

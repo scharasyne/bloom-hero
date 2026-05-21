@@ -41,10 +41,10 @@ export default function ForgotPassword() {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         if (code) {
-            router.replace(
-                `/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent("/forgot-password")}`
-            );
-            return;
+            router.replace(`/auth/confirm?code=${encodeURIComponent(code)}`);
+            return () => {
+                isMounted = false;
+            };
         }
 
         const hash = window.location.hash.substring(1);
@@ -83,11 +83,7 @@ export default function ForgotPassword() {
         setStatus("");
         setIsSubmitting(true);
 
-        const redirectTo =
-            typeof window !== "undefined"
-                ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/forgot-password")}`
-                : undefined;
-
+        const redirectTo = `${window.location.origin}/auth/confirm`;
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo,
         });
@@ -98,7 +94,7 @@ export default function ForgotPassword() {
             return;
         }
 
-        setStatus("Check your email for the password reset link.");
+        setStatus("Check your email. Open the link in this same browser you used just now.");
         setEmail("");
         setIsSubmitting(false);
     }
@@ -119,26 +115,43 @@ export default function ForgotPassword() {
 
         setIsSubmitting(true);
 
-        const { error } = await supabase.auth.updateUser({
-            password: newPassword,
-            data: {
-                must_change_password: false,
-            },
-        });
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword,
+                data: {
+                    must_change_password: false,
+                },
+            });
 
-        if (error) {
-            setStatus(error.message);
+            if (error) {
+                setStatus(error.message);
+                return;
+            }
+
+            await supabase.auth.getSession();
+
+            let redirectPath = "/";
+            try {
+                const destination = await resolvePostLoginDestination();
+                if (destination.ok) {
+                    redirectPath = destination.path;
+                } else if (destination.message) {
+                    setStatus(destination.message);
+                    redirectPath = "/";
+                }
+            } catch {
+                redirectPath = "/";
+            }
+
+            setNewPassword("");
+            setConfirmPassword("");
+            setStatus("Password updated! Redirecting…");
+
+            // Hard navigation so server cookies and navbar stay in sync
+            window.location.assign(redirectPath);
+        } finally {
             setIsSubmitting(false);
-            return;
         }
-
-        const destination = await resolvePostLoginDestination();
-        const redirectPath = destination.ok ? destination.path : "/";
-
-        setNewPassword("");
-        setConfirmPassword("");
-        router.replace(redirectPath);
-        router.refresh();
     }
 
     return (

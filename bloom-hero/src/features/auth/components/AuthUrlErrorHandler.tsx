@@ -10,7 +10,12 @@ import { getAuthErrorRedirectPath } from "@/features/auth/utils/authErrorRedirec
 export function AuthUrlErrorHandler() {
   useEffect(() => {
     const { pathname, search, hash } = window.location;
-    if (pathname === "/auth/callback" || pathname === "/forgot-password" || pathname === "/login") {
+    if (
+      pathname === "/auth/callback" ||
+      pathname === "/auth/confirm" ||
+      pathname === "/forgot-password" ||
+      pathname === "/login"
+    ) {
       return;
     }
 

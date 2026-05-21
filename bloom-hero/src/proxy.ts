@@ -21,6 +21,7 @@ const PUBLIC_PATHS = [
 
 const PUBLIC_PREFIXES = [
   '/auth/callback',
+  '/auth/confirm',
   '/auth/resolve',
 ]
 
@@ -76,7 +77,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  const response = withSecurityHeaders(
+  let response = withSecurityHeaders(
     NextResponse.next({
       request,
     }),
@@ -89,12 +90,18 @@ export async function proxy(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = withSecurityHeaders(
+            NextResponse.next({
+              request,
+            }),
+          )
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, options),
           )
         },
       },
-    }
+    },
   )
 
   const {

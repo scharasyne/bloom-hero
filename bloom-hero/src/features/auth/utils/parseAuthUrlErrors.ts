@@ -29,7 +29,14 @@ export function parseAuthUrlErrors(
 
 export function formatAuthUrlErrorMessage(authError: AuthUrlError): string {
   if (authError.errorCode === "otp_expired") {
-    return "This reset link has expired. Please request a new password reset email.";
+    return "This reset link has expired. Request a new reset email from Forgot password.";
+  }
+
+  if (
+    /pkce|code verifier/i.test(authError.errorDescription ?? "") ||
+    /pkce|code verifier/i.test(authError.error ?? "")
+  ) {
+    return "Open the reset link in the same browser where you clicked Send reset link. If you opened the email in another app, request a new reset after your admin updates the Supabase reset email template (token_hash).";
   }
 
   if (authError.errorDescription) {
