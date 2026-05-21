@@ -16,7 +16,7 @@ export async function listAdminVendors(): Promise<AdminActionResult<AdminVendorR
     const { data: rows, error } = await supabase
       .from("vendors")
       .select(
-        "id, shop_name, business_type, status, suspended_at, suspension_reason, created_at, location_text, phone_number, about, owner:users!vendors_owner_id_fkey(name, email), appeals:vendor_suspension_appeals(id, appeal_message, status, admin_response, created_at, reviewed_at)"
+        "id, owner_id, shop_name, business_type, status, suspended_at, suspension_reason, created_at, location_text, phone_number, about, owner:users!vendors_owner_id_fkey(name, email), appeals:vendor_suspension_appeals(id, appeal_message, status, admin_response, created_at, reviewed_at)"
       )
       .order("created_at", { ascending: false });
 

@@ -3,9 +3,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+import { DeleteAccountControl } from "@/features/auth/components/DeleteAccountControl";
 import type { BusinessType } from "@/features/vendors/types";
 
 // ─── SectionCard ─────────────────────────────────────────────────────────────
@@ -240,7 +238,7 @@ export function DangerSection({ businessType }: { businessType: BusinessType }) 
         label="Delete account"
         hint="Permanently remove your profile, products, and all data. This cannot be undone."
       >
-        <Btn variant="danger">Delete Account</Btn>
+        <DeleteAccountControl triggerClassName="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg font-[Quicksand] text-[12.5px] font-semibold cursor-pointer transition-all duration-150 bg-[#fdf2f1] text-[#c0392b] border-[1.5px] border-[rgba(192,57,43,0.15)] hover:bg-[#fbe8e6]" />
       </SettingRow>
     </div>
   );

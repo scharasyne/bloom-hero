@@ -93,6 +93,7 @@ export type AdminVendorAppealSummary = {
 
 export type AdminVendorRecord = {
   id: string;
+  ownerId: string;
   storeName: string;
   ownerName: string;
   businessType: BusinessType;

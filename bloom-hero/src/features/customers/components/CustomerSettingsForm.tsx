@@ -7,6 +7,7 @@ import { saveCustomerSettings } from "@/features/customers/actions/saveCustomerS
 import { updateCustomerEmail } from "@/features/customers/actions/updateCustomerEmail";
 import { updateCustomerPassword } from "@/features/customers/actions/updateCustomerPassword";
 import { uploadCustomerPhoto } from "@/features/customers/actions/uploadCustomerPhoto";
+import { DeleteAccountControl } from "@/features/auth/components/DeleteAccountControl";
 
 type NotificationPreferences = {
   order_updates: boolean;
@@ -343,6 +344,16 @@ export default function CustomerSettingsForm({
         >
           {isSavingProfile ? "Saving..." : "Save Changes"}
         </button>
+      </section>
+
+      <section className="mt-8 rounded-xl border border-[#f5d0cc] bg-[#fff7f6] p-5">
+        <h2 className="text-lg font-semibold text-[#c0392b]">Delete account</h2>
+        <p className="mt-1 text-sm text-[#6f6f6f]">
+          Permanently remove your account and personal data. This cannot be undone.
+        </p>
+        <div className="mt-4">
+          <DeleteAccountControl />
+        </div>
       </section>
     </form>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import { getSession } from "@/features/auth/queries/getSession";
 import NavBarShell from "@/components/NavBarShell";
+import { AuthUrlErrorHandler } from "@/features/auth/components/AuthUrlErrorHandler";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-quicksand`}>
+        <AuthUrlErrorHandler />
         <NavBarShell session={session} />
         {children}
       </body>

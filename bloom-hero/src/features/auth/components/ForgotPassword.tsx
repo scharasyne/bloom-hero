@@ -12,7 +12,6 @@ export default function ForgotPassword() {
     const router = useRouter();
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
-    const [isLoadingSession, setIsLoadingSession] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -20,35 +19,64 @@ export default function ForgotPassword() {
     const [status, setStatus] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const isErrorStatus =
+        /expired|invalid|denied|failed/i.test(status);
+
+    useEffect(() => {
+        const err = new URLSearchParams(window.location.search).get("error");
+        if (err) {
+            setStatus(decodeURIComponent(err));
+        }
+    }, []);
+
     useEffect(() => {
         let isMounted = true;
 
-        async function loadSession() {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-
-            if (!isMounted) {
-                return;
+        function applySession(session: { user: unknown } | null) {
+            if (isMounted) {
+                setIsAuthenticated(Boolean(session?.user));
             }
-
-            setIsAuthenticated(Boolean(user));
-            setIsLoadingSession(false);
         }
 
-        loadSession();
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        if (code) {
+            router.replace(
+                `/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent("/forgot-password")}`
+            );
+            return;
+        }
+
+        const hash = window.location.hash.substring(1);
+        if (hash && (hash.includes("type=recovery") || hash.includes("access_token"))) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                applySession(session);
+                if (session?.user) {
+                    window.history.replaceState(null, "", window.location.pathname);
+                }
+            });
+        } else {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                applySession(session);
+            });
+        }
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(() => {
-            loadSession();
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "PASSWORD_RECOVERY") {
+                if (isMounted) {
+                    setIsAuthenticated(true);
+                }
+            }
+            applySession(session);
         });
 
         return () => {
             isMounted = false;
             subscription.unsubscribe();
         };
-    }, [supabase]);
+    }, [supabase, router]);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -57,7 +85,7 @@ export default function ForgotPassword() {
 
         const redirectTo =
             typeof window !== "undefined"
-                ? `${window.location.origin}/forgot-password`
+                ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/forgot-password")}`
                 : undefined;
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -113,17 +141,6 @@ export default function ForgotPassword() {
         router.refresh();
     }
 
-    if (isLoadingSession) {
-        return (
-            <div className="min-h-svh flex items-center justify-center">
-                <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8">
-                    <div className="h-12" />
-                    <p className="text-sm text-center text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-svh flex items-center justify-center">
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
@@ -156,6 +173,7 @@ export default function ForgotPassword() {
                         alt="BloomHero Logo"
                         width={280}
                         height={90}
+                        priority
                     />
                 </div>
 
@@ -167,6 +185,15 @@ export default function ForgotPassword() {
                         ? "Set a new password for your account right away."
                         : "Enter your email and we'll send you a link to reset your password."}
                 </p>
+
+                {status && !isAuthenticated && isErrorStatus ? (
+                    <div
+                        role="alert"
+                        className="mb-4 rounded-lg border border-[#f0c4c0] bg-[#fff5f4] px-4 py-3 text-sm text-[#8b2e26] text-center"
+                    >
+                        {status}
+                    </div>
+                ) : null}
 
                 {isAuthenticated ? (
                     <form onSubmit={handlePasswordUpdate} className="space-y-5">
@@ -206,7 +233,7 @@ export default function ForgotPassword() {
                             </button>
                         </div>
 
-                        {status ? (
+                        {status && isAuthenticated ? (
                             <p className="text-sm text-center text-gray-700">
                                 {status}
                             </p>
@@ -240,17 +267,15 @@ export default function ForgotPassword() {
                             </button>
                         </div>
 
-                        {status ? (
-                            <p className="text-sm text-center text-gray-700">
-                                {status}
-                            </p>
+                        {status && !isErrorStatus ? (
+                            <p className="text-sm text-center text-[#2f5d3a]">{status}</p>
                         ) : null}
                     </form>
                 )}
 
                 <p className="text-sm text-center text-gray-600 mt-6">
                     {isAuthenticated ? (
-                        <>You'll be sent to your account once the password update is complete.</>
+                        <>You&apos;ll be sent to your account once the password update is complete.</>
                     ) : (
                         <>
                             Remember your password?{" "}

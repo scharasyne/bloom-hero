@@ -12,6 +12,7 @@ type AppealRow = {
 
 type VendorRow = {
   id: string;
+  owner_id: string;
   shop_name: string | null;
   business_type: BusinessType;
   status: string | null;
@@ -51,6 +52,7 @@ export function mapAdminVendor(row: VendorRow): AdminVendorRecord {
 
   return {
     id: row.id,
+    ownerId: row.owner_id,
     storeName: row.shop_name?.trim() || "Vendor Shop",
     ownerName: row.owner?.name?.trim() || "Vendor Owner",
     businessType: row.business_type,

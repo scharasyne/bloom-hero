@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "@/components/Modal";
+import { deleteUserAccount } from "@/features/admin/actions/deleteUserAccount";
 import { reviewVendorSuspensionAppeal } from "@/features/admin/actions/reviewVendorSuspensionAppeal";
 import type { AdminVendorRecord as VendorRecord } from "@/features/admin/types";
 
@@ -46,6 +47,22 @@ export function AdminVendorProfileModal({
   const isSuspended = vendor.status === "suspended";
   const isRegistered = vendor.businessType === "registered";
   const pendingAppeal = vendor.pendingAppeal;
+
+  const handleDeleteAccount = () => {
+    if (!window.confirm(`Permanently delete ${vendor.email}? This removes auth and all vendor data.`)) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteUserAccount(vendor.ownerId, "Admin deleted vendor account");
+      if (!result.ok) {
+        setError(result.error ?? "Failed to delete account.");
+        return;
+      }
+      onUpdated?.();
+      onClose();
+    });
+  };
 
   const handleReview = (decision: "approved" | "rejected") => {
     if (!pendingAppeal) return;
@@ -212,6 +229,22 @@ export function AdminVendorProfileModal({
               </div>
             </section>
           ) : null}
+
+          <section className="rounded-xl border border-[#fde4e1] bg-[#fff7f6] px-4 py-3">
+            <p className="text-xs font-semibold uppercase text-[#c43c30]">Danger zone</p>
+            <p className="mt-1 text-sm text-[#4c4742]">
+              Deletes the vendor&apos;s login and cascades shop data. Cannot be undone.
+            </p>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={handleDeleteAccount}
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#cc3526]/40 bg-white px-4 py-2 text-sm font-semibold text-[#cc3526] disabled:opacity-50"
+            >
+              <Icon icon="mdi:account-remove-outline" width={16} height={16} />
+              Delete vendor account
+            </button>
+          </section>
         </div>
       </div>
     </Modal>

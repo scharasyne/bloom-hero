@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
+import { deleteAuthUserById } from "@/lib/auth/deleteAuthUserById";
 import { logActivity } from "@/features/admin/actions/logActivity";
 import type { AdminActionResult, IssuedVendorCredentials } from "@/features/admin/types";
 import { ensureAdmin } from "@/features/admin/utils/ensureAdmin";
@@ -225,7 +226,7 @@ export async function approveVendorApplication(
       console.error("Failed to write approval activity log:", error);
     });
   } catch (error) {
-    await supabaseAdmin.auth.admin.deleteUser(vendorUserId);
+    await deleteAuthUserById(vendorUserId);
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Failed to finalize vendor approval.",

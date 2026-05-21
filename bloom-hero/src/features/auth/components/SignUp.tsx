@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { RegistrationSuccessModal } from "@/features/auth/components/RegistrationSuccessModal";
 import Image from "next/image";
 
 export default function SignUp() {
@@ -29,6 +30,7 @@ export default function SignUp() {
 
     const [status, setStatus] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
     async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
@@ -61,13 +63,15 @@ export default function SignUp() {
             return;
         }
 
-        setStatus("Check your email to confirm your account.");
+        await supabase.auth.signOut();
+
         setUsername("");
         setEmail("");
         setPassword("");
         setConfirmPassword("");
+        setStatus("");
         setIsSubmitting(false);
-        router.push("/");
+        setShowSuccessModal(true);
         return;
         // }
 
@@ -244,6 +248,11 @@ export default function SignUp() {
                     </Link>
                 </p>
             </div>
+
+            <RegistrationSuccessModal
+                isOpen={showSuccessModal}
+                onDismissAction={() => setShowSuccessModal(false)}
+            />
         </div>
     );
 }
