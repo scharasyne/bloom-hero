@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
+import { revalidateUserCache } from "@/features/auth/utils/revalidateUserCache";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { BusinessType, ActionResult, PHONE_PATTERN } from '../types';
 
@@ -15,12 +17,10 @@ export async function updateVendorCommonProfileByOwner(input: {
   about?: string;
   profilePhotoUrl?: string | null;
 }): Promise<ActionResult> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
   if (!user) return { ok: false, error: "You must be logged in." };
+
+  const supabase = await createSupabaseServerClient();
 
   const shopName = input.shopName.trim();
   const location = input.location.trim();
@@ -79,7 +79,7 @@ export async function updateVendorCommonProfileByOwner(input: {
       .eq("id", user.id);
   }
 
+  await revalidateUserCache(user.id);
   revalidatePath("/vendor/profile");
-//   revalidatePath("/pop-up/profile");
   return { ok: true };
 }

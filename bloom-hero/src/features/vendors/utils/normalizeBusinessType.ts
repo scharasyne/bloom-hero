@@ -8,7 +8,7 @@ export function normalizeBusinessType(value: unknown): BusinessType | null {
 }
 
 export function formatBusinessTypeLabel(value: BusinessType | null | undefined) {
-  if (value === "registered") return "Registered business";
-  if (value === "unregistered") return "Unregistered business";
+  if (value === "registered") return "Shop with online orders";
+  if (value === "unregistered") return "Pop-up vendor";
   return "Vendor";
 }

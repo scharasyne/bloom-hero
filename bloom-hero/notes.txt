@@ -30,3 +30,9 @@ studio - like a local supabase: http://127.0.0.1:54323
 to remove something from git tracking
 useful if you accidentally pushed something
 : git rm --cached -r supabase/
+
+
+to dump prod database to migration backups:
+npx supabase@latest login
+npx supabase@latest link --project-ref kmficyaksdccdassamjy
+npx supabase@latest db dump --schema public -f supabase/migrations_backup/prod_dump.sql

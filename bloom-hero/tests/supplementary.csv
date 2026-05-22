@@ -1,0 +1,104 @@
+"Module","Test Title","Test Type","Priority","Case Type","Preconditions","Test Data","Steps to Execute","Expected Result"
+"Landing page and public APIs","Home page loads with best sellers and pop-up map data","Functional, Integration","High","Sunny","1. Dev server is running and Supabase is configured","GET /; GET /api/best-sellers?limit=6","1. Open the home page in a logged-out session
+2. Wait for the page to finish loading
+3. Confirm the best sellers section requests /api/best-sellers
+4. Confirm the pop-up map section loads vendor markers via getPopUpMapVendors","- Home page returns HTTP 200
+- best sellers API returns HTTP 200
+- pop-up map data loads without a server error"
+"Landing page and public APIs","Best sellers API returns a valid JSON payload when products exist","Integration","High","Sunny","1. At least one product exists in the database","GET /api/best-sellers?limit=6","1. Call /api/best-sellers?limit=6 from the browser or API client
+2. Inspect the response status and body","- Response status is 200
+- body includes a flowers array (and vendors when scope allows)
+- errors array is empty or only contains non-blocking warnings"
+"Landing page and public APIs","Best sellers API handles an empty product catalog gracefully","Integration","Medium","Rainy","1. No products exist in the database","GET /api/best-sellers?limit=6","1. Call /api/best-sellers?limit=6
+2. Inspect the response body","- Response status is 200
+- flowers array is empty
+- the landing page does not crash"
+"Customer authentication","Customer can sign in with valid credentials and reach the home page","Functional, Security","High","Sunny","1. A customer account exists in Supabase Auth and users table","Email: test@customer.com; Password: customer","1. Open /login
+2. Enter the customer email and password
+3. Submit the form
+4. Confirm redirect after signInWithPasswordAction completes","- Login succeeds without an error message
+- user is redirected to the customer home page
+- subsequent GET / requests return HTTP 200"
+"Customer authentication","Invalid customer login shows an error and does not create a session","Validation, Security","High","Rainy","1. User is logged out","Email: test@customer.com; Password: wrong-password","1. Open /login
+2. Enter a valid email with an incorrect password
+3. Submit the form","- An error message is shown
+- user remains on the login page
+- protected customer routes are not accessible"
+"Search - vendors and flowers","Search page loads and calls the search API for a vendor name query","Functional, Integration","High","Sunny","1. User is logged in or browsing as guest on a working build","URL: /search?scope=all&q=zarah+legit","1. Open /search?scope=all&q=zarah+legit
+2. Wait for results to load
+3. Inspect the network request to /api/search","- Search page returns HTTP 200
+- /api/search is called with scope, q, price, and sort parameters
+- API returns HTTP 200"
+"Search - vendors and flowers","Vendor search returns matching vendor cards for a known shop name","Functional, Integration","High","Sunny","1. At least one vendor exists with shop name containing the query text","Query: zarah legit; Scope: all; Sort: Best Sellers","1. Open /search?scope=all&q=zarah+legit
+2. Wait for the Vendors section to render
+3. Verify vendor names in the results","- At least one vendor result card is shown
+- the card displays the correct shop name and business type
+- no fatal error banner is shown"
+"Search - vendors and flowers","Flower search returns product cards when matching products exist","Functional, Integration","High","Sunny","1. At least one product exists whose name or description matches the query","Query: rose; Scope: all or flowers; Sort: Best Sellers or Price: Low to High","1. Open /search?scope=flowers&q=rose
+2. Wait for the Flowers section to load
+3. Verify bouquet cards appear","- /api/search returns HTTP 200 with flowers in the payload
+- at least one flower card is rendered
+- pagination controls appear when results exceed one page"
+"Search - vendors and flowers","Flower search shows an empty state when no products match the query","Functional, Integration","Medium","Rainy","1. No products match the search term in the database","Query: rose; Scope: flowers","1. Open /search?scope=flowers&q=rose
+2. Wait for loading to finish","- Page shows a clear no-results message for flowers
+- no application crash occurs
+- API still returns HTTP 200"
+"Search - vendors and flowers","Default price filter does not block vendor or flower results","Functional, Regression","High","Rainy","1. Search page is on the latest build with price filter fixes applied","Price filter: Default; Query: zarah legit; Scope: all","1. Open /search?scope=all&q=zarah+legit
+2. Leave the price filter on Default
+3. Submit or refresh the search
+4. Inspect the /api/search request price parameter","- API receives price=Any (not a broken token such as <1000 from a typo)
+- vendor results still load when vendors exist
+- flower results load when products exist"
+"Search - vendors and flowers","Search API returns vendors for a broad query when using scope=all","Integration","High","Sunny","1. Multiple vendors exist in the database","Query: a; Scope: all; Price: Any","1. Call GET /api/search?q=a&scope=all&price=Any&sort=Best+Sellers
+2. Inspect the JSON response","- HTTP status is 200
+- vendors array contains one or more entries when data exists
+- errors array is empty or only lists partial failures with HTTP 207"
+"Search - vendors and flowers","Search page compiles without JSX syntax errors","Regression, Build","High","Sunny","1. Latest src/app/search/page.tsx is deployed locally","File: src/app/search/page.tsx with Suspense fallback","1. Start or refresh the dev server
+2. Open /search in the browser
+3. Check the terminal for compile errors","- No ""Expected corresponding JSX closing tag"" parse error appears
+- /search returns HTTP 200
+- skeleton fallback renders while SearchPageView loads"
+"Role-based access control","Non-admin user is redirected away from admin dashboard","Security, Functional","High","Rainy","1. User is logged in as a customer (not admin)","URL: /admin/dashboard","1. Log in as test@customer.com
+2. Navigate directly to /admin/dashboard
+3. Observe the final URL and page content","- User does not remain on the admin dashboard
+- redirect goes to an allowed route (for example home or login)
+- no admin-only data is visible"
+"Role-based access control","Customer without a vendor profile cannot open vendor dashboard","Security, Functional","High","Rainy","1. User is logged in as a customer with role customer and no vendor row","URL: /vendor/dashboard","1. Log in as test@customer.com
+2. Navigate to /vendor/dashboard
+3. Observe server logs and the browser result","- Page does not render a working vendor dashboard
+- user is redirected or shown an error state instead of vendor KPIs
+- server does not leave the user on a broken vendor dashboard view"
+"Role-based access control","Approved vendor can open vendor dashboard when a vendor profile exists","Functional, Integration","High","Sunny","1. User is logged in as an approved vendor with a vendors row linked to owner_id","URL: /vendor/dashboard","1. Log in as a vendor account with a completed vendor profile
+2. Open /vendor/dashboard
+3. Confirm dashboard content loads","- HTTP 200 is returned
+- vendor dashboard data renders
+- no ""Vendor profile not found"" error is thrown"
+"Vendor application","Customer can open the vendor application page and load a draft","Functional, Integration","High","Sunny","1. User is logged in as a customer","Route: /vendor-application","1. Log in as test@customer.com
+2. Open /vendor-application
+3. Wait for the draft loader to finish","- Page returns HTTP 200
+- getVendorApplicationDraftForCurrentUser completes
+- form fields populate from draft or empty defaults"
+"Vendor application","Customer can save a vendor application draft","Functional, Integration","High","Sunny","1. Customer is logged in on /vendor-application","businessType: registered; email: test@customer.com; partial form fields","1. Open /vendor-application
+2. Fill required draft fields
+3. Trigger save (auto-save or save action)
+4. Refresh the page","- saveVendorApplicationDraft returns success
+- refreshed page restores the same draft values
+- no duplicate draft rows are created"
+"Customer profile","Customer profile page loads for an authenticated customer","Functional","High","Sunny","1. Customer is logged in","Route: /profile","1. Log in as test@customer.com
+2. Open /profile
+3. Refresh once","- Profile page returns HTTP 200 on first load and refresh
+- customer details render without a 500 error
+- page remains usable after navigation from home"
+"Customer profile","Profile page does not break the whole app after a search page compile failure","Regression, Integration","High","Rainy","1. A broken search page build existed previously (invalid JSX)","Navigate: /search then /profile and /","1. Fix or verify search/page.tsx compiles
+2. Open /search
+3. Open /profile
+4. Open /","- Home and profile return HTTP 200
+- no site-wide 500 caused only by the search route syntax error"
+"Auth and session warnings","Server logs warn when getSession is used instead of getUser on vendor-application","Security, Regression","Medium","Rainy","1. Dev server logging is visible","Routes that still call auth.getSession()","1. Open /vendor-application while logged in
+2. Review the terminal warning output","- Warning about insecure getSession usage may appear until refactored
+- page still functions
+- no credential leak in the UI"
+"UI and assets","Navbar logo renders without breaking layout (aspect ratio warning only)","UI","Low","Rainy","1. Any page using /navbar-logo.png is open","Image: /navbar-logo.png with fixed width and height","1. Open home, login, or profile
+2. Check browser console for image warnings","- Logo is visible
+- optional Next.js aspect-ratio warning may appear in console
+- layout is not broken"

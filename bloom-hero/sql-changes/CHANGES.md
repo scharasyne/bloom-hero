@@ -98,3 +98,35 @@ SELECT business_type, count(*) FROM public.vendor_applications GROUP BY 1;
 ```
 
 After applying SQL, sign in as vendor and confirm `/vendor/dashboard`, registered-only tabs, and application/admin labels use `registered` / `unregistered`.
+
+## Vendor vs customer access (RLS)
+
+Manual apply: `sql-changes/apply-vendor-customer-access-rls.sql`
+
+- Enables RLS on `users`, `vendors`, `products`, `reviews`, `orders`, `order_items`, `popup_locations`, `popup_location_requests`, `vendor_applications`.
+- Public catalog reads (approved vendors, products, schedules, approved reviews) are limited to **anon + customers** via `can_read_public_vendor_catalog()` — vendors cannot browse other shops through the API.
+- `popup_location_requests` inserts require `is_customer()` and an existing `customers` row.
+- `customers` insert policy requires customer role (blocks vendors from creating a customer row to bypass checks).
+
+App guards:
+
+- `/vendors/:id` — vendors redirected unless it is their own shop (preview).
+- Location request API/action — customers only.
+- Map/search profile links hidden for logged-in vendors.
+- `/cart` — vendors redirected to `/vendor/dashboard` in `src/proxy.ts`.
+
+## Database linter (performance)
+
+Apply in Supabase SQL editor:
+
+1. **`apply-rls-initplan-fixes.sql`** (run once) — all `auth_rls_initplan` policy fixes, `can_read_public_vendor_catalog()`, vendor-access + suspension policy names, legacy policy names, drop duplicate `unique_vendor_owner` constraint.
+2. `apply-vendor-customer-access-rls.sql` — only if setting up RLS from scratch (full table set; policies match initplan script).
+3. `apply-vendor-suspension-appeals.sql` — only if the appeals table does not exist yet.
+
+Also available: `apply-database-linter-fixes.sql`, `apply-rls-helper-execute-grants.sql` (run if login fails with `permission denied for function is_admin`), `apply-disable-pg-graphql.sql`, `apply-postgrest-timezone-fix.sql`, `apply-fk-indexes.sql` (missing FK covering indexes).
+
+**Unused index (INFO):** linter may flag indexes with zero scans in dev. Keep them unless you have confirmed they are redundant; several support admin/search features not exercised locally yet.
+
+**Consolidated permissive policies:** `apply-rls-consolidate-permissive-policies.sql` (run after initplan fixes) — one policy per action with OR-combined rules. Also baked into `apply-vendor-customer-access-rls.sql` for fresh installs.
+
+**Dev terminal log archive:** `sql-changes/archives/dev-terminal-log-2026-05-16.txt`

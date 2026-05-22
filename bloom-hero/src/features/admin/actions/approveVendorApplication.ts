@@ -147,6 +147,7 @@ export async function approveVendorApplication(
         owner_id: vendorUserId,
         shop_name: application.shop_name?.trim() || "Vendor Shop",
         business_type: businessType,
+        holds_popups: true,
         status: "approved",
       },
       { onConflict: "owner_id" }

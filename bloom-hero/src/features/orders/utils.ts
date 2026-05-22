@@ -1,6 +1,11 @@
 // Source: `src/app/(customer)/orders/_lib/utils.ts`
 
-import type { OrderItemRow, OrderGroup } from "@/features/orders/types";
+import type {
+  OrderItemRow,
+  OrderGroup,
+  OrderItemCardModel,
+  VendorOrderSection,
+} from "@/features/orders/types";
 
 export function formatPeso(n: number) {
   return `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
@@ -44,10 +49,11 @@ export function groupOrders(rows: OrderItemRow[]): OrderGroup[] {
     const key = row.orders.id;
     if (!ordersMap.has(key)) {
       ordersMap.set(key, {
-        id: row.order_id,
-        vendorId: row.orders.vendors?.id ?? null,
-        vendorName: row.orders.vendors?.shop_name ?? "Bloom & Co.",
+        id: row.orders.id,
+        vendorId: row.orders.vendors?.id ?? row.orders.vendor_id ?? null,
+        vendorName: row.orders.vendors?.shop_name ?? "Shop",
         status: row.orders.status,
+        paymentMethod: row.orders.payment_method ?? null,
         orderDate: row.orders.order_date,
         total: Number(row.orders.total_amount) || 0,
         receiptProofUrl: row.orders.receipt_proof_url,
@@ -60,4 +66,33 @@ export function groupOrders(rows: OrderItemRow[]): OrderGroup[] {
   }
 
   return Array.from(ordersMap.values());
+}
+
+export function groupOrderItemsByVendor(orders: OrderGroup[]): VendorOrderSection[] {
+  const sections = new Map<string, VendorOrderSection>();
+
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+  );
+
+  for (const order of sortedOrders) {
+    const key = order.vendorId ?? order.vendorName;
+    if (!sections.has(key)) {
+      sections.set(key, {
+        vendorId: order.vendorId,
+        vendorName: order.vendorName,
+        cards: [],
+      });
+    }
+
+    for (const row of order.items) {
+      sections.get(key)!.cards.push({
+        itemId: row.id,
+        row,
+        order,
+      });
+    }
+  }
+
+  return Array.from(sections.values());
 }

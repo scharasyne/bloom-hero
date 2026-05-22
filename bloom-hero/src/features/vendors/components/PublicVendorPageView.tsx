@@ -4,15 +4,26 @@ import type { PublicVendorPageData } from "@/features/vendors/queries/getPublicV
 
 type PublicVendorPageViewProps = {
   data: PublicVendorPageData;
+  canRequestLocation?: boolean;
 };
 
-export function PublicVendorPageView({ data }: PublicVendorPageViewProps) {
-  const { vendor, products, schedule, galleryPhotos, reviews, businessType } = data;
+export function PublicVendorPageView({ data, canRequestLocation = true }: PublicVendorPageViewProps) {
+  const {
+    vendor,
+    products,
+    schedule,
+    galleryPhotos,
+    reviews,
+    businessType,
+    holdsPopups,
+    offersOnlineOrders,
+  } = data;
+  const showLocationRequests = canRequestLocation && holdsPopups;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+    <main className="page-shell min-h-screen">
+      <div className={`grid gap-8 ${holdsPopups ? "lg:grid-cols-3" : "lg:grid-cols-1"}`}>
+        <div className={holdsPopups ? "lg:col-span-2" : ""}>
           <CustomerVendorProfile
             vendorId={vendor.id}
             vendor={vendor}
@@ -20,11 +31,15 @@ export function PublicVendorPageView({ data }: PublicVendorPageViewProps) {
             reviews={reviews}
             galleryPhotos={galleryPhotos}
             businessType={businessType}
+            offersOnlineOrders={offersOnlineOrders}
+            canRequestLocation={showLocationRequests}
           />
         </div>
-        <aside className="lg:col-span-1">
-          <CustomerVendorSchedulePanel schedule={schedule} vendorName={vendor.shop_name} />
-        </aside>
+        {holdsPopups ? (
+          <aside className="lg:col-span-1">
+            <CustomerVendorSchedulePanel schedule={schedule} vendorName={vendor.shop_name} />
+          </aside>
+        ) : null}
       </div>
     </main>
   );

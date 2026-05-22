@@ -4,33 +4,16 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
+import { revalidateUserCache } from "@/features/auth/utils/revalidateUserCache";
 import { upsertCustomerSettingsByUserId } from "@/features/customers/actions/upsertCustomerSettings";
 import { updateUserProfile } from "@/features/users/actions/updateUserProfile";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type NotificationPreferences = {
   order_updates: boolean;
   promotions: boolean;
 };
 
-
-/*
-  —————————————————— CHECK THIS ——————————————————
-  A BIT REDUNDANT. WE ALREADY HAVE A CURRENT SESSION ID
-  USE THAT. FIND THE FILE.
-*/
-async function getCurrentSessionUserId() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error("Please log in again to continue.");
-  }
-
-  return session.user.id;
-}
 
 export async function saveCustomerSettings(input: {
   name: string;
@@ -40,7 +23,11 @@ export async function saveCustomerSettings(input: {
   notificationPreferences: NotificationPreferences;
 }) {
   try {
-    const userId = await getCurrentSessionUserId();
+    const user = await getAuthUser();
+    if (!user) {
+      throw new Error("Please log in again to continue.");
+    }
+    const userId = user.id;
 
     await Promise.all([
       updateUserProfile(userId, {
@@ -54,6 +41,7 @@ export async function saveCustomerSettings(input: {
       }),
     ]);
 
+    await revalidateUserCache(userId);
     revalidatePath("/settings");
     return { ok: true as const };
   } catch (error) {

@@ -2,6 +2,14 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+import { getSecurityHeaders } from '@/lib/security/headers'
+import {
+  checkRateLimit,
+  getClientIpFromRequest,
+  resolveRateLimitBucket,
+} from '@/lib/security/rate-limit'
+import { getUserAppRole, roleHomePath } from '@/lib/security/proxy-role-guard'
+
 const PUBLIC_PATHS = [
   '/',
   '/about-us',
@@ -18,6 +26,7 @@ const PUBLIC_PREFIXES = [
 
 const PROTECTED_PREFIXES = [
   '/admin',
+  '/vendor',
   '/market',
   '/pop-up',
   '/dashboard',
@@ -25,18 +34,53 @@ const PROTECTED_PREFIXES = [
   '/review',
   '/profile',
   '/vendor-application',
+  '/customer',
+  '/cart',
 ]
 
 function hasPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`)
 }
 
+function withSecurityHeaders(response: NextResponse) {
+  for (const { key, value } of getSecurityHeaders()) {
+    response.headers.set(key, value)
+  }
+  return response
+}
+
+function redirectWithSecurityHeaders(url: URL) {
+  return withSecurityHeaders(NextResponse.redirect(url))
+}
+
+function rateLimitResponse(request: NextRequest, retryAfterSeconds: number) {
+  const response = withSecurityHeaders(
+    NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429 },
+    ),
+  )
+  response.headers.set('Retry-After', String(retryAfterSeconds))
+  return response
+}
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  const response = NextResponse.next({
-    request,
-  })
+  const rateLimitBucket = resolveRateLimitBucket(pathname)
+  if (rateLimitBucket) {
+    const ip = getClientIpFromRequest(request)
+    const rateLimit = checkRateLimit(rateLimitBucket, ip)
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(request, rateLimit.retryAfterSeconds)
+    }
+  }
+
+  const response = withSecurityHeaders(
+    NextResponse.next({
+      request,
+    }),
+  )
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -64,7 +108,26 @@ export async function proxy(request: NextRequest) {
   const isProtectedPath = PROTECTED_PREFIXES.some(prefix => hasPrefix(pathname, prefix))
 
   if (!user && isProtectedPath) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return redirectWithSecurityHeaders(new URL('/login', request.url))
+  }
+
+  let appRole: Awaited<ReturnType<typeof getUserAppRole>> = null
+  if (user) {
+    appRole = await getUserAppRole(supabase, user.id)
+  }
+
+  if (user && hasPrefix(pathname, '/admin') && appRole !== 'admin') {
+    return redirectWithSecurityHeaders(new URL(roleHomePath(appRole), request.url))
+  }
+
+  if (user && hasPrefix(pathname, '/vendor') && appRole !== 'vendor' && appRole !== 'admin') {
+    return redirectWithSecurityHeaders(new URL(roleHomePath(appRole), request.url))
+  }
+
+  if (user && hasPrefix(pathname, '/cart')) {
+    if (appRole === 'vendor') {
+      return redirectWithSecurityHeaders(new URL('/vendor/dashboard', request.url))
+    }
   }
 
   if (isPublicPath) {

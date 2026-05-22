@@ -9,7 +9,7 @@ import type {
   VendorDashboardRecentOrder,
   VendorDashboardTrendPoint,
   VendorDashboardUpcomingOrder,
-} from "@/lib/mockData";
+} from "@/features/vendors/types/dashboard";
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 
@@ -160,7 +160,7 @@ export function VendorDashboardContent() {
         </div>
       ) : null}
       {/* ── KPI Row ── */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
           <Link
             key={kpi.label}

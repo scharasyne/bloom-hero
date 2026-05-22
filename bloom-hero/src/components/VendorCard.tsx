@@ -1,9 +1,25 @@
 "use client";
 
-import { Icon } from "@iconify/react";
 import CartItem from "@/components/CartItem";
 
-const GRID = "grid grid-cols-[minmax(0,1fr)_160px_120px_140px] items-center gap-[12px]";
+function IconStorefront({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
 
 type VendorCardProps = {
   vendorName: string;
@@ -29,48 +45,44 @@ export default function VendorCard({
   onRemove,
 }: VendorCardProps) {
   return (
-    <div className="bg-white rounded-[8px] border border-[#e8e8e8] overflow-hidden">
-
-      {/* Vendor row */}
-      <div className="flex items-center gap-[10px] px-[20px] py-[12px] border-b border-[#f0f0f0]">
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 rounded-2xl border border-[#e6e2dd] bg-white px-4 py-3 shadow-sm">
         <input
           type="checkbox"
           checked={isVendorSelected}
           onChange={onVendorSelect}
-          className="w-[18px] h-[18px] accent-[#D96A63] cursor-pointer"
+          className="h-5 w-5 shrink-0 cursor-pointer accent-[#D24B46]"
+          aria-label={`Select all from ${vendorName}`}
         />
-        <span className="text-[13px] font-semibold text-[#333]">{vendorName}</span>
-        <Icon icon="mdi:chevron-right" width={16} height={16} className="text-[#aaa]" />
-      </div>
-
-      {/* Column headers */}
-      <div className={`${GRID} px-[20px] py-[10px] border-b border-[#f0f0f0]`}>
-        <span className="text-[13px] font-semibold text-[#333]">Item</span>
-        <span className="text-[13px] font-semibold text-[#333] text-center">Quantity</span>
-        <span className="text-[13px] font-semibold text-[#333] text-center">Price</span>
-        <span className="text-[13px] font-semibold text-[#333] text-center">Total</span>
-      </div>
-
-      {/* Items */}
-      {items.map((item, index) => (
-        <div key={item.id}>
-          <div className="px-[20px] py-[16px]">
-            <CartItem
-              item={item}
-              index={index}
-              isSelected={selectedIds.has(item.id)}
-              onSelect={onItemSelect}
-              onIncrease={onIncrease}
-              onDecrease={onDecrease}
-              onRemove={onRemove}
-            />
-          </div>
-          {index < items.length - 1 && (
-            <div className="border-t border-[#f0f0f0] mx-[20px]" />
-          )}
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e6e2dd] bg-[#faf8f5] text-[#2f5d3a] shadow-sm">
+          <IconStorefront />
         </div>
-      ))}
+        <p className="min-w-0 flex-1 truncate text-sm font-bold text-[#2f2f2f]">{vendorName}</p>
+        <span className="shrink-0 text-[11px] font-semibold text-[#A39E96]">
+          {items.length} item{items.length !== 1 ? "s" : ""}
+        </span>
+      </div>
 
+      <div className="space-y-3 pl-0 sm:pl-2">
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className="overflow-hidden rounded-2xl border border-[#e6e2dd] bg-white shadow-sm transition-shadow hover:shadow-md"
+          >
+            <div className="px-4 py-4 sm:px-5 sm:py-5">
+              <CartItem
+                item={item}
+                index={index}
+                isSelected={selectedIds.has(item.id)}
+                onSelect={onItemSelect}
+                onIncrease={onIncrease}
+                onDecrease={onDecrease}
+                onRemove={onRemove}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

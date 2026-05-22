@@ -49,6 +49,7 @@ export type PopupGalleryClient = ReturnType<typeof createSupabaseBrowserClient>
 
 export type PopUpLocationRow = {
   id: string;
+  vendor_id: string;
   location: string;
   scheduled_date: string;
   start_time: string | null;
@@ -56,7 +57,9 @@ export type PopUpLocationRow = {
   latitude: number | string | null;
   longitude: number | string | null;
   vendors: {
+    id: string;
     shop_name: string | null;
+    business_type: string | null;
   } | null;
 };
 

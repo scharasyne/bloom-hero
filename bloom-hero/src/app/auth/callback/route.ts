@@ -1,3 +1,4 @@
+import { revalidateUserCache } from "@/features/auth/utils/revalidateUserCache";
 import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -83,6 +84,8 @@ export async function GET(request: NextRequest) {
     }
     path = "/vendor/dashboard";
   }
+
+  await revalidateUserCache(user.id);
 
   const redirect = NextResponse.redirect(`${origin}${path}`);
   applyAuthCookies(redirect);

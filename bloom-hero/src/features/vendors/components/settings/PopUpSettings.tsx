@@ -6,7 +6,14 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { VendorOfferingBadges } from "@/components/VendorOfferingBadges";
+import { updateVendorHoldsPopups } from "@/features/vendors/actions/updateVendorHoldsPopups";
+import type { BusinessType } from "@/features/vendors/types";
+import {
+  getVendorOfferingBadges,
+  getVendorOfferings,
+} from "@/features/vendors/utils/vendorOfferings";
 import {
   SectionCard, SectionHeader,
   SettingRow, SettingRowFull,
@@ -14,17 +21,88 @@ import {
   AccountTab, SettingsShell,
 } from "./shared";
 
+type VendorSettingsProps = {
+  businessType: BusinessType;
+  holdsPopups: boolean;
+};
+
+function CustomerOfferingsSection({
+  businessType,
+  holdsPopups,
+}: {
+  businessType: BusinessType;
+  holdsPopups: boolean;
+}) {
+  const isPopUpOnly = businessType === "unregistered";
+  const [enabled, setEnabled] = useState(holdsPopups);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const previewBadges = getVendorOfferingBadges(
+    getVendorOfferings({ businessType, holdsPopups: enabled }),
+  );
+
+  const saveHoldsPopups = (next: boolean) => {
+    setEnabled(next);
+    setMessage(null);
+    startTransition(async () => {
+      const result = await updateVendorHoldsPopups(next);
+      if (!result.ok) {
+        setEnabled(!next);
+        setMessage(result.error);
+        return;
+      }
+      setMessage("Saved.");
+    });
+  };
+
+  return (
+    <SectionCard>
+      <SectionHeader
+        icon="mdi:storefront-outline"
+        title="How customers find you"
+        desc="These labels appear on your vendor card in search and browse."
+      />
+      <SettingRowFull label="Your vendor card shows">
+        <VendorOfferingBadges badges={previewBadges} />
+      </SettingRowFull>
+      {isPopUpOnly ? (
+        <SettingRow
+          label="Pop-up listings"
+          hint="Pop-up vendors always appear in pop-up search, the map, and location requests."
+        >
+          <Toggle checked disabled onChange={() => undefined} />
+        </SettingRow>
+      ) : (
+        <SettingRow
+          label="I host pop-up events"
+          hint="When on, customers see Pop-up on your card and can find your schedule on the map. Orders stay available."
+        >
+          <Toggle checked={enabled} disabled={isPending} onChange={saveHoldsPopups} />
+        </SettingRow>
+      )}
+      {message ? <p className="px-6 pb-4 text-xs text-[#6b7a6f]">{message}</p> : null}
+    </SectionCard>
+  );
+}
+
 // ─── Tab: Appearance ──────────────────────────────────────────────────────────
 
-function AppearanceTab() {
+function AppearanceTab({
+  businessType,
+  holdsPopups,
+}: {
+  businessType: BusinessType;
+  holdsPopups: boolean;
+}) {
   const [showOnDirectory, setShowOnDirectory] = useState(true);
   const [allowFollows, setAllowFollows]       = useState(true);
   const [showSoldOut, setShowSoldOut]         = useState(false);
 
   return (
     <div>
+      <CustomerOfferingsSection businessType={businessType} holdsPopups={holdsPopups} />
       <SectionCard>
-        <SectionHeader icon="mdi:storefront-outline" title="Public Profile" desc="How your pop-up booth appears to customers browsing BloomHero" />
+        <SectionHeader icon="mdi:storefront-outline" title="Public Profile" desc="How your shop appears to customers browsing BloomHero" />
         <SettingRowFull label="Profile Photo" hint="Recommended: 400×400px, PNG or JPG, max 2MB">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-[#2f5d3a] flex items-center justify-center text-white text-lg font-bold shrink-0">PV</div>
@@ -36,7 +114,7 @@ function AppearanceTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Profile Details" hint="Shown on your public pop-up listing">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Display Name" type="text" defaultValue="Petal Pop-up" />
             <FieldInput label="Tagline"      type="text" placeholder="e.g. Blooms wherever we go" />
             <div className="col-span-2">
@@ -45,7 +123,7 @@ function AppearanceTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Contact Info" hint="How customers can reach you">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Contact Email" type="email" defaultValue="hello@petalpopup.ph" />
             <FieldInput label="Phone / Viber" type="tel"   defaultValue="+63 917 000 0000" />
           </div>
@@ -101,13 +179,13 @@ function ScheduleTab() {
           </div>
         </SettingRowFull>
         <SettingRowFull label="Preferred Setup Areas" hint="Locations you're willing to travel to">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="City / Municipality" type="text" defaultValue="Cebu City" />
             <FieldInput label="Max travel radius"   type="text" placeholder="e.g. 30 km" />
           </div>
         </SettingRowFull>
         <SettingRowFull label="Booth Requirements" hint="Space and logistics needs shared with organizers upfront">
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <FieldInput label="Min. booth size" type="text" placeholder="e.g. 2m × 2m" />
             <FieldSelect label="Power outlet">
               <option>Not required</option>
@@ -231,19 +309,24 @@ const tabs: Array<{ id: PopUpSettingsTab; label: string }> = [
   { id: "account",       label: "Account"             },
 ];
 
-export function PopUpSettings() {
+export function PopUpSettings({ businessType, holdsPopups }: VendorSettingsProps) {
   const [activeTab, setActiveTab] = useState<PopUpSettingsTab>("appearance");
+  const isPopUpOnly = businessType === "unregistered";
 
   const panels: Record<PopUpSettingsTab, React.ReactNode> = {
-    appearance:    <AppearanceTab />,
+    appearance:    <AppearanceTab businessType={businessType} holdsPopups={holdsPopups} />,
     schedule:      <ScheduleTab />,
     notifications: <NotificationsTab />,
-    account:       <AccountTab businessType="unregistered" />,
+    account:       <AccountTab businessType={businessType} />,
   };
 
   return (
     <SettingsShell
-      subtitle="Manage your pop-up profile, schedule preferences, and account."
+      subtitle={
+        isPopUpOnly
+          ? "Manage your pop-up profile, schedule, and account."
+          : "Manage how customers see your shop, pop-up events, and account."
+      }
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={(id) => setActiveTab(id as PopUpSettingsTab)}

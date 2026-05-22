@@ -83,6 +83,7 @@ export type ActivityLog = {
 // POP-UP MAP
 export interface PopUpMapVendor {
   id: string;
+  vendorId: string;
   displayNumber: number;
   name: string;
   address: string;

@@ -1,9 +1,10 @@
 // Source: `src/app/(customer)/orders/page.tsx`
 
 import Footer from "@/components/footer";
-import { OrderCard } from "@/features/orders/components/OrderCard";
+import { VendorOrdersSection } from "@/features/orders/components/VendorOrdersSection";
 import { TABS, EMPTY_STATE, type TabKey } from "@/features/orders/constants";
 import type { OrderGroup } from "@/features/orders/types";
+import { groupOrderItemsByVendor } from "@/features/orders/utils";
 
 function IconPackage({ className = "" }: { className?: string }) {
   return (
@@ -47,10 +48,11 @@ type CustomerOrdersPageViewProps = {
 
 export function CustomerOrdersPageView({ activeTab, orders }: CustomerOrdersPageViewProps) {
   const emptyState = EMPTY_STATE[activeTab];
+  const vendorSections = groupOrderItemsByVendor(orders);
 
   return (
     <>
-      <main className="min-h-screen bg-[#fbf7f4] px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="min-h-screen bg-[#fbf7f4] page-x pb-16 pt-4 sm:pt-6">
         <div className="mx-auto w-full max-w-230 pt-8">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#2f2f2f] tracking-tight">
@@ -96,10 +98,16 @@ export function CustomerOrdersPageView({ activeTab, orders }: CustomerOrdersPage
               </a>
             </div>
           ) : (
-            <div className="space-y-5">
-              {orders.map((order) => (
-                <OrderCard key={order.id} order={order} activeTab={activeTab} />
-              ))}
+            <div className="space-y-6">
+              {vendorSections
+                .filter((section) => section.cards.length > 0)
+                .map((section) => (
+                  <VendorOrdersSection
+                    key={section.vendorId ?? section.vendorName}
+                    section={section}
+                    activeTab={activeTab}
+                  />
+                ))}
             </div>
           )}
         </div>

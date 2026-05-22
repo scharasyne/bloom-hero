@@ -198,40 +198,49 @@ export default function PopUpLocationRequest({
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="flex h-screen max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl bg-white sm:h-auto">
-        <div className="flex items-center justify-between border-b border-[#ece4dc] px-6 py-4">
-          <h2 className="text-lg font-semibold text-[#2c2825]">
+      <div
+        className="modal-overlay"
+        onClick={onClose}
+      >
+      <div
+        className="flex max-h-[80dvh] w-full max-w-md flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-[#ece4dc] px-3 py-2.5 sm:px-4">
+          <h2 className="text-sm font-semibold text-[#2c2825]">
             Request pop-up location
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-[#8a847d] hover:text-[#4a453f]"
+            className="rounded-lg p-1 text-[#8a847d] hover:bg-[#f3eee8] hover:text-[#4a453f]"
+            aria-label="Close"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="flex-1 flex-col gap-4 overflow-hidden p-6 sm:flex">
-          <div className="text-sm text-[#8a847d]">
+        <div className="scrollbar-thin-oval min-h-0 flex-1 overflow-y-auto overscroll-contain pr-0.5">
+          <div className="flex flex-col gap-3 p-3 sm:p-4">
+          <div className="text-xs text-[#8a847d]">
             <p>
               Search a place or click on the map to select a location for {vendorName}'s next pop-up.
             </p>
           </div>
 
           <form onSubmit={handleSearch} className="space-y-2">
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search address or place"
-                className="w-full rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm outline-none focus:border-[#2f5d3a]"
+                className="w-full min-w-0 rounded-lg border border-[#e0d8cf] px-2.5 py-1.5 text-sm outline-none focus:border-[#2f5d3a]"
               />
               <button
                 type="submit"
                 disabled={searching}
-                className="rounded-xl bg-[#2f5d3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#254a2f] disabled:opacity-50"
+                className="shrink-0 rounded-lg bg-[#2f5d3a] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#254a2f] disabled:opacity-50 sm:w-auto"
               >
                 {searching ? "Searching..." : "Search"}
               </button>
@@ -242,13 +251,13 @@ export default function PopUpLocationRequest({
             )}
 
             {searchResults.length > 0 && (
-              <div className="max-h-36 overflow-y-auto rounded-xl border border-[#ece5dd] bg-white">
+              <div className="scrollbar-thin-oval max-h-28 overflow-y-auto rounded-lg border border-[#ece5dd] bg-white">
                 {searchResults.map((result, index) => (
                   <button
                     key={`${result.name}-${index}`}
                     type="button"
                     onClick={() => handleSelectSearchResult(result)}
-                    className="block w-full border-b border-[#f3eee8] px-3 py-2 text-left text-sm text-[#4a453f] hover:bg-[#fbf9f6] last:border-b-0"
+                    className="block w-full border-b border-[#f3eee8] px-2.5 py-1.5 text-left text-xs text-[#4a453f] hover:bg-[#fbf9f6] last:border-b-0"
                   >
                     {result.name}
                   </button>
@@ -259,15 +268,15 @@ export default function PopUpLocationRequest({
 
           <div
             ref={mapRef}
-            className="h-96 w-full rounded-xl border border-[#ece5dd]"
+            className="h-36 w-full shrink-0 rounded-lg border border-[#ece5dd] sm:h-40"
           />
 
           {selectedLocation && (
-            <div className="rounded-xl border border-[#ece5dd] bg-[#fbf9f6] p-4">
-              <div className="flex items-start gap-3">
-                <MapPin size={18} className="mt-0.5 shrink-0 text-[#2f5d3a]" />
+            <div className="rounded-lg border border-[#ece5dd] bg-[#fbf9f6] p-2.5">
+              <div className="flex items-start gap-2">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-[#2f5d3a]" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-[#2c2825]">
+                  <p className="text-xs font-medium text-[#2c2825]">
                     {selectedLocation.name}
                   </p>
                   <p className="mt-1 text-xs text-[#8a847d]">
@@ -282,34 +291,37 @@ export default function PopUpLocationRequest({
               type="date"
               value={requestedDate}
               onChange={(e) => setRequestedDate(e.target.value)}
-              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#e0d8cf] px-2.5 py-1.5 text-sm"
             />
             <input
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#e0d8cf] px-2.5 py-1.5 text-sm"
             />
             <input
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="rounded-xl border border-[#e0d8cf] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#e0d8cf] px-2.5 py-1.5 text-sm"
             />
+          </div>
           </div>
         </div>
 
-        <div className="border-t border-[#ece4dc] px-6 py-4 sm:flex sm:justify-end sm:gap-3">
+        <div className="shrink-0 border-t border-[#ece4dc] px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:flex sm:justify-end sm:gap-2 sm:px-4">
           <button
+            type="button"
             onClick={onClose}
-            className="w-full rounded-full border border-[#e0d8cf] px-4 py-2.5 text-sm font-medium text-[#4a453f] hover:bg-[#f3eee8] sm:w-auto"
+            className="w-full rounded-full border border-[#e0d8cf] px-3 py-2 text-xs font-medium text-[#4a453f] hover:bg-[#f3eee8] sm:w-auto"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!selectedLocation || !requestedDate || !startTime || !endTime || isLoading}
-            className="mt-2 w-full rounded-full bg-[#2f5d3a] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(25,118,72,0.28)] hover:bg-[#254a2f] disabled:opacity-50 sm:mt-0 sm:w-auto"
+            className="mt-1.5 w-full rounded-full bg-[#2f5d3a] px-3 py-2 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(25,118,72,0.24)] hover:bg-[#254a2f] disabled:opacity-50 sm:mt-0 sm:w-auto"
           >
             {isLoading ? "Submitting..." : "Submit request"}
           </button>

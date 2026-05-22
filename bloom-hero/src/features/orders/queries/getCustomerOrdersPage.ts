@@ -34,7 +34,7 @@ export async function getCustomerOrdersPage(  tab: string | undefined
   const { data: rows } = (await supabase
     .from("order_items")
     .select(
-      "order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, order_date, status, total_amount, receipt_proof_url, receipt_submitted_at, vendors(id, shop_name))"
+      "id, order_id, quantity, subtotal, products(id, product_name, price, product_image_url), orders!inner(id, vendor_id, order_date, status, payment_method, total_amount, receipt_proof_url, receipt_submitted_at, vendors(id, shop_name))"
     )
     .eq("orders.customer_id", user.id)
     .in("orders.status", activeStatuses)) as { data: OrderItemRow[] | null };

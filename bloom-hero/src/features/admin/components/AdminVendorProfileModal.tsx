@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Icon } from "@iconify/react";
 import { Modal } from "@/components/Modal";
 import { reviewVendorSuspensionAppeal } from "@/features/admin/actions/reviewVendorSuspensionAppeal";
-import type { VendorRecord } from "@/hooks/useVendors";
+import type { AdminVendorRecord as VendorRecord } from "@/features/admin/types";
 
 type AdminVendorProfileModalProps = {
   vendor: VendorRecord | null;

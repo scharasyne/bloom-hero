@@ -2,19 +2,15 @@
 
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { getAuthUser } from "@/features/auth/queries/getAuthUser";
 import { getVendorApplicationDraftByOwnerId } from "@/features/vendors/queries/getVendorApplicationDraft";
 
 export async function getVendorApplicationDraftForCurrentUser() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) return { ok: false as const };
+  const user = await getAuthUser();
+  if (!user) return { ok: false as const };
 
   try {
-    const draft = await getVendorApplicationDraftByOwnerId(session.user.id);
+    const draft = await getVendorApplicationDraftByOwnerId(user.id);
     return { ok: true as const, draft };
   } catch {
     return { ok: false as const };

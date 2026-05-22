@@ -3,29 +3,17 @@
 "use server";
 
 import { uploadCustomerProfilePhoto } from "@/features/customers/actions/uploadCustomerProfile";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-/**
- * 
- * REDUNDANT GET CURRENT SESSION USER ID. 
- * WE ALREADY HAVE ONE
- */
-async function getCurrentSessionUserId() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error("Please log in again to continue.");
-  }
-
-  return session.user.id;
-}
+import { RateLimitError, enforceRateLimit } from "@/lib/security/enforce-rate-limit";
+import { requireAuthUser } from "@/lib/security/require-auth-user";
 
 export async function uploadCustomerPhoto(formData: FormData) {
   try {
-    const userId = await getCurrentSessionUserId();
+    const auth = await requireAuthUser();
+    if (!auth.ok) {
+      return { ok: false as const, message: auth.error };
+    }
+    const userId = auth.userId;
+    await enforceRateLimit("upload-api", userId);
     const file = formData.get("photo");
 
     if (!(file instanceof File)) {
@@ -35,6 +23,10 @@ export async function uploadCustomerPhoto(formData: FormData) {
     const publicUrl = await uploadCustomerProfilePhoto(userId, file);
     return { ok: true as const, publicUrl };
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return { ok: false as const, message: error.message };
+    }
+
     return {
       ok: false as const,
       message:

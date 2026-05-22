@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { getSecurityHeaders } from "./src/lib/security/headers";
+
 const legacyVendorDashboardRedirects = [
   { from: "/market/dashboard", to: "/vendor/dashboard" },
   { from: "/pop-up/dashboard", to: "/vendor/dashboard" },
@@ -26,6 +28,15 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+  },
+  async headers() {
+    const securityHeaders = getSecurityHeaders();
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
   },
   async redirects() {
     return [

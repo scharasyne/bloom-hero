@@ -9,7 +9,7 @@ import type {
   VendorDashboardRecentOrder,
   VendorDashboardTrendPoint,
   VendorDashboardUpcomingOrder,
-} from "@/lib/mockData";
+} from "@/features/vendors/types/dashboard";
 
 export type VendorDashboardData = {
   kpis: VendorDashboardKPIItem[];
@@ -76,7 +76,7 @@ export async function getVendorDashboardData(): Promise<
   const previousStart = addDays(currentStart, -7);
   const fulfilmentStatuses = ["to_pay", "to_ship", "to_receive"];
 
-  const { count: pendingCount } = await supabase
+  const { count: pendingCount, error: pendingCountError } = await supabase
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("vendor_id", vendor.id)
@@ -88,9 +88,19 @@ export async function getVendorDashboardData(): Promise<
     .eq("vendor_id", vendor.id)
     .gte("order_date", previousStart.toISOString())
     .lt("order_date", currentEnd.toISOString())
-    .neq("status", "cancelled");
+    .neq("status", "cancelled")
+    .neq("status", "pending");
 
-  if (ordersError) return { ok: false, error: "Failed to load order metrics." };
+  const ordersAccessError = pendingCountError ?? ordersError;
+  if (ordersAccessError) {
+    return {
+      ok: false,
+      error:
+        ordersAccessError.message.includes("permission denied")
+          ? "Could not load orders. Run sql/01-rls-helpers.sql and sql/02-rls-policies.sql in Supabase (see sql/README.md)."
+          : ordersAccessError.message,
+    };
+  }
   const orders = orderRows ?? [];
 
   const currentOrders = orders.filter((row) => {
@@ -235,7 +245,8 @@ export async function getVendorDashboardData(): Promise<
     .eq("vendor_id", vendor.id)
     .gte("order_date", upcomingStart.toISOString())
     .lt("order_date", upcomingEnd.toISOString())
-    .neq("status", "cancelled");
+    .neq("status", "cancelled")
+    .neq("status", "pending");
 
   const upcomingMap = new Map<string, number>();
   for (const row of upcomingRows ?? []) {

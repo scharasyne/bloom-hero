@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { VendorPageShell } from "@/components/VendorPageShell";
 import VendorOrdersTable from "@/features/orders/components/VendorOrdersTable";
 import { VendorCatalogBlockedPanel } from "@/features/vendors/components/VendorCatalogBlockedPanel";
-import { VendorDashboardSidebarCard } from "@/features/vendors/components/VendorDashboardSidebarCard";
 import { getVendorCommonProfileByOwner } from "@/features/vendors/queries/getVendorCommonProfile";
 import { canManageCatalog } from "@/features/vendors/utils/catalogAccess";
 
@@ -11,29 +11,30 @@ type VendorOrdersPageProps = {
   searchParams: Promise<{ success?: string; error?: string; status?: string }>;
 };
 
+function OrdersHeader() {
+  return (
+    <div className="mb-6">
+      <h1 className="page-title">Orders</h1>
+      <p className="text-sm text-muted-foreground">
+        Review payment receipts and update delivery status.
+      </p>
+    </div>
+  );
+}
+
 export default async function VendorOrdersPage({ searchParams }: VendorOrdersPageProps) {
   const commonProfile = await getVendorCommonProfileByOwner();
   if (!commonProfile) redirect("/login");
+
   if (!canManageCatalog(commonProfile.businessType)) {
     return (
-      <main className="flex">
-        <div className="lg:p-6">
-          <VendorDashboardSidebarCard activeTab="orders" businessType={commonProfile.businessType} />
-        </div>
-
-        <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold">Orders</h1>
-            <p className="text-sm text-muted-foreground">
-              Review payment receipts and update delivery status.
-            </p>
-          </div>
-          <VendorCatalogBlockedPanel
-            title="Register your business!"
-            description="Order management unlocks after you register your business with BloomHero."
-          />
-        </div>
-      </main>
+      <VendorPageShell activeTab="orders" businessType={commonProfile.businessType}>
+        <OrdersHeader />
+        <VendorCatalogBlockedPanel
+          title="Register your business!"
+          description="Order management unlocks after you register your business with BloomHero."
+        />
+      </VendorPageShell>
     );
   }
 
@@ -52,46 +53,35 @@ export default async function VendorOrdersPage({ searchParams }: VendorOrdersPag
   ];
 
   return (
-    <main className="flex">
-      <div className="lg:p-6">
-        <VendorDashboardSidebarCard activeTab="orders" businessType={commonProfile.businessType} />
+    <VendorPageShell activeTab="orders" businessType={commonProfile.businessType}>
+      <OrdersHeader />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {statusButtons.map((button) => {
+          const isActive = activeStatus === button.key;
+          const href = button.key === "all" ? "?" : `?status=${button.key}`;
+
+          return (
+            <Link
+              key={button.key}
+              href={href}
+              className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
+                isActive
+                  ? "border-[#2f5d3a] bg-[#2f5d3a] text-white"
+                  : "border-[#dad5cc] bg-white text-[#5f5a55] hover:border-[#2f5d3a] hover:text-[#2f5d3a]"
+              }`}
+            >
+              {button.label}
+            </Link>
+          );
+        })}
       </div>
 
-      <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold">Orders</h1>
-          <p className="text-sm text-muted-foreground">
-            Review payment receipts and update delivery status.
-          </p>
-        </div>
-
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {statusButtons.map((button) => {
-            const isActive = activeStatus === button.key;
-            const href = button.key === "all" ? "?" : `?status=${button.key}`;
-
-            return (
-              <Link
-                key={button.key}
-                href={href}
-                className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
-                  isActive
-                    ? "border-[#2f5d3a] bg-[#2f5d3a] text-white"
-                    : "border-[#dad5cc] bg-white text-[#5f5a55] hover:border-[#2f5d3a] hover:text-[#2f5d3a]"
-                }`}
-              >
-                {button.label}
-              </Link>
-            );
-          })}
-        </div>
-
-        <VendorOrdersTable
-          successMessage={params.success}
-          errorMessage={params.error}
-          statusFilter={activeStatus}
-        />
-      </div>
-    </main>
+      <VendorOrdersTable
+        successMessage={params.success}
+        errorMessage={params.error}
+        statusFilter={activeStatus}
+      />
+    </VendorPageShell>
   );
 }

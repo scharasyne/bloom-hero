@@ -8,6 +8,9 @@
 
 export type TabKey = "to-pay" | "to-ship" | "to-receive" | "completed";
 
+/** Cart rows live in `orders` with this status until checkout. Not a real order yet. */
+export const CART_ORDER_STATUS = "pending" as const;
+
 export const TABS: { key: TabKey; label: string }[] = [
   { key: "to-pay",     label: "To Pay" },
   { key: "to-ship",    label: "To Ship" },
@@ -16,7 +19,7 @@ export const TABS: { key: TabKey; label: string }[] = [
 ];
 
 export const TAB_STATUS_MAP: Record<TabKey, string[]> = {
-  "to-pay":     ["to_pay", "pending"],
+  "to-pay":     ["to_pay"],
   "to-ship":    ["to_ship", "confirmed"],
   "to-receive": ["to_receive", "shipped"],
   "completed":  ["completed"],

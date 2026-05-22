@@ -136,7 +136,7 @@ export function CustomerReviewPageView({
             )}
           </section>
 
-          <section className="bg-white rounded-3xl shadow-md border border-[#e2ddd4] px-10 py-8 max-w-2xl w-full">
+          <section className="w-full max-w-2xl rounded-3xl border border-[#e2ddd4] bg-white px-4 py-6 shadow-md sm:px-8 sm:py-8">
             <p className="text-xs font-semibold tracking-[0.15em] text-gray-400 mb-3">
               REVIEW YOUR PURCHASE
             </p>

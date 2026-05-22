@@ -43,7 +43,8 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
       .from("orders")
       .select("total_amount, status, order_date")
       .gte("order_date", monthStart)
-      .neq("status", "cancelled"),
+      .neq("status", "cancelled")
+      .neq("status", "pending"),
     adminClient.client
       .from("vendor_applications")
       .select("id, shop_name, shop_address, email, submitted_at, created_at")
@@ -148,8 +149,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
 
   const moderationQueue = [...applicationItems, ...reviewItems]
     .sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime())
-    .slice(0, 6)
-    .map(({ sortAt: _sortAt, ...item }) => item);
+    .slice(0, 6);
 
   const suspendedVendors: AdminDashboardSuspendedVendor[] = (suspendedVendorsResult.data ?? []).map(
     (row) => ({

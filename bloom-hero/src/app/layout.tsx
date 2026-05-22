@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import { getSession } from "@/features/auth/queries/getSession";
 import NavBarShell from "@/components/NavBarShell";
 import "./globals.css";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Bloom Hero",
+    template: "%s | Bloom Hero",
+  },
+  icons: {
+    icon: "/bloom-icon.png",
+    apple: "/bloom-icon.png",
+  },
+};
 
 const quicksand = Quicksand({
   subsets: ["latin"],

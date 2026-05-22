@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import EditProductModalTrigger from "@/features/products/components/EditProductModalTrigger"
-import { VendorDashboardSidebarCard } from "@/features/vendors/components/VendorDashboardSidebarCard"
+import { VendorPageShell } from "@/components/VendorPageShell"
 import ProductCardImageCarousel from "@/components/ProductCardImageCarousel"
 import { Button } from "@/components/ui/button"
 import { createSupabaseServerClient } from "@/lib/supabase/server-client"
@@ -35,21 +35,16 @@ export default async function VendorListProductPage() {
   if (!commonProfile) redirect("/login")
   if (!canManageCatalog(commonProfile.businessType)) {
     return (
-      <main className="flex">
-        <div className="lg:p-6">
-          <VendorDashboardSidebarCard activeTab="products" businessType={commonProfile.businessType} />
+      <VendorPageShell activeTab="products" businessType={commonProfile.businessType}>
+        <div className="mb-8">
+          <h1 className="page-title">Product List</h1>
+          <p className="mt-0.5 text-sm text-slate-400">Manage your product inventory and sales.</p>
         </div>
-        <div className="w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight text-[#1e1c1a]">Product List</h1>
-            <p className="mt-0.5 text-sm text-slate-400">Manage your product inventory and sales.</p>
-          </div>
-          <VendorCatalogBlockedPanel
-            title="Register your business!"
-            description="Product listings and inventory unlock after you register your business with BloomHero."
-          />
-        </div>
-      </main>
+        <VendorCatalogBlockedPanel
+          title="Register your business!"
+          description="Product listings and inventory unlock after you register your business with BloomHero."
+        />
+      </VendorPageShell>
     )
   }
 
@@ -97,28 +92,17 @@ export default async function VendorListProductPage() {
 
   const products: ProductRow[] = (productsData ?? []) as ProductRow[]
 
-  {/*
-    
-    // <main className="mx-auto max-w-6xl px-6 py-10">
-    {/* // <main className = "flex-h screen"> */}
-    {/* // <main className= "flex flex-wrap min-h-screen"> */}
-    {/* // <main> */}
   return (
-    <main className = "flex">
-      <div className="lg:p-6">
-        <VendorDashboardSidebarCard activeTab="products" businessType={commonProfile.businessType} />
-      </div>
-      <div className = "w-full p-4 lg:pl-2 lg:pr-10 md:p-6 sm:pt-20">
-        <div>
-          <div className="mb-8 flex items-center justify-between gap-4">
+    <VendorPageShell activeTab="products" businessType={commonProfile.businessType}>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#1e1c1a]">Product List</h1>
+              <h1 className="page-title">Product List</h1>
               <p className="mt-0.5 text-sm text-slate-400">
                 Manage your product inventory and sales.
               </p>
             </div>
 
-            <Button asChild className="rounded-xl bg-[#2f5d3a] px-5 text-sm font-semibold text-white shadow-none hover:bg-[#26492f] transition-colors">
+            <Button asChild className="btn-mobile rounded-xl bg-[#2f5d3a] px-5 text-sm font-semibold text-white shadow-none hover:bg-[#26492f] transition-colors">
               <Link href="/vendor/add-product">+ Add Product</Link>
             </Button>
           </div>
@@ -199,8 +183,6 @@ export default async function VendorListProductPage() {
               })}
             </section>
           )}
-        </div>
-      </div>
-    </main>
+    </VendorPageShell>
   )
 }

@@ -4,6 +4,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
+import { RateLimitError, enforceRateLimit } from "@/lib/security/enforce-rate-limit";
 import { getOrderSessionUserId } from "@/features/orders/utils/getOrderSessionUserId";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png"];
@@ -28,6 +29,7 @@ export async function uploadOrderReceiptProof(formData: FormData) {
 
   try {
     const { supabase, userId } = await getOrderSessionUserId();
+    await enforceRateLimit("upload-api", userId);
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -63,7 +65,6 @@ export async function uploadOrderReceiptProof(formData: FormData) {
       .update({
         receipt_proof_url: filePath,
         receipt_submitted_at: new Date().toISOString(),
-        status: "to_ship",
       })
       .eq("id", orderId);
 
@@ -74,9 +75,15 @@ export async function uploadOrderReceiptProof(formData: FormData) {
     revalidatePath("/orders");
     revalidatePath("/customer/orders");
     revalidatePath("/vendor/orders");
-    redirect("/orders?tab=to-ship&success=Receipt+uploaded");
+    redirect(
+      "/orders?tab=to-pay&success=Receipt+uploaded.+Waiting+for+vendor+to+confirm+payment."
+    );
   } catch (error) {
     unstable_rethrow(error);
+
+    if (error instanceof RateLimitError) {
+      redirect("/orders?tab=to-pay&error=Too+many+uploads.+Please+try+again+later.");
+    }
 
     const message =
       error instanceof Error ? encodeURIComponent(error.message) : "Upload+failed";

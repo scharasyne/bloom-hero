@@ -30,8 +30,8 @@ export async function cancelCustomerOrder(formData: FormData) {
       throw new Error("You are not allowed to cancel this order.");
     }
 
-    if (!["pending", "to_pay"].includes(order.status)) {
-      throw new Error("Only unpaid orders can be cancelled.");
+    if (order.status !== "to_pay") {
+      throw new Error("Only orders awaiting payment can be cancelled.");
     }
 
     const { error: updateError } = await supabase

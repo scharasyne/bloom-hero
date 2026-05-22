@@ -7,6 +7,7 @@ import PopUpVendorModal from "./PopUpVendorModal";
 
 interface PopUpMapProps {
   initialVendors: PopUpMapVendor[];
+  showProfileLink?: boolean;
 }
 
 function getToday() {
@@ -24,7 +25,7 @@ function parseDate(value: string | null | undefined) {
   return null;
 }
 
-export default function PopUpMap({ initialVendors }: PopUpMapProps) {
+export default function PopUpMap({ initialVendors, showProfileLink = true }: PopUpMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const [activeVendor, setActiveVendor] = useState<PopUpMapVendor | null>(null);
@@ -182,7 +183,7 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
             className="w-full max-w-6xl rounded-[16px] overflow-hidden shadow-[0px_8px_24px_0px_rgba(0,0,0,0.06)]"
             style={{ border: "1px solid #edeae6" }}
           >
-            <div className="flex flex-col md:flex-row" style={{ height: "620px" }}>
+            <div className="flex h-[620px] min-h-0 flex-col overflow-hidden md:flex-row">
 
               <PopUpMapSidebar
                 todayVendors={todayVendors}
@@ -197,12 +198,13 @@ export default function PopUpMap({ initialVendors }: PopUpMapProps) {
               />
 
               {/* Map */}
-              <div className="flex-1 min-h-[400px] md:min-h-0 relative">
+              <div className="relative min-h-0 flex-1 md:min-h-0">
                 <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
                 {activeVendor && (
                   <PopUpVendorModal
                     vendor={activeVendor}
                     onClose={() => setActiveVendor(null)}
+                    showProfileLink={showProfileLink}
                   />
                 )}
               </div>
