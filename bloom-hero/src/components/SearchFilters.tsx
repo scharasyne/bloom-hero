@@ -3,7 +3,7 @@
 import React from "react";
 import { Icon } from "@iconify/react";
 
-const PRICE_OPTIONS = ["Under P500", "Over P500", "Under P700", "Default"];
+const PRICE_OPTIONS = ["Default", "Under P500", "P500-700", "Over P700"];
 const SORT_OPTIONS = ["Best Sellers", "Price: Low to High", "Price: High to Low"];
 
 const SORT_LABELS: Record<string, string> = {

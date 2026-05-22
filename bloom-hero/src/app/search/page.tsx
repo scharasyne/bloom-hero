@@ -106,10 +106,10 @@ function scopeLabel(scope: SearchScope) {
 
 function mapPriceFilter(value: string) {
   if (value === "Under P500") return "<500";
-  if (value === "Over P500") return ">500";
-  if (value === "Under P700") return "<700";
-  if (value === "Default") return "<100000";
-  return "<1000";
+  if (value === "P500-700") return "500-700";
+  if (value === "Over P700") return ">700";
+  if (value === "Default") return "Any";
+  return "Any";
 }
 
 function VendorResultCard({ vendor }: { vendor: SearchVendorRow }) {
@@ -175,7 +175,7 @@ export default function SearchPage() {
   const hasQuery = q.trim().length > 0;
   const hasCategory = Boolean(category);
 
-  const [price, setPrice] = React.useState("Default ");
+  const [price, setPrice] = React.useState("Default");
   const [sort, setSort] = React.useState("Best Sellers");
   const [moreFilter, setMoreFilter] = React.useState("All");
   const [results, setResults] = React.useState<SearchResults>({ flowers: [], vendors: [] });
