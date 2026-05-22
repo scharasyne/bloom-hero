@@ -22,7 +22,7 @@ export async function requestPasswordReset(
 
   const headerStore = await headers();
   const origin = getRequestOrigin(headerStore);
-  const redirectTo = `${origin}/auth/confirm`;
+  const redirectTo = `${origin}/auth/confirm?type=recovery`;
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {

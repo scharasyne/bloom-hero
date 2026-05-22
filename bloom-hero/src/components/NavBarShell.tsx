@@ -10,7 +10,13 @@ type NavBarShellProps = {
 export default function NavBarShell({ session }: NavBarShellProps) {
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/admin")) {
+  if (
+    pathname?.startsWith("/admin") ||
+    pathname === "/forgot-password" ||
+    pathname === "/auth/confirm" ||
+    pathname === "/login" ||
+    pathname === "/sign-up"
+  ) {
     return null;
   }
 

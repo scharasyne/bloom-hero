@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { Modal } from "@/components/Modal";
 import { getReviewModerationReviews } from "@/features/admin/queries/getReviewModerationReviews";
@@ -29,6 +30,38 @@ function StarRating({ rating }: { rating: number }) {
       ))}
       <span className="ml-[4px] text-[13px] text-[#7a746e]">{rating.toFixed(1)}</span>
     </span>
+  );
+}
+
+function LoadErrorPanel({
+  message,
+  onRetry,
+  isRetrying,
+}: {
+  message: string;
+  onRetry: () => void;
+  isRetrying: boolean;
+}) {
+  return (
+    <div
+      data-testid="review-moderation-load-error"
+      className="flex flex-col items-center justify-center py-[80px] gap-[16px] rounded-[16px] border border-[#fde4e1] bg-[#fff7f6] px-6"
+      role="alert"
+    >
+      <Icon icon="mdi:alert-circle-outline" width={56} height={56} className="text-[#c43c30]" />
+      <p className="text-[#2c2a28] font-semibold text-[20px] text-center">Could not load reviews</p>
+      <p className="text-[#7a746e] text-[14px] text-center max-w-md">{message}</p>
+      <button
+        type="button"
+        data-testid="review-moderation-retry"
+        onClick={onRetry}
+        disabled={isRetrying}
+        className="flex items-center gap-[8px] bg-[#2c2a28] text-white h-[44px] px-[20px] rounded-[12px] text-[14px] font-medium cursor-pointer hover:bg-[#1a1918] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Icon icon="mdi:refresh" width={18} height={18} />
+        {isRetrying ? "Retrying…" : "Retry"}
+      </button>
+    </div>
   );
 }
 
@@ -213,7 +246,13 @@ function OrderDetailContent({ details }: { details: ReviewOrderDetails }) {
   );
 }
 
+function isSimulateLoadErrorEnabled() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("simulateLoadError") === "1";
+}
+
 export default function ReviewModerationPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ReviewTab>("pending");
   const [reviews, setReviews] = useState<ReviewModerationRecord[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -226,36 +265,46 @@ export default function ReviewModerationPage() {
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadReviews = useCallback(async (options?: { skipSimulate?: boolean }) => {
+    setIsLoading(true);
+    setLoadError(null);
 
-    const load = async () => {
-      setIsLoading(true);
-      setLoadError(null);
+    const simulate =
+      !options?.skipSimulate && isSimulateLoadErrorEnabled();
 
-      try {
-        const result = await getReviewModerationReviews();
-        if (!isMounted) return;
-        if (!result.ok) {
-          setReviews([]);
-          setLoadError(result.error ?? "Failed to load reviews.");
-          return;
-        }
-        setReviews(result.data ?? []);
-      } catch (error) {
-        if (!isMounted) return;
+    try {
+      const result = await getReviewModerationReviews(
+        simulate ? { simulateError: true } : undefined
+      );
+      if (!result.ok) {
         setReviews([]);
-        setLoadError(error instanceof Error ? error.message : "Failed to load reviews.");
-      } finally {
-        if (isMounted) setIsLoading(false);
+        setLoadError(result.error ?? "Failed to load reviews.");
+        return;
       }
-    };
-
-    void load();
-    return () => {
-      isMounted = false;
-    };
+      setReviews(result.data ?? []);
+    } catch (error) {
+      setReviews([]);
+      setLoadError(error instanceof Error ? error.message : "Failed to load reviews.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  const handleRetryLoad = useCallback(() => {
+    if (isSimulateLoadErrorEnabled()) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("simulateLoadError");
+      const path = `${url.pathname}${url.search}${url.hash}`;
+      router.replace(path);
+      void loadReviews({ skipSimulate: true });
+      return;
+    }
+    void loadReviews();
+  }, [loadReviews, router]);
+
+  useEffect(() => {
+    void loadReviews();
+  }, [loadReviews]);
 
   const tabReviews = useMemo(
     () => reviews.filter((review) => review.status === activeTab),
@@ -412,16 +461,16 @@ export default function ReviewModerationPage() {
 
       <div className="bg-[#e6e2dd] h-px w-full -mt-[16px]" />
 
-      {loadError ? (
-        <div className="rounded-[12px] border border-[#fde4e1] bg-[#fff7f6] px-4 py-3 text-sm text-[#c43c30]">
-          {loadError}
-        </div>
-      ) : null}
-
       {isLoading ? (
-        <div className="flex flex-col gap-[24px]">
+        <div className="flex flex-col gap-[24px]" data-testid="review-moderation-loading">
           {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
+      ) : loadError ? (
+        <LoadErrorPanel
+          message={loadError}
+          onRetry={handleRetryLoad}
+          isRetrying={isLoading}
+        />
       ) : tabReviews.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-[80px] gap-[12px]">
           <Icon icon="mdi:check-circle-outline" width={64} height={64} className="text-[#b8b2ab]" />

@@ -1,0 +1,2 @@
+No separate REST /api/review-moderation endpoint	Integration	High	Rainy	Dev server at localhost:3000	N/A	"1. Search codebase for /api/review routes
+2. Monitor network on approve"	Dedicated REST API for moderation	Moderation uses getReviewModerationReviews + updateReviewStatus server actions only; no /api/review-moderation route.	Partial	Story wording mentions API; implementation is server actions not REST.

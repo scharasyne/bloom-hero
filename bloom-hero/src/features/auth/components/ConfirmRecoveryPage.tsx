@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { setPasswordRecoveryCookieClient } from "@/features/auth/utils/passwordRecoverySession.client";
 import Image from "next/image";
 
 export function ConfirmRecoveryPage() {
@@ -31,6 +32,7 @@ export function ConfirmRecoveryPage() {
           );
           return;
         }
+        setPasswordRecoveryCookieClient();
         router.replace("/forgot-password");
         router.refresh();
         return;
@@ -45,6 +47,7 @@ export function ConfirmRecoveryPage() {
           );
           return;
         }
+        setPasswordRecoveryCookieClient();
         router.replace("/forgot-password");
         router.refresh();
         return;

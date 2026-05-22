@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { getAuthCallbackRedirectPath } from "@/features/auth/utils/authCallbackRedirect";
 import { getAuthErrorRedirectPath } from "@/features/auth/utils/authErrorRedirect";
+import { getAuthRecoveryRedirectPath } from "@/features/auth/utils/authRecoveryRedirect";
+import { setPasswordRecoveryCookieClient } from "@/features/auth/utils/passwordRecoverySession.client";
 
 /**
  * Handles auth query/hash on any page (server cannot read #fragment).
@@ -16,6 +18,13 @@ export function AuthUrlErrorHandler() {
       pathname === "/forgot-password" ||
       pathname === "/login"
     ) {
+      return;
+    }
+
+    const recoveryRedirect = getAuthRecoveryRedirectPath(search, hash);
+    if (recoveryRedirect) {
+      setPasswordRecoveryCookieClient();
+      window.location.replace(recoveryRedirect);
       return;
     }
 

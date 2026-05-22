@@ -4,6 +4,7 @@ import {
   formatAuthUrlErrorMessage,
   parseAuthUrlErrors,
 } from "@/features/auth/utils/parseAuthUrlErrors";
+import { setPasswordRecoveryCookieOnResponse } from "@/features/auth/utils/passwordRecoverySession.server";
 import { createSupabaseOAuthCallbackClient } from "@/lib/supabase/server-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -16,10 +17,14 @@ function safeNextPath(next: string | null): string {
 
 function redirectWithCookies(
   url: string,
-  applyAuthCookies: (response: NextResponse) => void
+  applyAuthCookies: (response: NextResponse) => void,
+  options?: { passwordRecovery?: boolean }
 ) {
   const redirect = NextResponse.redirect(url);
   applyAuthCookies(redirect);
+  if (options?.passwordRecovery) {
+    setPasswordRecoveryCookieOnResponse(redirect);
+  }
   return redirect;
 }
 
@@ -80,7 +85,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (isRecovery) {
-    return redirectWithCookies(`${origin}/forgot-password`, applyAuthCookies);
+    return redirectWithCookies(`${origin}/forgot-password`, applyAuthCookies, {
+      passwordRecovery: true,
+    });
   }
 
   const {

@@ -58,7 +58,7 @@ export function VendorDashboardSidebarCard({
             "flex h-11 w-11 items-center justify-center rounded-full text-slate-500 hover:bg-[#eef4f0] hover:text-[#2f5d3a] transition-all duration-200 cursor-pointer md:h-10 md:w-full md:justify-start md:gap-2 md:rounded-lg md:px-2 lg:h-11 lg:gap-2.5 lg:px-3 xl:h-12 xl:gap-3 xl:rounded-xl xl:px-4";
 
           const lockedClassName =
-            "flex h-11 w-11 items-center justify-center rounded-full text-slate-400 blur-[0.4px] opacity-60 transition-all duration-200 cursor-pointer md:h-10 md:w-full md:justify-start md:gap-2 md:rounded-lg md:px-2 lg:h-11 lg:gap-2.5 lg:px-3 xl:h-12 xl:gap-3 xl:rounded-xl xl:px-4";
+            "flex h-11 w-11 items-center justify-center rounded-full text-slate-400 blur-[0.4px] opacity-60 transition-all duration-200 cursor-not-allowed pointer-events-none select-none md:h-10 md:w-full md:justify-start md:gap-2 md:rounded-lg md:px-2 lg:h-11 lg:gap-2.5 lg:px-3 xl:h-12 xl:gap-3 xl:rounded-xl xl:px-4";
 
           const inactiveContent = (
             <>
@@ -75,11 +75,17 @@ export function VendorDashboardSidebarCard({
             );
           }
 
-          if (isCatalogLocked && route) {
+          if (isCatalogLocked) {
             return (
-              <Link key={tab.id} href={route} className={cn(lockedClassName, orderClass)}>
+              <span
+                key={tab.id}
+                aria-disabled="true"
+                title="Available after your shop is registered for online orders"
+                data-testid={`vendor-nav-locked-${tab.id}`}
+                className={cn(lockedClassName, orderClass)}
+              >
                 {inactiveContent}
-              </Link>
+              </span>
             );
           }
 

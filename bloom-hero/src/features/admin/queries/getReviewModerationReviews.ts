@@ -4,9 +4,21 @@ import type { AdminActionResult, ReviewModerationRecord } from "@/features/admin
 import { ensureAdmin } from "@/features/admin/utils/ensureAdmin";
 import { getAdminClient, pickSingle } from "@/features/admin/utils/reviewModeration";
 
-export async function getReviewModerationReviews(): Promise<
-  AdminActionResult<ReviewModerationRecord[]>
-> {
+type GetReviewModerationReviewsOptions = {
+  /** Dev/QA only: return a failed result without hitting the database. */
+  simulateError?: boolean;
+};
+
+export async function getReviewModerationReviews(
+  options?: GetReviewModerationReviewsOptions
+): Promise<AdminActionResult<ReviewModerationRecord[]>> {
+  if (options?.simulateError) {
+    return {
+      ok: false,
+      error: "Simulated load failure for testing. Click Retry to load real reviews.",
+    };
+  }
+
   const adminCheck = await ensureAdmin();
   if (!adminCheck.adminId) {
     return { ok: false, error: adminCheck.error ?? "You must be logged in as an admin." };

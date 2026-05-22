@@ -13,21 +13,32 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
+  const [statusIsError, setStatusIsError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const err = new URLSearchParams(window.location.search).get("error");
-    if (err) setStatus(decodeURIComponent(err));
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    const message = params.get("message");
+    if (message) {
+      setStatus(decodeURIComponent(message));
+      setStatusIsError(false);
+    } else if (err) {
+      setStatus(decodeURIComponent(err));
+      setStatusIsError(true);
+    }
   }, []);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("");
+    setStatusIsError(false);
     setIsSubmitting(true);
 
     const destination = await signInWithPasswordAction(email, password);
     if (!destination.ok) {
       setStatus(destination.message);
+      setStatusIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -38,6 +49,7 @@ export default function Login() {
 
     if (!user) {
       setStatus("Unable to load your account. Please try again.");
+      setStatusIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -60,6 +72,7 @@ export default function Login() {
   // social login
   async function handleGoogleLogin() {
     setStatus("");
+    setStatusIsError(false);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -69,6 +82,7 @@ export default function Login() {
 
     if (error) {
       setStatus(error.message);
+      setStatusIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -162,7 +176,14 @@ export default function Login() {
           </div>
 
           {status ? (
-            <p className="text-sm text-center text-gray-700 mt-2">{status}</p>
+            <p
+              role={statusIsError ? "alert" : "status"}
+              className={`text-sm text-center mt-2 ${
+                statusIsError ? "text-[#8b2e26]" : "text-[#2f5d3a]"
+              }`}
+            >
+              {status}
+            </p>
           ) : null}
         </form>
 

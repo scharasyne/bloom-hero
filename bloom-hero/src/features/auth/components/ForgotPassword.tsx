@@ -4,15 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import {
+    clearPasswordRecoveryCookieClient,
+    hasPasswordRecoveryCookieClient,
+    setPasswordRecoveryCookieClient,
+} from "@/features/auth/utils/passwordRecoverySession.client";
 import Image from "next/image";
-
-import { resolvePostLoginDestination } from "@/features/auth/actions/actions";
 
 export default function ForgotPassword() {
     const router = useRouter();
     const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,12 +35,6 @@ export default function ForgotPassword() {
     useEffect(() => {
         let isMounted = true;
 
-        function applySession(session: { user: unknown } | null) {
-            if (isMounted) {
-                setIsAuthenticated(Boolean(session?.user));
-            }
-        }
-
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         if (code) {
@@ -48,28 +45,47 @@ export default function ForgotPassword() {
         }
 
         const hash = window.location.hash.substring(1);
-        if (hash && (hash.includes("type=recovery") || hash.includes("access_token"))) {
+        const hashIsRecovery =
+            hash.includes("type=recovery") || hash.includes("access_token");
+
+        const recoveryCookieActive = hasPasswordRecoveryCookieClient();
+
+        if (hashIsRecovery || recoveryCookieActive) {
+            setPasswordRecoveryCookieClient();
+            setIsRecoveryFlow(true);
             supabase.auth.getSession().then(({ data: { session } }) => {
-                applySession(session);
+                if (!isMounted) return;
                 if (session?.user) {
+                    setIsRecoveryFlow(true);
                     window.history.replaceState(null, "", window.location.pathname);
                 }
             });
         } else {
+            // Email-request step only: clear a normal login, not a recovery session.
             supabase.auth.getSession().then(({ data: { session } }) => {
-                applySession(session);
+                if (!isMounted) return;
+                if (!session?.user) {
+                    setIsRecoveryFlow(false);
+                    return;
+                }
+                supabase.auth.signOut().finally(() => {
+                    if (isMounted) setIsRecoveryFlow(false);
+                });
             });
         }
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
+        } = supabase.auth.onAuthStateChange((event) => {
+            if (!isMounted) return;
             if (event === "PASSWORD_RECOVERY") {
-                if (isMounted) {
-                    setIsAuthenticated(true);
-                }
+                setPasswordRecoveryCookieClient();
+                setIsRecoveryFlow(true);
             }
-            applySession(session);
+            if (event === "SIGNED_OUT") {
+                clearPasswordRecoveryCookieClient();
+                setIsRecoveryFlow(false);
+            }
         });
 
         return () => {
@@ -83,7 +99,7 @@ export default function ForgotPassword() {
         setStatus("");
         setIsSubmitting(true);
 
-        const redirectTo = `${window.location.origin}/auth/confirm`;
+        const redirectTo = `${window.location.origin}/auth/confirm?type=recovery`;
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo,
         });
@@ -93,6 +109,9 @@ export default function ForgotPassword() {
             setIsSubmitting(false);
             return;
         }
+
+        await supabase.auth.signOut();
+        clearPasswordRecoveryCookieClient();
 
         setStatus("Check your email. Open the link in this same browser you used just now.");
         setEmail("");
@@ -128,27 +147,17 @@ export default function ForgotPassword() {
                 return;
             }
 
-            await supabase.auth.getSession();
-
-            let redirectPath = "/";
-            try {
-                const destination = await resolvePostLoginDestination();
-                if (destination.ok) {
-                    redirectPath = destination.path;
-                } else if (destination.message) {
-                    setStatus(destination.message);
-                    redirectPath = "/";
-                }
-            } catch {
-                redirectPath = "/";
-            }
+            await supabase.auth.signOut();
+            clearPasswordRecoveryCookieClient();
 
             setNewPassword("");
             setConfirmPassword("");
-            setStatus("Password updated! Redirecting…");
+            setStatus("Password updated! Redirecting to sign in…");
 
-            // Hard navigation so server cookies and navbar stay in sync
-            window.location.assign(redirectPath);
+            const message = encodeURIComponent(
+                "Password updated. Sign in with your new password."
+            );
+            window.location.assign(`/login?message=${message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -159,7 +168,7 @@ export default function ForgotPassword() {
             <div className="w-full max-w-md bg-[#f8ece7] rounded-2xl shadow-xl p-8 relative">
                 <button
                     type="button"
-                    onClick={() => router.push(isAuthenticated ? "/" : "/login")}
+                    onClick={() => router.push("/login")}
                     aria-label="Go back"
                     className="absolute top-6 left-6 text-gray-500 hover:text-gray-700"
                 >
@@ -191,15 +200,15 @@ export default function ForgotPassword() {
                 </div>
 
                 <h2 className="text-xl font-semibold text-gray-800 text-center mb-2">
-                    {isAuthenticated ? "Change password" : "Forgot password"}
+                    {isRecoveryFlow ? "Change password" : "Forgot password"}
                 </h2>
                 <p className="text-sm text-gray-600 text-center mb-6">
-                    {isAuthenticated
-                        ? "Set a new password for your account right away."
+                    {isRecoveryFlow
+                        ? "Set a new password for your account. You will sign in separately afterward."
                         : "Enter your email and we'll send you a link to reset your password."}
                 </p>
 
-                {status && !isAuthenticated && isErrorStatus ? (
+                {status && !isRecoveryFlow && isErrorStatus ? (
                     <div
                         role="alert"
                         className="mb-4 rounded-lg border border-[#f0c4c0] bg-[#fff5f4] px-4 py-3 text-sm text-[#8b2e26] text-center"
@@ -208,7 +217,7 @@ export default function ForgotPassword() {
                     </div>
                 ) : null}
 
-                {isAuthenticated ? (
+                {isRecoveryFlow ? (
                     <form onSubmit={handlePasswordUpdate} className="space-y-5">
                         <div>
                             <label className="block text-sm text-gray-700 mb-1">
@@ -246,7 +255,7 @@ export default function ForgotPassword() {
                             </button>
                         </div>
 
-                        {status && isAuthenticated ? (
+                        {status && isRecoveryFlow ? (
                             <p className="text-sm text-center text-gray-700">
                                 {status}
                             </p>
@@ -287,8 +296,8 @@ export default function ForgotPassword() {
                 )}
 
                 <p className="text-sm text-center text-gray-600 mt-6">
-                    {isAuthenticated ? (
-                        <>You&apos;ll be sent to your account once the password update is complete.</>
+                    {isRecoveryFlow ? (
+                        <>After updating, you&apos;ll sign in on the next screen with your new password.</>
                     ) : (
                         <>
                             Remember your password?{" "}
